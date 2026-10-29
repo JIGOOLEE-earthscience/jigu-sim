@@ -255,7 +255,9 @@ table.read td:first-child{font-weight:600;color:var(--ink2)}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--u1:#4CC9B7;--u2:#5EA2FF;--u3:#A48BFF}}
 :root[data-theme="dark"]{--u1:#4CC9B7;--u2:#5EA2FF;--u3:#A48BFF}
 .hero{background:var(--panel);border-radius:24px;padding:22px 22px;display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;margin-bottom:18px}
-.hero p{margin:0;color:var(--ink2);font-size:15px;line-height:1.6;max-width:62ch}
+.hero p{margin:0;color:var(--ink2);font-size:15px;line-height:1.6}
+body{word-break:keep-all;overflow-wrap:break-word}
+.hero p,.lesson .txt b{text-wrap:pretty}
 .hero .stat{display:flex;gap:10px}
 .hero .stat div{background:var(--btn);border-radius:16px;padding:10px 16px;text-align:center;min-width:92px}
 .hero .stat b{display:block;font-size:24px;font-weight:800;color:var(--accent);letter-spacing:-.03em}
