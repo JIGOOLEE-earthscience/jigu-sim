@@ -1,0 +1,16 @@
+{
+  "name": "지구시스템과학 체험형 시뮬레이션",
+  "short_name": "지구시스템과학",
+  "description": "교과서 단원별로 직접 조작하며 원리를 확인하는 지구과학 시뮬레이션",
+  "lang": "ko",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F2F4F6",
+  "theme_color": "#3182F6",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
