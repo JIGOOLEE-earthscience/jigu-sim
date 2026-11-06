@@ -1408,8 +1408,8 @@ const lcl=(function(){
   const H=()=>(st.T-st.Td)/8;
   const Tp=h=>{const L=H();return h<=L?st.T-10*h:st.T-10*L-5*(h-L);};
   const Tdp=h=>{const L=H();return h<=L?st.Td-2*h:Tp(h);};
-  const TdS=bindRange('lTd',v=>fi(v)+' ℃',v=>{st.Td=v;question();});
-  const TS=bindRange('lT',v=>v+' ℃',v=>{st.T=v;TdS.el.max=v;if(st.Td>v)TdS.set(v);question();});
+  const TdS=bindRange('lTd',v=>fi(v)+' ℃',v=>{if(v>st.T){TdS.set(st.T);return;}st.Td=v;question();});
+  const TS=bindRange('lT',v=>v+' ℃',v=>{st.T=v;if(st.Td>v)TdS.set(v);question();});
   bindRange('lSp',v=>SPL[v-1],v=>{st.sp=v;}).set(3);
   const HS=bindRange('lH',v=>mm(v)+' m',v=>{st.h=v;st.hold=0;st.play=false;syncPlay();});
   const syncPlay=playBtn('lPlay',st,['상승시키기','일시정지']);
@@ -1534,8 +1534,8 @@ const foehn=(function(){
 
   /* ----- 조작 ----- */
   const US=bindRange('fhU',v=>mm(hOf(v)),v=>{st.u=v;st.goU=null;st.play=false;sync();});
-  const TdS=bindRange('fhTd0',v=>fi(v)+' ℃',v=>{st.Td0=v;});
-  bindRange('fhT0',v=>v+' ℃',v=>{st.T0=v;TdS.el.max=v;if(st.Td0>v)TdS.set(v);}).set(20);TdS.set(12);
+  const TdS=bindRange('fhTd0',v=>fi(v)+' ℃',v=>{if(v>st.T0){TdS.set(st.T0);return;}st.Td0=v;});
+  bindRange('fhT0',v=>v+' ℃',v=>{st.T0=v;if(st.Td0>v)TdS.set(v);}).set(20);TdS.set(12);
   bindRange('fhH',v=>v.toLocaleString('ko-KR')+' m',v=>{st.H=v/1000;}).set(2000);
   bindRange('fhSp',v=>SPL[v-1],v=>{st.sp=v;}).set(3);
   [['fhcDry','dry'],['fhcMoist','moist'],['fhcDew','dew'],['fhcPre','pre'],['fhcStopL','stopL'],['fhcStopT','stopT']].forEach(([id,key])=>{const el=document.getElementById(id);el.checked=st[key];el.onchange=()=>{st[key]=el.checked;};});
@@ -1883,8 +1883,8 @@ const fog=(function(){
   function fogTop(cool){let top=0;for(let z=0;z<=1000;z+=5){if(prof(z,cool)<=dprof(z)+1e-6)top=z;else break;}return top;}
 
   const PS=bindRange('fP',v=>pLabel(v),v=>{st.p=v;st.play=false;syncPlay();});
-  const TdS=bindRange('fTd',v=>fi(v)+' ℃',v=>{st.Td=v;});
-  const TS=bindRange('fT',v=>v+' ℃',v=>{st.T=v;TdS.el.max=v;if(st.Td>v)TdS.set(v);});
+  const TdS=bindRange('fTd',v=>fi(v)+' ℃',v=>{if(v>st.T){TdS.set(st.T);return;}st.Td=v;});
+  const TS=bindRange('fT',v=>v+' ℃',v=>{st.T=v;if(st.Td>v)TdS.set(v);});
   bindRange('fSp',v=>['아주 느리게','느리게','보통','빠르게','아주 빠르게'][v-1],v=>{st.sp=v;}).set(3);
   const syncPlay=playBtn('fPlay',st,['재생하기','일시정지']);
   st.onPlay=()=>{if(st.play&&st.p>=1){st.p=0;st.hold=0;}};
