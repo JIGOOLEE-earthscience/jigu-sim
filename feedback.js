@@ -120,7 +120,7 @@
       var h = document.querySelector('h1'), sub = h && h.querySelector('.subj');
       if (sub) {
         var tab = document.querySelector('[role="tab"][aria-selected="true"]');
-        return (h.textContent.replace(sub.textContent, '').trim() + (tab ? ' · ' + tab.textContent.trim() : '')).slice(0, 80);
+        return (sub.textContent.trim() + '/' + h.textContent.replace(sub.textContent, '').trim() + (tab ? ' · ' + tab.textContent.trim() : '')).slice(0, 100);
       }
       return (h ? h.textContent.trim() : document.title).slice(0, 80);
     }
