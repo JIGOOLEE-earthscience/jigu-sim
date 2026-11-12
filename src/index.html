@@ -1,0 +1,207 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#3182F6"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="지구과학 시뮬">
+<title>지구과학 체험형 시뮬레이션</title>
+<meta name="jigu-page" content="과목 선택 첫 화면">
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/*@@FONT_FACE@@*/
+/* 레이아웃: 헤더 → 이어서 보기 → 학년·구분별 과목 카드(공통 2칸, 선택 3칸) → 앱 설치 안내 */
+:root{
+  --bg:#F2F4F6; --panel:#FFFFFF; --ink:#191F28; --ink2:#333D4B; --muted:#6B7684; --sub:#8B95A1; --line:#E5E8EB;
+  --accent:#3182F6; --accent-ink:#FFFFFF; --accent-soft:#E8F3FF; --btn:#F2F4F6; --btn-ink:#4E5968;
+  --s1:#14A37F; --s1s:#E3F7F0;   /* 통합과학1 */
+  --s2:#F07B1A; --s2s:#FFF1E4;   /* 통합과학2 */
+  --s3:#3182F6; --s3s:#E8F3FF;   /* 지구과학 */
+  --s4:#2F9E8F; --s4s:#E1F5F2;   /* 지구시스템과학 */
+  --s5:#7C5CE6; --s5s:#F0EBFF;   /* 행성우주과학 */
+  --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101013; --panel:#1E1E24; --ink:#ECECEE; --ink2:#C9C9CF; --muted:#9E9EA6; --sub:#7E7E87; --line:#2C2C35;
+  --accent:#3B8BFF; --accent-ink:#FFFFFF; --accent-soft:#1B2B46; --btn:#2C2C35; --btn-ink:#C9C9CF;
+  --s1:#3FD3A8; --s1s:#173329; --s2:#FF9A45; --s2s:#3A2A1C; --s3:#5EA2FF; --s3s:#1B2B46;
+  --s4:#4CC9B7; --s4s:#163330; --s5:#A48BFF; --s5s:#2A2342;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101013; --panel:#1E1E24; --ink:#ECECEE; --ink2:#C9C9CF; --muted:#9E9EA6; --sub:#7E7E87; --line:#2C2C35;
+  --accent:#3B8BFF; --accent-ink:#FFFFFF; --accent-soft:#1B2B46; --btn:#2C2C35; --btn-ink:#C9C9CF;
+  --s1:#3FD3A8; --s1s:#173329; --s2:#FF9A45; --s2s:#3A2A1C; --s3:#5EA2FF; --s3s:#1B2B46;
+  --s4:#4CC9B7; --s4s:#163330; --s5:#A48BFF; --s5s:#2A2342;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--font);letter-spacing:-.01em;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word;font-variant-numeric:tabular-nums}
+.wrap{max-width:1080px;margin:0 auto;padding-block:22px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+.em{display:inline-block;width:1.3em;height:1.3em;background:center/contain no-repeat;vertical-align:-.28em;flex:none}
+/*@@EMOJI_CSS@@*/
+
+/* 헤더 */
+header{display:flex;align-items:center;gap:14px;padding:4px 4px 6px}
+header img{width:56px;height:auto;flex:none}
+.eyebrow{font:600 14px var(--font);color:var(--accent)}
+h1{margin:2px 0 0;font-size:clamp(24px,3.4vw,32px);font-weight:800;letter-spacing:-.035em;line-height:1.2;text-wrap:balance}
+
+/* 이어서 보기 */
+.resume{display:flex;align-items:center;gap:14px;background:var(--panel);border-radius:24px;padding:16px 18px;text-decoration:none;color:inherit}
+.resume:hover{filter:brightness(.985)}
+.resume .txt{display:flex;flex-direction:column;min-width:0;flex:1}
+.resume .txt span{font-size:13px;color:var(--sub)}
+.resume .txt b{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.pill{flex:none;font:700 14px var(--font);color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:9px 16px}
+
+/* 과목 묶음 */
+.group{display:flex;flex-direction:column;gap:10px}
+.group-head{display:flex;align-items:baseline;gap:10px;padding:0 6px}
+.group-head h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.03em}
+.group-head span{font-size:14px;color:var(--sub)}
+.grid{display:grid;gap:12px}
+.grid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:820px){.grid.c2,.grid.c3{grid-template-columns:minmax(0,1fr)}}
+
+/* 과목 카드 */
+.subj{position:relative;display:flex;flex-direction:column;gap:14px;background:var(--panel);border-radius:24px;padding:22px 20px 20px;text-decoration:none;color:inherit;min-width:0;overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
+a.subj:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.06)}
+a.subj:active{transform:scale(.985)}
+a.subj:focus-visible,.resume:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.subj::after{content:"";position:absolute;right:-40px;top:-40px;width:150px;height:150px;border-radius:50%;background:var(--cs);opacity:.7;pointer-events:none}
+.subj .top{position:relative;z-index:1;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.tile{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;flex:none;background:var(--cs)}
+.tile .em{width:32px;height:32px}
+.kind{font:700 12.5px var(--font);color:var(--c);background:var(--cs);border-radius:8px;padding:4px 9px;white-space:nowrap}
+.subj h3{position:relative;z-index:1;margin:0;font-size:22px;font-weight:800;letter-spacing:-.035em;line-height:1.25}
+.subj h3 small{display:block;font-size:13.5px;font-weight:600;color:var(--sub);letter-spacing:-.01em;margin-top:3px}
+.subj .desc{margin:0;font-size:14px;color:var(--muted);line-height:1.55;flex:1}
+.bar{display:flex;flex-direction:column;gap:7px}
+.bar .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;color:var(--sub)}
+.bar .row b{color:var(--c);font-weight:800;font-size:15px}
+.track{height:8px;border-radius:999px;background:var(--btn);overflow:hidden}
+.track i{display:block;height:100%;border-radius:999px;background:var(--c)}
+.go{font:700 14px var(--font);color:var(--c)}
+.soon{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;color:var(--sub);background:var(--btn);border-radius:14px;padding:10px 12px}
+.soon b{font-weight:700;color:var(--muted)}
+.subj.off .tile{filter:saturate(.35)}
+.subj.off h3{color:var(--ink2)}
+
+/* 앱 설치 안내 */
+.install{display:flex;flex-direction:column;gap:6px;background:var(--panel);border-radius:24px;padding:16px 20px}
+.install .item{display:flex;align-items:center;gap:14px}
+.install .item .tile{width:48px;height:48px;border-radius:16px;background:var(--accent-soft)}
+.install .item .tile .em{width:28px;height:28px}
+.install .txt{display:flex;flex-direction:column;flex:1;min-width:0}
+.install .txt b{font-size:15.5px;font-weight:700}
+.install .txt span{font-size:14px;color:var(--sub)}
+.btn{font:600 15px/1.2 var(--font);background:var(--accent);color:var(--accent-ink);border:0;border-radius:12px;padding:10px 18px;cursor:pointer;flex:none}
+.howto summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--accent);padding:4px 0;list-style:none}
+.howto summary::-webkit-details-marker{display:none}
+.howto summary::after{content:' ▾'}
+.howto[open] summary::after{content:' ▴'}
+.howto ul{margin:6px 0 4px;padding-left:18px;font-size:14px;color:var(--ink2);line-height:1.7}
+.howto b{margin-right:6px}
+.foot{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:13px;color:var(--sub);margin:6px 0 0}
+.contact{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 8px;font-size:14px;color:var(--muted)}
+.contact b{color:var(--ink2);font-weight:600}
+.contact a{color:var(--accent);font-weight:600;text-decoration:none;user-select:all}
+.copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.copy{font:600 12px var(--font);color:var(--btn-ink);background:var(--panel);border:0;border-radius:8px;padding:4px 9px;cursor:pointer}
+.pub{font-size:12.5px;color:var(--sub)}
+@media (prefers-reduced-motion: reduce){.subj{transition:none}a.subj:hover,a.subj:active{transform:none}}
+</style>
+<!-- 이모지: em-microscope em-alembic em-volcano em-earth-globe-asia-australia em-ringed-planet em-mobile-phone em-black-right-pointing-triangle -->
+<div class="wrap">
+  <header>
+    <img src="@@LOGO@@" alt="상민T와 함께하는 지구과학 로고">
+    <div>
+      <div class="eyebrow">지구과학 체험형 시뮬레이션</div>
+      <h1>어떤 과목을 공부할까요?</h1>
+    </div>
+  </header>
+
+  <a class="resume" id="resume" href="#" hidden>
+    <div class="tile" id="resumeTile"><i class="em"></i></div>
+    <div class="txt"><span>최근에 본 과목</span><b id="resumeName"></b></div>
+    <span class="pill">이어서 보기</span>
+  </a>
+
+  <section class="group" aria-labelledby="g1">
+    <div class="group-head"><h2 id="g1">1학년 · 공통 과목</h2><span>통합과학</span></div>
+    <div class="grid c2" id="grid1"></div>
+  </section>
+
+  <section class="group" aria-labelledby="g2">
+    <div class="group-head"><h2 id="g2">선택 과목</h2><span>지구과학 계열</span></div>
+    <div class="grid c3" id="grid2"></div>
+  </section>
+
+  <section class="install" id="install" hidden aria-label="앱으로 설치하기">
+    <div class="item">
+      <div class="tile"><i class="em em-mobile-phone"></i></div>
+      <div class="txt"><b>앱으로 설치하면 인터넷 없이도 열려요</b><span id="instStatus">처음 한 번은 인터넷이 연결된 상태로 열어 주세요.</span></div>
+      <button class="btn" id="instBtn" hidden>설치</button>
+    </div>
+    <details class="howto">
+      <summary>기기별 설치 방법</summary>
+      <ul>
+        <li><b>갤럭시탭·안드로이드(크롬)</b>오른쪽 위 메뉴(⋮) → ‘홈 화면에 추가’ 또는 ‘앱 설치’</li>
+        <li><b>아이패드·아이폰(사파리)</b>공유 버튼(□↑) → ‘홈 화면에 추가’</li>
+        <li><b>PC(크롬·엣지)</b>주소창 오른쪽 설치 아이콘 또는 메뉴 → ‘앱 설치’</li>
+      </ul>
+    </details>
+  </section>
+
+  <footer class="foot">
+    <div class="contact"><span>문의</span><b>남양고등학교 이상민</b><a href="mailto:earthsci24@korea.kr" id="mail">earthsci24@korea.kr</a><button class="copy" id="copyMail" type="button">복사</button></div>
+    <span>2022 개정 교육과정 · 단원 목차와 쪽수는 과목별 교과서 기준</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* 과목 목록: href 가 있으면 열림, 없으면 준비 중. open/total 은 공개 단원 수/전체 단원 수 */
+const SUBJECTS=[
+  {key:'is1',g:1,name:'통합과학1',grade:'1학년',kind:'공통 과목',em:'microscope',c:'1',
+   desc:'과학의 기초 · 물질과 규칙성 · 시스템과 상호작용'},
+  {key:'is2',g:1,name:'통합과학2',grade:'1학년',kind:'공통 과목',em:'alembic',c:'2',
+   desc:'변화와 다양성 · 환경과 에너지 · 과학과 미래 사회'},
+  {key:'es',g:2,name:'지구과학',grade:'2학년',kind:'일반 선택',em:'volcano',c:'3',
+   desc:'단원 목차를 준비하고 있어요.'},
+  {key:'ess',g:2,name:'지구시스템과학',grade:'2학년',kind:'진로 선택',em:'earth-globe-asia-australia',c:'4',
+   desc:'지구 탄생과 생동하는 지구 · 해수의 운동과 순환 · 강수 과정과 대기의 운동',
+   href:'subjects/ess.html',open:3,total:17,pub:'미래엔'},
+  {key:'ps',g:2,name:'행성우주과학',grade:'',kind:'진로 선택',em:'ringed-planet',c:'5',
+   desc:'단원 목차를 준비하고 있어요.'}
+];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS='jigu-sim:last';
+const card=s=>{
+  const on=!!s.href,style=`--c:var(--s${s.c});--cs:var(--s${s.c}s)`;
+  const head=`<div class="top"><div class="tile"><i class="em em-${s.em}"></i></div><span class="kind">${esc(s.kind)}</span></div>
+    <h3>${esc(s.name)}${s.grade?`<small>${esc(s.grade)}</small>`:''}</h3><p class="desc">${esc(s.desc)}${s.pub?`<br><span class="pub">${esc(s.pub)} 교과서 기준</span>`:''}</p>`;
+  if(on){const pct=Math.round(s.open/s.total*100);
+    return `<a class="subj" href="${esc(s.href)}" data-key="${s.key}" style="${style}" aria-label="${esc(s.name)} 단원 목차 열기">${head}
+      <div class="bar"><div class="row"><span>공개 단원 <b>${s.open}</b> / ${s.total}</span><span class="go">목차 보기 →</span></div>
+      <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="${s.total}" aria-valuenow="${s.open}" aria-label="공개 단원 비율"><i style="width:${pct}%"></i></div></div></a>`;}
+  return `<div class="subj off" style="${style}" aria-disabled="true">${head}<div class="soon"><b>준비 중</b><span>곧 열려요</span></div></div>`;
+};
+document.getElementById('grid1').innerHTML=SUBJECTS.filter(s=>s.g===1).map(card).join('');
+document.getElementById('grid2').innerHTML=SUBJECTS.filter(s=>s.g===2).map(card).join('');
+
+/* 최근에 본 과목 기억(이 기기에서만) */
+document.querySelectorAll('a.subj').forEach(a=>a.addEventListener('click',()=>{try{localStorage.setItem(LS,a.dataset.key);}catch(e){}}));
+let last=null;try{last=localStorage.getItem(LS);}catch(e){}
+const ls=SUBJECTS.find(s=>s.key===last&&s.href);
+if(ls){const r=document.getElementById('resume');r.href=ls.href;r.style.cssText=`--cs:var(--s${ls.c}s)`;
+  document.querySelector('#resumeTile .em').className='em em-'+ls.em;document.getElementById('resumeName').textContent=ls.name;r.hidden=false;}
+
+/* 문의 메일 복사 */
+document.getElementById('copyMail').addEventListener('click',e=>{const b=e.currentTarget,t='earthsci24@korea.kr';
+  const ok=()=>{b.textContent='복사됨';setTimeout(()=>b.textContent='복사',1500);};
+  try{navigator.clipboard.writeText(t).then(ok,()=>{selectMail();});}catch(err){selectMail();}});
+function selectMail(){const r=document.createRange();r.selectNodeContents(document.getElementById('mail'));const s=getSelection();s.removeAllRanges();s.addRange(r);}
+
+})();
+</script>
+<script src="pwa.js" defer></script>

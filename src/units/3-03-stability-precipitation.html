@@ -1,0 +1,2415 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#3182F6"><link rel="manifest" href="../manifest.webmanifest"><link rel="icon" href="../icons/icon-192.png"><link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="지구과학 시뮬">
+<title>지구시스템과학 · Ⅲ-03 대기 안정도와 강수</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/*@@FONT_FACE@@*/
+/* 레이아웃: 단원 헤더 + 탭 3개. 각 탭은 [시뮬레이션 화면 | 조작 패널] 2단, 좁은 화면에서는 1단 */
+:root{
+  --bg:#EDF1F2; --panel:#FFFFFF; --ink:#14232D; --muted:#566872; --line:#D2DBDF;
+  --accent:#1F6F93; --accent-ink:#FFFFFF; --accent-soft:#DCEBF2;
+  --canvas:#F7FAFB; --sky:#E4EEF3;
+  --sea:#2E86B3; --sea-a:rgba(46,134,179,.5); --mud:#9B7443; --land:#D3C29C; --land-edge:#8C7A57;
+  --grav:#1B2833; --cent:#D9443A; --tide:#1D6BD6; --earth:#3D7F9E; --moon:#AEB4BA;
+  --siteC:#D9811A; --siteB:#D9443A; --siteA:#7C5CE6;
+  --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E161B; --panel:#152129; --ink:#E2EBEF; --muted:#90A3AD; --line:#2A3A44;
+    --accent:#5BB0D6; --accent-ink:#0B1418; --accent-soft:#1B3442;
+    --canvas:#111D24; --sky:#142630;
+    --sea:#4CA8D4; --sea-a:rgba(76,168,212,.42); --mud:#C2955C; --land:#5B5240; --land-edge:#A08C64;
+    --grav:#E2EBEF; --cent:#FF6B5E; --tide:#5AA6FF; --earth:#2F6C88; --moon:#C9CED4;
+    --siteC:#F0A33F; --siteB:#FF6B5E; --siteA:#A48BFF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E161B; --panel:#152129; --ink:#E2EBEF; --muted:#90A3AD; --line:#2A3A44;
+  --accent:#5BB0D6; --accent-ink:#0B1418; --accent-soft:#1B3442;
+  --canvas:#111D24; --sky:#142630;
+  --sea:#4CA8D4; --sea-a:rgba(76,168,212,.42); --mud:#C2955C; --land:#5B5240; --land-edge:#A08C64;
+  --grav:#E2EBEF; --cent:#FF6B5E; --tide:#5AA6FF; --earth:#2F6C88; --moon:#C9CED4;
+  --siteC:#F0A33F; --siteB:#FF6B5E; --siteA:#A48BFF;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--font);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+h1{font-size:clamp(24px,3.2vw,34px);line-height:1.15;margin:6px 0 0;letter-spacing:-.02em;text-wrap:balance}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px}
+.tabs button{font:500 14px/1.2 var(--font);color:var(--muted);background:transparent;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tabs button .n{font:500 12px var(--mono);opacity:.8}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lab-head{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-bottom:12px}
+.lab-head h2{font-size:21px;margin:0;letter-spacing:-.01em}
+.lab-head p{margin:0;color:var(--muted);max-width:70ch}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+@media (max-width:920px){.lab{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.stage canvas{display:block;width:100%;height:auto;border-radius:8px;background:var(--canvas)}
+.note{font-size:13px;color:var(--muted);margin:8px 4px 0}
+.controls{display:flex;flex-direction:column;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.group{display:flex;flex-direction:column;gap:10px}
+.group + .group{border-top:1px solid var(--line);padding-top:14px}
+.group h3{margin:0;font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.ctl{display:flex;flex-direction:column;gap:4px}
+.ctl .row{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:500 13px/1.2 var(--font);color:var(--ink);background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:14px}
+.checks label{display:flex;gap:7px;align-items:center;cursor:pointer}
+.chip{display:inline-block;width:18px;height:4px;border-radius:2px;flex:none}
+table.read{width:100%;border-collapse:collapse;font-size:14px}
+table.read th,table.read td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+table.read th:first-child,table.read td:first-child{text-align:left}
+table.read thead th{font-size:12px;color:var(--muted);font-weight:500}
+table.read td{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
+table.read td:first-child{font-family:var(--font);font-weight:500}
+.big{font:500 15px/1.5 var(--font)}
+.big b{font-family:var(--mono)}
+.formula{font:500 13px var(--mono);background:var(--accent-soft);border-radius:8px;padding:8px 10px}
+.qs{margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.info{font-size:14px;background:var(--accent-soft);border-radius:8px;padding:10px 12px;min-height:84px}
+.info b{font-family:var(--mono);font-weight:500}
+.gl-host{position:relative;width:100%;border-radius:8px;overflow:hidden;background:var(--canvas);touch-action:none;cursor:grab;min-height:200px}
+.gl-host:active{cursor:grabbing}
+.gl-host canvas{display:block}
+.gl-clock{position:absolute;left:12px;top:10px;font:500 13px var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;pointer-events:none}
+.gl-hint{position:absolute;right:12px;bottom:10px;font-size:12px;color:var(--muted);pointer-events:none}
+.gl-error{padding:40px 20px;text-align:center;color:var(--muted)}
+.charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:760px){.charts{grid-template-columns:minmax(0,1fr)}}
+.chart{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.chart-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;font-size:14px;font-weight:500}
+.chart-top .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.chart canvas{display:block;width:100%;height:auto;margin-top:4px}
+.chart .sub{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.chart .sub b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+#cvForce{touch-action:none}
+.real{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.real-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:920px){.real-grid{grid-template-columns:minmax(0,1fr)}}
+.real figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.real canvas{display:block;width:100%;height:auto;border-radius:8px;background:var(--canvas);touch-action:pan-y}
+.real-top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:10px}
+.real-top .ctl{flex:1;min-width:180px}
+.real-read{font:500 13px var(--mono);margin:8px 4px 0;min-height:1.5em}
+.real figcaption{font-size:13px;color:var(--muted);margin:8px 4px 0}
+.tide-mini{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tide-mini-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:14px;font-weight:500}
+.muted-s{font-size:12px;font-weight:400;color:var(--muted)}
+.tide-mini canvas{display:block;width:100%;height:auto;margin-top:4px}
+.tide-state{display:flex;flex-direction:column;gap:2px;border-radius:10px;padding:12px 14px;background:var(--accent-soft)}
+.tide-state b{font-size:22px;letter-spacing:-.01em;color:var(--accent)}
+.tide-state span{font-size:14px;color:var(--muted)}
+.terms{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}
+.terms dt{font-weight:700}
+.terms dd{margin:0;color:var(--muted)}
+.brand{display:flex;align-items:center;gap:16px;min-width:0}
+.brand .logo{width:72px;height:auto;flex:none}
+
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+.em{display:inline-block;width:1.3em;height:1.3em;background:center/contain no-repeat;vertical-align:-.28em;flex:none}
+/*@@EMOJI_CSS@@*/
+
+/* ===== 토스 스타일 시안 ===== */
+:root{
+  --bg:#F2F4F6; --panel:#FFFFFF; --ink:#191F28; --ink2:#333D4B; --muted:#6B7684; --sub:#8B95A1; --line:#E5E8EB;
+  --accent:#3182F6; --accent-ink:#FFFFFF; --accent-soft:#E8F3FF; --accent-deep:#1B64DA;
+  --btn:#F2F4F6; --btn-ink:#4E5968; --chip-on:#FFFFFF;
+  --canvas:#F9FAFB; --sky:#EAF2FE; --sea:#3D8BFD; --sea-a:rgba(61,139,253,.32); --mud:#B98A55; --land:#F3E4C8; --land-edge:#C9A877;
+  --grav:#191F28; --cent:#F04452; --tide:#1B64DA; --earth:#4A90E2; --moon:#B0B8C1;
+  --hero1:#FFFFFF; --hero2:#D6E8FF; --hero3:#86B8FF; --hero-big:#FFFFFF;
+  --tile-blue:#E8F3FF; --tile-red:#FFEEF0; --tile-gray:#F2F4F6; --tile-yellow:#FFF6DC; --tile-green:#E5F8EE;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101013; --panel:#1E1E24; --ink:#ECECEE; --ink2:#C9C9CF; --muted:#9E9EA6; --sub:#7E7E87; --line:#2C2C35;
+  --accent:#3B8BFF; --accent-ink:#FFFFFF; --accent-soft:#1B2B46; --accent-deep:#7DB3FF;
+  --btn:#2C2C35; --btn-ink:#C9C9CF; --chip-on:#2C2C35;
+  --canvas:#18181D; --sky:#1A2232; --sea:#3B82F6; --sea-a:rgba(59,130,246,.38); --mud:#C79A62; --land:#4A4136; --land-edge:#A08A68;
+  --grav:#ECECEE; --cent:#FF6B76; --tide:#6AA8FF; --earth:#3A78C2; --moon:#C9CED4;
+  --hero1:#101013; --hero2:#172846; --hero3:#2A5BB0; --hero-big:#FFFFFF;
+  --tile-blue:#1B2B46; --tile-red:#3A2026; --tile-gray:#2C2C35; --tile-yellow:#3A3320; --tile-green:#1C3528;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101013; --panel:#1E1E24; --ink:#ECECEE; --ink2:#C9C9CF; --muted:#9E9EA6; --sub:#7E7E87; --line:#2C2C35;
+  --accent:#3B8BFF; --accent-ink:#FFFFFF; --accent-soft:#1B2B46; --accent-deep:#7DB3FF;
+  --btn:#2C2C35; --btn-ink:#C9C9CF; --chip-on:#2C2C35;
+  --canvas:#18181D; --sky:#1A2232; --sea:#3B82F6; --sea-a:rgba(59,130,246,.38); --mud:#C79A62; --land:#4A4136; --land-edge:#A08A68;
+  --grav:#ECECEE; --cent:#FF6B76; --tide:#6AA8FF; --earth:#3A78C2; --moon:#C9CED4;
+  --hero1:#101013; --hero2:#172846; --hero3:#2A5BB0; --hero-big:#FFFFFF;
+  --tile-blue:#1B2B46; --tile-red:#3A2026; --tile-gray:#2C2C35; --tile-yellow:#3A3320; --tile-green:#1C3528;
+  color-scheme:dark}
+body{letter-spacing:-.01em}
+.wrap{max-width:1180px}
+/* 공통: 카드·버튼 */
+header{display:block;border:0;padding:0;margin-bottom:22px}
+.stage,.controls{border:0;border-radius:24px;padding:16px}
+.stage canvas{border-radius:16px}
+.btn{font:600 15px/1.2 var(--font);background:var(--btn);color:var(--btn-ink);border:0;border-radius:12px;padding:11px 15px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(.97)}
+.btn:active{transform:scale(.98)}
+.btn-xl{width:100%;font-size:17px;padding:17px;border-radius:16px;display:flex;justify-content:center;gap:8px;align-items:center}
+.lab-head{margin:4px 4px 14px;gap:4px 14px}
+.lab-head h2{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.lab-head p{color:var(--muted);font-size:15px}
+.group h3{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.group + .group{border-top:0;padding-top:6px}
+.ctl .row{font-size:15px;color:var(--ink2)}
+.ctl output{font:600 15px var(--font);color:var(--accent)}
+input[type=range]{accent-color:var(--accent);height:22px}
+.tide-mini{border:0;background:var(--canvas);border-radius:16px;padding:12px 14px}
+/* 토스식 카드 스택 */
+.t-cards{background:transparent;padding:0;gap:12px}
+.card{background:var(--panel);border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:16px}
+.card-title{font-size:18px;font-weight:700;letter-spacing:-.02em;margin:0}
+.card-title .blue{color:var(--accent)}
+.card-sub{font-size:14px;color:var(--sub);margin:-10px 0 0}
+.item{display:flex;align-items:center;gap:14px;min-width:0}
+.tile{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:none;background:var(--tile-gray)}
+.tile .em{width:28px;height:28px}
+.tile.blue{background:var(--tile-blue)} .tile.red{background:var(--tile-red)} .tile.yellow{background:var(--tile-yellow)} .tile.green{background:var(--tile-green)}
+.item-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.item-text b{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--ink);font-variant-numeric:tabular-nums}
+.item-text span{font-size:14px;color:var(--sub)}
+.item-text.big b{font-size:28px}
+.item-text.small b{font-size:16px;letter-spacing:-.01em}
+.item .btn{flex:none}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.divider{height:1px;background:var(--line);margin:0 -20px}
+.qlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.qlist li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--ink2);line-height:1.5}
+.qlist .num{flex:none;width:26px;height:26px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font:700 14px/26px var(--font);text-align:center}
+/* 헤더: 칩 탭 */
+.hdA{display:flex;flex-direction:column;gap:16px}
+.hdA .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hdA .brandrow{display:flex;align-items:center;gap:12px;min-width:0}
+.hdA .brandrow img{width:52px;height:auto;flex:none}
+.hdA .eyebrow{font:600 14px var(--font);color:var(--accent);letter-spacing:0;text-transform:none}
+.hdA h1{font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.035em;margin:2px 0 0}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.tchip{flex:none;display:flex;align-items:center;gap:7px;font:500 16px var(--font);color:var(--muted);background:transparent;border:0;border-radius:14px;padding:10px 16px;cursor:pointer;white-space:nowrap}
+.tchip[aria-selected="true"]{background:var(--chip-on);color:var(--ink);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+@media (prefers-reduced-motion: reduce){.cat .ct{transition:none}.btn:active{transform:none}}
+
+/* 2~4번 탭: 그룹마다 카드 */
+.controls:not(.t-cards){background:transparent;padding:0;gap:12px;border-radius:0}
+.controls:not(.t-cards) > .group{background:var(--panel);border-radius:24px;padding:22px 20px;gap:14px}
+.controls:not(.t-cards) > .group + .group{padding-top:22px}
+.group h3{display:flex;align-items:center;gap:8px}
+table.read th,table.read td{border-bottom:1px solid var(--line);padding:10px 4px}
+table.read thead th{color:var(--sub);font-weight:500}
+table.read td{font:600 15px var(--font);color:var(--ink)}
+table.read td:first-child{font-weight:600;color:var(--ink2)}
+.formula{font:600 14px var(--font);background:var(--accent-soft);color:var(--accent-deep);border-radius:14px;padding:12px 14px}
+.big{font:500 15px/1.6 var(--font);color:var(--ink2)} .big b{font:700 17px var(--font);color:var(--accent)}
+.info{background:var(--btn);border-radius:16px;padding:14px 16px;font-size:15px}
+.info b{font:700 15px var(--font);color:var(--ink)}
+.qs{font-size:15px;color:var(--ink2);gap:8px}
+.checks{gap:10px}
+.checks label{background:var(--btn);border-radius:12px;padding:9px 10px;font-size:14px}
+.chart{border:0;background:var(--canvas);border-radius:16px;padding:12px}
+.badge{border:0;background:var(--accent-soft);padding:4px 10px}
+.gl-host{border-radius:16px}
+.gl-clock{border:0;border-radius:12px;font:600 14px var(--font);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.real{border-top:0;padding-top:8px}
+.real figure{border:0;border-radius:24px;padding:16px}
+.real canvas{border-radius:16px}
+.real-read{font:600 14px var(--font);color:var(--ink2)}
+/* ===== Ⅲ-03 단원 추가 토큰 ===== */
+:root{
+  --dry:#F07B1A; --moist:#2F80ED; --dew:#4E5968; --env:#22A45A; --grid:#C5CDD5; --diff:#9C3D2E;
+  --cloud:#FFFFFF; --cloud-edge:#C6D2DE; --warm:#F04452; --cold:#3182F6; --ice:#5DB3E8; --night:#1F2B44; --tag:#B9784A;
+  --zone-u:rgba(240,123,26,.18); --zone-c:rgba(34,164,90,.15); --zone-s:rgba(47,128,237,.14); --fogc:255,255,255;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --dry:#FF9A45; --moist:#64A6FF; --dew:#AEB6C0; --env:#4CD07D; --grid:#3A3A46; --diff:#F08C70;
+  --cloud:#D6DDE6; --cloud-edge:#8A96A4; --warm:#FF6B76; --cold:#6AA8FF; --ice:#8FD0FF; --night:#0A0E18; --tag:#C98B5C;
+  --zone-u:rgba(255,154,69,.20); --zone-c:rgba(76,208,125,.16); --zone-s:rgba(100,166,255,.17); --fogc:214,221,230;
+}}
+:root[data-theme="dark"]{
+  --dry:#FF9A45; --moist:#64A6FF; --dew:#AEB6C0; --env:#4CD07D; --grid:#3A3A46; --diff:#F08C70;
+  --cloud:#D6DDE6; --cloud-edge:#8A96A4; --warm:#FF6B76; --cold:#6AA8FF; --ice:#8FD0FF; --night:#0A0E18; --tag:#C98B5C;
+  --zone-u:rgba(255,154,69,.20); --zone-c:rgba(76,208,125,.16); --zone-s:rgba(100,166,255,.17); --fogc:214,221,230;
+}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;background:var(--btn);border-radius:14px;padding:4px}
+.seg button{font:600 15px/1.25 var(--font);color:var(--muted);background:transparent;border:0;border-radius:11px;padding:10px 4px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--chip-on);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.checks input{accent-color:var(--accent);width:16px;height:16px;margin:0;flex:none}
+.checks label{white-space:nowrap;font-size:13.5px;padding:9px 8px;gap:6px;letter-spacing:-.03em;min-width:0}
+.checks .chip{height:4px;width:12px}
+.checks .chip.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 8px)!important}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--muted);margin:10px 6px 0}
+.leg span{display:inline-flex;align-items:center;gap:6px}
+.leg i{display:inline-block;width:18px;height:4px;border-radius:2px}
+.leg i.dash{height:0;border-top:3px dashed}
+.leg i.dot{width:11px;height:11px;border-radius:50%}
+.ansrow{display:flex;gap:8px}
+.ansrow input{flex:1;min-width:0;font:600 16px var(--font);color:var(--ink);background:var(--btn);border:0;border-radius:12px;padding:11px 12px}
+.fb{margin:0;font-size:14px;font-weight:600;min-height:1.3em;color:var(--muted)}
+.fb.ok{color:var(--env)} .fb.no{color:var(--warm)}
+.status{font-size:15px;color:var(--ink2);background:var(--btn);border-radius:14px;padding:12px 14px;line-height:1.55}
+.status b{color:var(--accent)}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tri .btn{padding:11px 4px;font-size:14px}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin-top:10px}
+@media (max-width:760px){.duo{grid-template-columns:minmax(0,1fr)}}
+.duo figure{margin:0}
+.duo figcaption{font-size:13px;color:var(--muted);margin:6px 4px 0}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmp > div{background:var(--btn);border-radius:16px;padding:12px 14px;font-size:14px;color:var(--ink2);line-height:1.55}
+.cmp b{display:block;font-size:16px;color:var(--ink);margin-bottom:4px}
+details.adv{background:var(--panel);border-radius:20px;padding:14px 18px}
+details.adv summary{cursor:pointer;font-size:14px;font-weight:600;color:var(--sub);list-style:none;display:flex;align-items:center;gap:8px}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::after{white-space:nowrap;flex:none;content:'펼치기';margin-left:auto;font-size:12px;font-weight:500;color:var(--sub);background:var(--btn);padding:3px 9px;border-radius:999px}
+details.adv[open] summary::after{content:'접기'}
+.advbody{display:flex;flex-direction:column;gap:10px;margin-top:12px;font-size:14px;color:var(--ink2);line-height:1.6}
+.advbody .formula{text-align:center;font-size:17px}
+.advbody table{width:100%;border-collapse:collapse;font-size:14px}
+.advbody td{padding:6px 4px;border-bottom:1px solid var(--line);vertical-align:top}
+.advbody td:first-child{font-weight:700;color:var(--ink);white-space:nowrap;width:44px}
+.mini{font-size:12px;color:var(--sub)}
+table.read.data td,table.read.data th{padding:7px 4px;text-align:center}
+table.read.data td:first-child,table.read.data th:first-child{text-align:center}
+table.read.data td{font-size:14px}
+.kbtns{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.kbtns .btn{padding:10px 0;font-size:13px;border-radius:10px}
+.kbtns .btn.on{background:var(--accent-soft);color:var(--accent)}
+.ratebox{margin-top:10px;background:var(--canvas);border-radius:16px;padding:10px 12px 14px;display:flex;flex-direction:column;gap:8px}
+.ratebox canvas{background:transparent!important}
+.quiz .qz{display:flex;flex-direction:column;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+.quiz .qz:first-of-type{border-top:0;padding-top:0}
+.qz-q{margin:0;display:flex;gap:10px;font-size:15px;font-weight:600;color:var(--ink);line-height:1.5}
+.qz-q .num{flex:none;width:26px;height:26px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font:700 14px/26px var(--font);text-align:center}
+.qz-tag{display:inline-block;font-size:11px;font-weight:700;color:var(--sub);background:var(--btn);border-radius:6px;padding:1px 6px;margin-right:6px;vertical-align:1px}
+.qz-opts{display:flex;flex-direction:column;gap:6px}
+.qz-opt{font:500 14px/1.45 var(--font);text-align:left;color:var(--ink2);background:var(--btn);border:2px solid transparent;border-radius:12px;padding:10px 12px;cursor:pointer}
+.qz-opt:hover{filter:brightness(.97)}
+.qz-opt.ok{background:var(--tile-green);border-color:var(--env);color:var(--ink);font-weight:700}
+.qz-opt.no{background:var(--tile-red);border-color:var(--warm)}
+.qz-opt:disabled{cursor:default}
+.qz .ansrow .unit{align-self:center;font-weight:600;color:var(--muted)}
+.qz-fb{margin:0;font-size:14px;line-height:1.55;color:var(--ink2);background:var(--btn);border-radius:12px;padding:10px 12px}
+.qz-fb b{color:var(--ink)}
+.qz-fb.ok{background:var(--tile-green)} .qz-fb.no{background:var(--tile-red)}
+.qz-score{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.qz-score span{font-size:14px;color:var(--sub)}
+.qz-score b{color:var(--accent)}
+.qz-score .btn{padding:8px 12px;font-size:13px}
+.hdA h1 .subj{display:block;font-size:.58em;font-weight:700;color:var(--ink2);letter-spacing:-.02em;line-height:1.3;margin-bottom:2px}
+</style>
+<!-- 동적으로 쓰는 이모지: em-fog em-splashing-sweat-symbol em-wind-blowing-face em-mountain em-umbrella-with-rain-drops em-crescent-moon -->
+<div class="wrap">
+  <header>
+    <div class="hdA">
+      <div class="top">
+        <div class="brandrow">
+          <img src="@@LOGO@@" alt="상민T와 함께하는 지구과학 로고">
+          <div>
+            <div class="eyebrow"><a href="../subjects/ess.html" style="color:inherit;text-decoration:none">← 단원 목차</a> · 지구과학 체험형 시뮬레이션</div>
+            <h1><span class="subj">지구시스템과학</span>Ⅲ-03 대기 안정도와 강수</h1>
+          </div>
+        </div>
+      </div>
+      <nav class="chips" role="tablist" aria-label="실험 선택">
+        <button role="tab" id="tab-adia" data-tab="adia" class="tchip" aria-selected="true"><i class="em em-bubbles"></i>단열 변화</button>
+        <button role="tab" id="tab-svp" data-tab="svp" class="tchip" aria-selected="false"><i class="em em-droplet"></i>포화 수증기압</button>
+        <button role="tab" id="tab-lcl" data-tab="lcl" class="tchip" aria-selected="false"><i class="em em-chart-with-downwards-trend"></i>단열선도 · 상승 응결 고도</button>
+        <button role="tab" id="tab-foehn" data-tab="foehn" class="tchip" aria-selected="false"><i class="em em-mountain"></i>푄 현상</button>
+        <button role="tab" id="tab-stab" data-tab="stab" class="tchip" aria-selected="false"><i class="em em-scales"></i>대기 안정도</button>
+        <button role="tab" id="tab-fog" data-tab="fog" class="tchip" aria-selected="false"><i class="em em-fog"></i>안개의 생성</button>
+        <button role="tab" id="tab-rain" data-tab="rain" class="tchip" aria-selected="false"><i class="em em-cloud-with-rain"></i>강수 과정</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ================= 1. 단열 변화 ================= -->
+  <section id="adia" role="tabpanel" aria-labelledby="tab-adia">
+    <div class="lab-head">
+      <h2>단열 변화</h2>
+      <p>공기 덩어리가 외부와 열을 주고받지 않고 부피 변화로 온도가 변하는 모습을 관찰해요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvAdia" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="공기 덩어리가 상승하면 팽창하고 하강하면 압축되는 단열 변화 시뮬레이션"></canvas>
+        <p class="note">불포화 공기 덩어리(높이 1 km마다 약 10 ℃ 변화)로 가정했어요. 부피 변화와 분자 운동은 잘 보이도록 과장해 표현했고, 기압은 근삿값이에요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <p class="card-title">지금 상태</p>
+          <div class="item">
+            <div class="tile blue" id="aTile"><i class="em em-thermometer"></i></div>
+            <div class="item-text big"><b id="aT">20.0 ℃</b><span id="aTsub">공기 덩어리 온도</span></div>
+          </div>
+          <div class="item">
+            <div class="tile"><i class="em em-up-down-arrow"></i></div>
+            <div class="item-text small"><b id="aPV">주위 기압 1013 hPa</b><span id="aPVsub">부피: 지표면의 1.00배</span></div>
+          </div>
+          <div class="status" id="aState">멈춤</div>
+        </div>
+        <div class="card">
+          <div class="ctl"><div class="row"><label for="aT0">지표면에서의 온도</label><output id="aT0-v"></output></div><input type="range" id="aT0" min="0" max="30" step="1" value="20"></div>
+          <div class="ctl"><div class="row"><label for="aH">공기 덩어리 높이</label><output id="aH-v"></output></div><input type="range" id="aH" min="0" max="5" step="0.01" value="0"></div>
+          <div class="kbtns" role="group" aria-label="높이로 이동"><button class="btn" data-ah="0">지표</button><button class="btn" data-ah="1">1 km</button><button class="btn" data-ah="2">2 km</button><button class="btn" data-ah="3">3 km</button><button class="btn" data-ah="4">4 km</button><button class="btn" data-ah="5">5 km</button></div>
+          <div class="pair"><button class="btn" id="aUp">⬆ 상승시키기</button><button class="btn" id="aDown">⬇ 하강시키기</button></div>
+          <button class="btn primary btn-xl" id="aPlay">재생하기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile blue"><i class="em em-upwards-black-arrow"></i></div><div class="item-text small"><b>단열 팽창</b><span>상승 → 주위 기압이 낮아 팽창 → 분자 운동 에너지 일부가 팽창에 쓰여 온도 하강</span></div></div>
+          <div class="item"><div class="tile red"><i class="em em-downwards-black-arrow"></i></div><div class="item-text small"><b>단열 압축</b><span>하강 → 주위 기압이 높아 압축 → 분자 운동 에너지 증가로 온도 상승</span></div></div>
+          <div class="item"><div class="tile"><i class="em em-thermometer"></i></div><div class="item-text small"><b>단열 변화</b><span>외부와 열을 주고받지 않으면서 부피 변화로 온도가 변하는 현상</span></div></div>
+          <div class="divider"></div>
+          <div class="item"><div class="tile yellow"><i class="em em-dash-symbol"></i></div><div class="item-text small"><b>생활 속 예</b><span>손바닥에 입김을 불 때 입을 동그랗게 좁혀 ‘후~’ 불면 차가운 바람, 입을 크게 벌려 ‘하~’ 불면 따뜻한 바람이 나와요. 크게 분 풍선을 놓으면 빠져나온 공기가 시원하고, 펌프로 자전거 바퀴에 공기를 넣으면 바퀴가 따뜻해져요.</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>지표면에서 기온이 20 ℃인 공기 덩어리가 불포화 상태로 1 km까지 상승하면 기온은 몇 ℃가 될까요?</li>
+            <li><span class="num">2</span>공기 덩어리가 상승할 때 내부 압력과 주위 압력을 비교해 부피가 커지는 까닭을 설명해 보세요.</li>
+            <li><span class="num">3</span>상승할 때와 하강할 때 공기 덩어리 속 분자의 움직임은 어떻게 달라지나요?</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="adia"></div>
+        <details class="adv">
+          <summary><i class="em em-test-tube"></i>심화 · 열역학 제1법칙으로 보기</summary>
+          <div class="advbody">
+            <div class="formula">Q = ΔU + W</div>
+            <span class="mini">Q: 기체가 받은 열 · ΔU: 내부 에너지 변화(온도에 비례) · W: 기체가 외부에 한 일</span>
+            <table>
+              <tr><td>Q</td><td>0 — 외부와 열을 주고받지 않아요(단열).</td></tr>
+              <tr><td>W</td><td id="advW">0</td></tr>
+              <tr><td>ΔU</td><td id="advU">0</td></tr>
+            </table>
+            <span>Q = 0이므로 <b>ΔU = −W</b>. 팽창하며 일을 한 만큼 내부 에너지가 줄어 온도가 낮아지고, 압축될 때는 받은 일만큼 온도가 높아져요.</span>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 1-2. 포화 수증기압 ================= -->
+  <section id="svp" role="tabpanel" aria-labelledby="tab-svp" hidden>
+    <div class="lab-head">
+      <h2>포화 수증기압과 응결</h2>
+      <p>기온과 수증기량을 바꾸며 공기가 불포화 → 포화 → 응결로 바뀌는 모습을 분자 수준에서 관찰해요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvSvp" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="공기 속 수증기 분자와 물방울, 포화 수증기압 곡선 위의 공기 상태"></canvas>
+        <div class="leg">
+          <span><i class="dot" style="background:var(--moist)"></i>수증기(기체) 분자</span>
+          <span><i class="dot" style="background:var(--sea);outline:3px solid var(--accent-soft)"></i>물방울(액체)</span>
+          <span><i style="background:var(--moist)"></i>포화 수증기압 곡선</span>
+          <span><i class="dot" style="background:var(--warm)"></i>공기의 상태</span>
+        </div>
+        <p class="note">분자와 물방울의 크기·개수는 과장해 표현했어요(실제 수증기 분자는 아주 작아 보이지 않아요). 포화 수증기압은 실제 식으로 계산한 근삿값이고, 포화 수증기량(g/kg)은 1013 hPa 기준으로 바꾼 근삿값이에요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <p class="card-title">지금 상태</p>
+          <div class="item">
+            <div class="tile blue" id="vTile"><i class="em em-thermometer"></i></div>
+            <div class="item-text big"><b id="vRh">—</b><span id="vRhSub">상대 습도</span></div>
+          </div>
+          <div class="item">
+            <div class="tile"><i class="em em-droplet"></i></div>
+            <div class="item-text small"><b id="vNow">—</b><span id="vNowSub">—</span></div>
+          </div>
+          <div class="status" id="vState"></div>
+        </div>
+        <div class="card">
+          <div class="ctl"><div class="row"><label for="vT">기온</label><output id="vT-v"></output></div><input type="range" id="vT" min="0" max="35" step="0.1" value="25"></div>
+          <div class="kbtns" role="group" aria-label="기온 바로가기"><button class="btn" data-vt="5">5 ℃</button><button class="btn" data-vt="10">10 ℃</button><button class="btn" data-vt="15">15 ℃</button><button class="btn" data-vt="20">20 ℃</button><button class="btn" data-vt="25">25 ℃</button><button class="btn" data-vt="30">30 ℃</button></div>
+          <div class="ctl"><div class="row"><label for="vW" id="vWlab">공기 속 수증기량</label><output id="vW-v"></output></div><input type="range" id="vW" min="2" max="55" step="0.1" value="17"></div>
+          <div>
+            <p class="mini" style="margin:0 0 6px">재생할 때 일어날 일</p>
+            <div class="seg" role="group" aria-label="재생할 동작">
+              <button data-va="cool" aria-pressed="true">냉각</button>
+              <button data-va="heat" aria-pressed="false">가열</button>
+              <button data-va="add" aria-pressed="false">수증기 공급</button>
+            </div>
+          </div>
+          <div class="ctl"><div class="row"><label for="vSp">빠르기</label><output id="vSp-v"></output></div><input type="range" id="vSp" min="1" max="5" step="1" value="3"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="vcDew"><span class="chip dash" style="color:var(--dew)"></span>이슬점 표시</label>
+            <label><input type="checkbox" id="vcRh"><span class="chip dash" style="color:var(--warm)"></span>상대 습도 계산</label>
+            <label><input type="checkbox" id="vcZone"><span class="chip" style="background:var(--moist)"></span>영역 이름</label>
+            <label><input type="checkbox" id="vcStop"><span class="chip" style="background:var(--ink)"></span>포화되면 멈추기</label>
+          </div>
+          <div>
+            <p class="mini" style="margin:0 0 6px">세로축</p>
+            <div class="seg" role="group" aria-label="세로축 단위">
+              <button data-vu="p" aria-pressed="true">포화 수증기압(hPa)</button>
+              <button data-vu="q" aria-pressed="false">포화 수증기량(g/kg)</button>
+            </div>
+          </div>
+          <button class="btn" id="vReset">처음으로</button>
+          <button class="btn primary btn-xl" id="vPlay">냉각시키기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">헷갈리지 마세요</p>
+          <div class="cmp">
+            <div><b>수증기 = 기체</b>물 분자가 하나하나 떨어져 자유롭게 날아다녀요.<br><b style="display:inline;font-size:14px;color:var(--warm)">눈에 보이지 않아요.</b></div>
+            <div><b>물방울 = 액체</b>수많은 물 분자가 서로 뭉쳐 있어요.<br><b style="display:inline;font-size:14px;color:var(--warm)">눈에 보여요.</b> 구름·안개·김</div>
+          </div>
+          <div class="item"><div class="tile yellow"><i class="em em-heavy-exclamation-mark-symbol"></i></div><div class="item-text small"><b>주전자의 하얀 김은 수증기일까?</b><span>아니에요. 눈에 보이는 하얀 김은 수증기가 식어 응결한 작은 물방울이에요. 주전자 입구 바로 앞의 투명한 부분이 수증기예요.</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile blue"><i class="em em-chart-with-upwards-trend"></i></div><div class="item-text small"><b>포화 수증기압(포화 수증기량)</b><span>어떤 기온에서 공기가 최대로 포함할 수 있는 수증기의 양. 기온이 높을수록 커요.</span></div></div>
+          <div class="item"><div class="tile"><i class="em em-thermometer"></i></div><div class="item-text small"><b>상대 습도</b><span>현재 기온에서의 포화 수증기량에 대해 현재 공기 중에 포함된 수증기량의 비를 백분율로 나타낸 것</span></div></div>
+          <div class="item"><div class="tile green"><i class="em em-droplet"></i></div><div class="item-text small"><b>이슬점</b><span>상대 습도가 100 %에 도달해 수증기가 응결하기 시작할 때의 기온</span></div></div>
+          <div class="item"><div class="tile"><i class="em em-cloud"></i></div><div class="item-text small"><b>응결</b><span>수증기(기체)가 물방울(액체)로 변하는 현상</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>수증기량은 그대로 두고 냉각시키면 그래프 위의 점은 어느 쪽으로 움직이나요? 상대 습도는 어떻게 변하나요?</li>
+            <li><span class="num">2</span>이슬점보다 더 냉각시키면 분자 화면에서 수증기 분자와 물방울은 각각 어떻게 변하나요?</li>
+            <li><span class="num">3</span>기온을 바꾸지 않고 공기를 포화시키려면 어떻게 해야 할까요?</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="svp"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2. 단열선도 · 상승 응결 고도 ================= -->
+  <section id="lcl" role="tabpanel" aria-labelledby="tab-lcl" hidden>
+    <div class="lab-head">
+      <h2>단열선도로 보는 상승 응결 고도</h2>
+      <p>공기 덩어리를 상승시키며 기온과 이슬점이 만나는 높이(구름이 생기기 시작하는 높이)를 찾아요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvLcl" width="1000" height="600" style="aspect-ratio:1000/600" aria-label="높이-기온 그래프 위에서 공기 덩어리의 기온과 이슬점 변화를 보여 주는 단열선도"></canvas>
+        <div class="leg">
+          <span><i style="background:var(--dry)"></i>공기 덩어리 기온(건조 단열 감률)</span>
+          <span><i style="background:var(--moist)"></i>공기 덩어리 기온(습윤 단열 감률)</span>
+          <span><i style="background:var(--dew)"></i>공기 덩어리 이슬점</span>
+        </div>
+        <p class="note">교과서 개념도처럼 건조 단열 감률 10 ℃/km, 습윤 단열 감률 5 ℃/km(평균값), 이슬점 감률 2 ℃/km로 일정하게 두었어요. 실제 습윤 단열 감률은 기온에 따라 달라요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <p class="card-title">지금 상태</p>
+          <div class="item">
+            <div class="tile blue" id="lTile"><i class="em em-thermometer"></i></div>
+            <div class="item-text big"><b id="lRh">—</b><span id="lRhSub">상대 습도</span></div>
+          </div>
+          <div class="item">
+            <div class="tile"><i class="em em-straight-ruler"></i></div>
+            <div class="item-text small"><b id="lNow">높이 0.00 km</b><span id="lNowSub">기온 · 이슬점</span></div>
+          </div>
+          <div class="status" id="lState">불포화</div>
+        </div>
+        <div class="card">
+          <div class="ctl"><div class="row"><label for="lT">지표면 기온 (T)</label><output id="lT-v"></output></div><input type="range" id="lT" min="0" max="35" step="1" value="20"></div>
+          <div class="ctl"><div class="row"><label for="lTd">지표면 이슬점 (T<sub>d</sub>)</label><output id="lTd-v"></output></div><input type="range" id="lTd" min="-10" max="20" step="1" value="12"></div>
+          <div class="ctl"><div class="row"><label for="lH">공기 덩어리 높이</label><output id="lH-v"></output></div><input type="range" id="lH" min="0" max="5" step="0.01" value="0"></div>
+          <div class="ctl"><div class="row"><label for="lSp">상승 속도</label><output id="lSp-v"></output></div><input type="range" id="lSp" min="1" max="5" step="1" value="3"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="lcDry"><span class="chip dash" style="color:var(--dry)"></span>건조 단열선</label>
+            <label><input type="checkbox" id="lcMoist"><span class="chip dash" style="color:var(--moist)"></span>습윤 단열선</label>
+            <label><input type="checkbox" id="lcDew"><span class="chip dash" style="color:var(--dew)"></span>이슬점 감률선</label>
+            <label><input type="checkbox" id="lcPre"><span class="chip" style="background:var(--sub)"></span>경로 미리보기</label>
+            <label style="grid-column:1/-1"><input type="checkbox" id="lcStop"><span class="chip" style="background:var(--ink)"></span>상승 응결 고도에서 상승 멈추기</label>
+          </div>
+          <div class="pair"><button class="btn" id="lReset">처음으로</button><button class="btn" id="lGo">응결 고도로</button></div>
+          <button class="btn primary btn-xl" id="lPlay">상승시키기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">상승 응결 고도 계산하기</p>
+          <div class="formula">T − 10H = T<sub>d</sub> − 2H &nbsp;<span style="font-weight:500">(H: km)</span><br>H(km) = (T − T<sub>d</sub>) ÷ 8<br>→ H(m) = 125 × (T − T<sub>d</sub>)</div>
+          <span class="mini" id="lAsk"></span>
+          <div class="ansrow"><input type="number" id="lAns" step="1" inputmode="numeric" placeholder="내 답 (m)" aria-label="상승 응결 고도 답 입력"><button class="btn" id="lChk">확인</button></div>
+          <p class="fb" id="lFb"></p>
+          <button class="btn" id="lSolBtn">풀이 보기</button>
+          <div class="info" id="lSol" hidden></div>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile yellow"><i class="em em-black-sun-with-rays"></i></div><div class="item-text small"><b>건조 단열 감률 · 약 10 ℃/km</b><span>불포화 공기 덩어리가 상승·하강할 때의 기온 변화율</span></div></div>
+          <div class="item"><div class="tile blue"><i class="em em-droplet"></i></div><div class="item-text small"><b>습윤 단열 감률 · 약 5 ℃/km</b><span>포화 공기 덩어리의 기온 변화율. 응결열이 방출되어 건조 단열 감률보다 작아요.</span></div></div>
+          <div class="item"><div class="tile"><i class="em em-chart-with-downwards-trend"></i></div><div class="item-text small"><b>이슬점 감률</b><span>불포화일 때 약 2 ℃/km, 포화일 때는 습윤 단열 감률처럼 약 5 ℃/km</span></div></div>
+          <div class="item"><div class="tile green"><i class="em em-cloud"></i></div><div class="item-text small"><b>상승 응결 고도</b><span>기온과 이슬점이 같아져 상대 습도 100 %, 구름이 생기기 시작하는 높이</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>공기 덩어리가 1 km 상승할 때마다 기온과 이슬점의 차는 몇 ℃씩 줄어드나요?</li>
+            <li><span class="num">2</span>지표면 이슬점을 높이면(공기가 습할수록) 구름이 생기기 시작하는 높이는 어떻게 될까요?</li>
+            <li><span class="num">3</span>상승 응결 고도 위에서 기온이 덜 낮아지는 까닭을 응결열로 설명해 보세요.</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="lcl"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 2-2. 푄 ================= -->
+  <section id="foehn" role="tabpanel" aria-labelledby="tab-foehn" hidden>
+    <div class="lab-head">
+      <h2>푄 — 산을 넘으면 고온 건조해지는 바람</h2>
+      <p>공기 덩어리가 산 사면을 따라 오르고 내려올 때 기온과 이슬점이 어떻게 변하는지 단열선도와 함께 봐요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvFoehn" width="1000" height="620" style="aspect-ratio:1000/620" aria-label="산 사면을 넘는 공기 덩어리와 높이-기온 그래프(단열선도)"></canvas>
+        <div class="leg">
+          <span><i style="background:var(--dry)"></i>공기 덩어리 기온(건조 단열 감률)</span>
+          <span><i style="background:var(--moist)"></i>기온·이슬점(습윤 단열 감률)</span>
+          <span><i style="background:var(--dew)"></i>공기 덩어리 이슬점(이슬점 감률)</span>
+        </div>
+        <p class="note">교과서처럼 건조 단열 감률 10 ℃/km, 습윤 단열 감률 5 ℃/km, 이슬점 감률 2 ℃/km로 두었어요. 그림 Ⅲ-13처럼 바다에서 불어온 바람이 오른쪽 사면을 오르고 왼쪽 사면으로 내려가요. 산의 모양과 구름 크기는 과장해 표현했어요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <p class="card-title">지금 상태</p>
+          <div class="item">
+            <div class="tile blue" id="fhTile"><i class="em em-thermometer"></i></div>
+            <div class="item-text big"><b id="fhT">—</b><span id="fhTsub">공기 덩어리 기온</span></div>
+          </div>
+          <div class="item">
+            <div class="tile"><i class="em em-droplet"></i></div>
+            <div class="item-text small"><b id="fhNow">—</b><span id="fhNowSub">—</span></div>
+          </div>
+          <div class="status" id="fhState"></div>
+        </div>
+        <div class="card">
+          <div class="ctl"><div class="row"><label for="fhU">공기 덩어리 위치</label><output id="fhU-v"></output></div><input type="range" id="fhU" min="0" max="1" step="0.001" value="0"></div>
+          <div class="kbtns" style="grid-template-columns:repeat(4,1fr)" role="group" aria-label="위치 바로가기"><button class="btn" data-fu="start">출발</button><button class="btn" data-fu="lcl">응결 고도</button><button class="btn" data-fu="top">산 정상</button><button class="btn" data-fu="end">도착</button></div>
+          <div class="ctl"><div class="row"><label for="fhT0">출발 기온</label><output id="fhT0-v"></output></div><input type="range" id="fhT0" min="10" max="30" step="1" value="20"></div>
+          <div class="ctl"><div class="row"><label for="fhTd0">출발 이슬점</label><output id="fhTd0-v"></output></div><input type="range" id="fhTd0" min="0" max="20" step="1" value="12"></div>
+          <div class="ctl"><div class="row"><label for="fhH">산 높이</label><output id="fhH-v"></output></div><input type="range" id="fhH" min="1000" max="3000" step="100" value="2000"></div>
+          <div class="ctl"><div class="row"><label for="fhSp">빠르기</label><output id="fhSp-v"></output></div><input type="range" id="fhSp" min="1" max="5" step="1" value="3"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="fhcDry"><span class="chip dash" style="color:var(--dry)"></span>건조 단열선</label>
+            <label><input type="checkbox" id="fhcMoist"><span class="chip dash" style="color:var(--moist)"></span>습윤 단열선</label>
+            <label><input type="checkbox" id="fhcDew"><span class="chip dash" style="color:var(--dew)"></span>이슬점 감률선</label>
+            <label><input type="checkbox" id="fhcPre"><span class="chip" style="background:var(--sub)"></span>경로 미리보기</label>
+            <label><input type="checkbox" id="fhcStopL"><span class="chip" style="background:var(--ink)"></span>응결 고도에서 멈춤</label>
+            <label><input type="checkbox" id="fhcStopT"><span class="chip" style="background:var(--ink)"></span>산 정상에서 멈춤</label>
+          </div>
+          <button class="btn" id="fhReset">처음으로</button>
+          <button class="btn primary btn-xl" id="fhPlay">바람 불게 하기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">산을 넘기 전과 후</p>
+          <table class="read data">
+            <thead><tr><th></th><th>출발(산 넘기 전)</th><th>도착(산 넘은 후)</th></tr></thead>
+            <tbody>
+              <tr><td>기온</td><td id="fhC1"></td><td id="fhC2"></td></tr>
+              <tr><td>이슬점</td><td id="fhC3"></td><td id="fhC4"></td></tr>
+              <tr><td>상대 습도</td><td id="fhC5"></td><td id="fhC6"></td></tr>
+            </tbody>
+          </table>
+          <p class="mini" id="fhCmpNote" style="margin:0">공기 덩어리가 도착하면 결과가 보여요.</p>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile red"><i class="em em-fire"></i></div><div class="item-text small"><b>푄</b><span>불포화 상태의 공기 덩어리가 높은 산을 넘어오면서 고온 건조해지는 현상</span></div></div>
+          <div class="item"><div class="tile blue"><i class="em em-cloud-with-rain"></i></div><div class="item-text small"><b>산을 오를 때</b><span>건조 단열 감률로 냉각 → 상승 응결 고도에서 구름 생성 → 정상까지 습윤 단열 감률로 냉각하며 비나 눈</span></div></div>
+          <div class="item"><div class="tile yellow"><i class="em em-black-sun-with-rays"></i></div><div class="item-text small"><b>산을 내려올 때</b><span>기온은 건조 단열 감률, 이슬점은 이슬점 감률에 따라 높아져요.</span></div></div>
+          <div class="item"><div class="tile green"><i class="em em-wind-blowing-face"></i></div><div class="item-text small"><b>높새바람</b><span>동풍이 불 때 태백산맥을 넘어 영서 지방으로 부는 고온 건조한 바람. 영서 지방 농작물에 큰 피해를 주기도 해요.</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>단열선도에서 오를 때와 내려올 때 기온 그래프의 기울기를 비교해 보세요. 도착 기온이 출발 기온보다 높아지는 까닭은 무엇일까요?</li>
+            <li><span class="num">2</span>출발 이슬점을 낮춰 산 정상까지 구름이 생기지 않게 하면 도착 기온은 출발 기온과 비교해 어떻게 되나요?</li>
+            <li><span class="num">3</span>산을 넘은 뒤 상대 습도가 낮아지는 까닭을 기온과 이슬점의 변화로 설명해 보세요.</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="foehn"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. 대기 안정도 ================= -->
+  <section id="stab" role="tabpanel" aria-labelledby="tab-stab" hidden>
+    <div class="lab-head">
+      <h2>대기 안정도와 구름의 생성</h2>
+      <p>기온 감률(기온 변화선)과 단열 감률을 비교해 대기 안정도를 판단하고, 생기는 구름을 확인해요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvStab" width="1000" height="640" style="aspect-ratio:1000/640" aria-label="기온 변화선과 단열선을 비교해 대기 안정도를 판별하는 시뮬레이션"></canvas>
+        <div class="leg">
+          <span><i style="background:var(--env)"></i>기온 변화선(주위 공기)</span>
+          <span><i style="background:var(--dry)"></i>건조 단열선</span>
+          <span><i style="background:var(--moist)"></i>습윤 단열선</span>
+        </div>
+        <p class="note">교과서 그림 Ⅲ-15~17처럼 지표면 기온 30 ℃, 건조 단열 감률 10 ℃/km, 습윤 단열 감률 5 ℃/km로 두었어요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <p class="card-title">지금 상태</p>
+          <div class="item">
+            <div class="tile blue" id="sTile"><i class="em em-scales"></i></div>
+            <div class="item-text big"><b id="sKind">절대 안정</b><span id="sKindSub"></span></div>
+          </div>
+          <div class="item">
+            <div class="tile"><i class="em em-thermometer"></i></div>
+            <div class="item-text small"><b id="sNow"></b><span id="sNowSub"></span></div>
+          </div>
+          <div class="status" id="sState"></div>
+        </div>
+        <div class="card">
+          <p class="card-title">교과서 그림 불러오기</p>
+          <div class="tri"><button class="btn" data-pre="4">그림 Ⅲ-15</button><button class="btn" data-pre="12">그림 Ⅲ-16</button><button class="btn" data-pre="8">그림 Ⅲ-17</button></div>
+          <div class="ctl"><div class="row"><label for="sG">기온 감률</label><output id="sG-v"></output></div><input type="range" id="sG" min="-4" max="14" step="0.5" value="4"></div>
+          <div class="ctl"><div class="row"><label for="sL">상승 응결 고도</label><output id="sL-v"></output></div><input type="range" id="sL" min="0.5" max="4" step="0.1" value="2"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="scDry" checked><span class="chip dash" style="color:var(--dry)"></span>건조 단열선</label>
+            <label><input type="checkbox" id="scMoist" checked><span class="chip dash" style="color:var(--moist)"></span>습윤 단열선</label>
+            <label><input type="checkbox" id="scZone"><span class="chip" style="background:var(--env)"></span>안정도 영역</label>
+            <label><input type="checkbox" id="scPre"><span class="chip" style="background:var(--sub)"></span>경로 미리보기</label>
+          </div>
+          <button class="btn" id="sReset">처음으로</button>
+          <button class="btn primary btn-xl" id="sPlay">강제로 상승시키기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile green"><i class="em em-chart-with-downwards-trend"></i></div><div class="item-text small"><b>기온 감률 vs 단열 감률</b><span>기온 감률은 높이에 따라 주위 기온이 낮아지는 비율, 단열 감률은 공기 덩어리의 단열 변화로 기온이 낮아지는 비율</span></div></div>
+          <div class="item"><div class="tile blue"><i class="em em-white-heavy-check-mark"></i></div><div class="item-text small"><b>절대 안정</b><span>기온 감률 &lt; 습윤 단열 감률 → 포화 여부와 관계없이 되돌아가려 함 → 층운형 구름</span></div></div>
+          <div class="item"><div class="tile green"><i class="em em-sun-behind-cloud"></i></div><div class="item-text small"><b>조건부 불안정</b><span>습윤 단열 감률 &lt; 기온 감률 &lt; 건조 단열 감률 → 불포화이면 안정, 포화이면 불안정</span></div></div>
+          <div class="item"><div class="tile red"><i class="em em-thunder-cloud-and-rain"></i></div><div class="item-text small"><b>절대 불안정</b><span>기온 감률 &gt; 건조 단열 감률 → 원래 위치에서 멀어지려 함 → 적운형 구름</span></div></div>
+          <div class="item"><div class="tile"><i class="em em-cityscape"></i></div><div class="item-text small"><b>역전층</b><span>높이 올라갈수록 기온이 높아지는 절대 안정한 층 (기온 감률을 0보다 작게 해 보세요)</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>기온 감률을 바꾸며, 공기 덩어리가 주위보다 차가울 때와 따뜻할 때 각각 어느 방향으로 움직이려 하는지 확인해 보세요.</li>
+            <li><span class="num">2</span>그림 Ⅲ-17(조건부 불안정)에서 층운형 구름이 적운형 구름으로 발달하기 시작하는 높이는 약 몇 km인가요?</li>
+            <li><span class="num">3</span>절대 안정한 대기에서 구름이 얇게 생기는 까닭을 연직 운동과 관련지어 설명해 보세요.</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="stab"></div>
+      </div>
+    </div>
+
+    <div class="real">
+      <div class="lab-head">
+        <h2>탐구 · 단열선도로 대기 안정도 해석하기</h2>
+        <p>(가), (나) 지점의 높이별 기온을 단열선도에 나타내 단열선과 비교해요. 먼저 직접 그려 본 뒤 켜서 확인하세요.</p>
+      </div>
+      <div class="real-grid">
+        <figure>
+          <canvas id="cvInq" width="800" height="640" style="aspect-ratio:800/640;touch-action:pan-y" aria-label="교과서 탐구 단열선도: 높이 0~500 m, 기온 10~20 ℃"></canvas>
+          <p class="real-read" id="inqRead">그래프를 누르거나 마우스를 올리면 그 높이의 기온을 읽어 줘요.</p>
+          <figcaption>교과서 97쪽 탐구의 단열선도와 같은 축(기온 10~20 ℃, 높이 0~500 m)이에요.</figcaption>
+        </figure>
+        <div class="controls">
+          <div class="group">
+            <h3><i class="em em-eyes"></i>표시하기</h3>
+            <div class="checks">
+              <label><input type="checkbox" id="iqA"><span class="chip" style="background:var(--siteA)"></span>(가) 지점</label>
+              <label><input type="checkbox" id="iqB"><span class="chip" style="background:var(--env)"></span>(나) 지점</label>
+              <label><input type="checkbox" id="iqJ"><span class="chip" style="background:var(--warm)"></span>판정 보기</label>
+              <label><input type="checkbox" id="iqL" checked><span class="chip" style="background:var(--dry)"></span>단열선</label>
+            </div>
+          </div>
+          <div class="group">
+            <h3><i class="em em-memo"></i>측정 자료 <span class="mini">(단위: ℃)</span></h3>
+            <table class="read data">
+              <thead><tr><th>높이(m)</th><th>(가)</th><th>(나)</th></tr></thead>
+              <tbody id="iqTable"></tbody>
+            </table>
+          </div>
+          <div class="group">
+            <h3><i class="em em-pencil"></i>결과 및 정리</h3>
+            <ol class="qlist">
+              <li><span class="num">1</span>(가), (나) 지점의 대기 안정도를 높이에 따라 절대 안정, 절대 불안정, 조건부 불안정으로 구분해 보세요.</li>
+              <li><span class="num">2</span>(가) 지점 300 m에서 주위 공기와 온도가 같은 대기 오염 물질이 배출된다면 어느 방향으로 퍼져 나갈까요?</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 4. 안개의 생성 ================= -->
+  <section id="fog" role="tabpanel" aria-labelledby="tab-fog" hidden>
+    <div class="lab-head">
+      <h2>안개의 생성</h2>
+      <p>지표면 부근 공기의 기온이 이슬점까지 내려가 포화되는 과정을 그래프 두 개로 함께 봐요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvFogS" width="1000" height="380" style="aspect-ratio:1000/380" aria-label="안개가 생기는 장면"></canvas>
+        <div class="duo">
+          <figure><canvas id="cvFogD" width="600" height="500" style="aspect-ratio:600/500" aria-label="높이-기온 그래프"></canvas><figcaption id="fogDcap">높이-기온 그래프: 기온 변화선과 이슬점</figcaption></figure>
+          <figure><canvas id="cvFogP" width="600" height="500" style="aspect-ratio:600/500" aria-label="포화 수증기압 곡선"></canvas><figcaption>포화 수증기압 곡선: 곡선에 닿으면 포화(상대 습도 100 %)</figcaption></figure>
+        </div>
+        <p class="note">기온 변화와 안개 두께는 과정을 보여 주기 위한 예시 값이에요. 포화 수증기압은 실제 식으로 계산한 근삿값이에요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <div class="seg" role="group" aria-label="안개 종류">
+            <button data-fm="rad" aria-pressed="true">복사 안개</button>
+            <button data-fm="adv" aria-pressed="false">이류 안개</button>
+            <button data-fm="up" aria-pressed="false">활승 안개</button>
+          </div>
+          <div class="item">
+            <div class="tile blue" id="fTile"><i class="em em-thermometer"></i></div>
+            <div class="item-text big"><b id="fRh">—</b><span id="fRhSub">상대 습도</span></div>
+          </div>
+          <div class="status" id="fState"></div>
+        </div>
+        <div class="card">
+          <div class="ctl"><div class="row"><label for="fP" id="fPlab">시각</label><output id="fP-v"></output></div><input type="range" id="fP" min="0" max="1" step="0.001" value="0"></div>
+          <div class="ctl"><div class="row"><label for="fT" id="fTlab">처음 기온</label><output id="fT-v"></output></div><input type="range" id="fT" min="5" max="30" step="1" value="14"></div>
+          <div class="ctl"><div class="row"><label for="fTd">이슬점</label><output id="fTd-v"></output></div><input type="range" id="fTd" min="0" max="30" step="1" value="8"></div>
+          <div class="ctl"><div class="row"><label for="fSp">진행 속도</label><output id="fSp-v"></output></div><input type="range" id="fSp" min="1" max="5" step="1" value="3"></div>
+          <div class="pair"><button class="btn" id="fReset">처음으로</button><button class="btn" id="fEnd">끝으로</button></div>
+          <button class="btn primary btn-xl" id="fPlay">재생하기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">어떻게 냉각될까?</p>
+          <div class="item"><div class="tile yellow" id="fHowTile"><i class="em em-crescent-moon"></i></div><div class="item-text small"><b id="fHow"></b><span id="fHowSub"></span></div></div>
+          <div class="cmp">
+            <div><b>복사 · 이류 안개</b>주로 대기가 안정할 때 지표면 부근의 공기가 냉각되어 생성</div>
+            <div><b>활승 안개</b>산 사면을 따라 상승하며 단열 팽창으로 냉각되어 생성</div>
+          </div>
+          <span class="mini">증발 안개·전선 안개는 냉각이 아니라 수증기량이 증가해 생성돼요.</span>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>복사 안개와 이류 안개에서 포화 수증기압 곡선 위의 점은 어느 방향으로 움직이나요? 수증기량은 변하나요?</li>
+            <li><span class="num">2</span>활승 안개에서 점이 왼쪽 아래로 움직이는 까닭은 무엇일까요? (이슬점의 변화를 생각해 보세요)</li>
+            <li><span class="num">3</span>처음 기온과 이슬점의 차를 크게 하면 안개가 생기기 어려워지는 까닭은?</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="fog"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 5. 강수 과정 ================= -->
+  <section id="rain" role="tabpanel" aria-labelledby="tab-rain" hidden>
+    <div class="lab-head">
+      <h2>강수 과정 · 병합설과 빙정설</h2>
+      <p>구름 입자가 빗방울 크기로 자라는 두 가지 방법을 비교해요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvRain" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="병합설과 빙정설 강수 과정 시뮬레이션"></canvas>
+        <figure id="iceFig" style="margin:10px 0 0" hidden>
+          <canvas id="cvIce" width="1000" height="470" style="aspect-ratio:1000/470;touch-action:pan-y" aria-label="과냉각 물방울과 빙정의 포화 수증기압 그래프"></canvas>
+          <p class="real-read" id="iceRead">그래프를 누르거나 마우스를 올리면 값을 읽어 줘요.</p>
+          <div class="ratebox">
+            <canvas id="cvRate" width="1000" height="330" style="aspect-ratio:1000/330" aria-label="포화 수증기압 차가 클수록 빙정이 빨리 자라는 모습"></canvas>
+            <div class="ctl"><div class="row"><label for="rIceT">구름 속 기온 (그래프를 눌러도 바뀌어요)</label><output id="rIceT-v"></output></div><input type="range" id="rIceT" min="-40" max="0" step="1" value="-12"></div>
+          </div>
+          <p class="note">그림 Ⅲ-21 과냉각 물방울과 빙정의 포화 수증기압 (출처: 《대기과학개론》, 2012)을 식으로 다시 그린 근삿값이에요.</p>
+        </figure>
+        <p class="note" id="rainNote">입자 크기와 개수, 속도는 잘 보이도록 과장해 표현했어요.</p>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <div class="seg" role="group" aria-label="강수 이론">
+            <button data-rm="coal" aria-pressed="true">병합설</button>
+            <button data-rm="ice" aria-pressed="false">빙정설</button>
+          </div>
+          <div class="item">
+            <div class="tile blue" id="rTile"><i class="em em-droplet"></i></div>
+            <div class="item-text big"><b id="rBig">—</b><span id="rBigSub"></span></div>
+          </div>
+          <div class="status" id="rState"></div>
+        </div>
+        <div class="card">
+          <div class="ctl" id="rDivBox"><div class="row"><label for="rDiv">구름 속 물방울 크기의 다양성</label><output id="rDiv-v"></output></div><input type="range" id="rDiv" min="0" max="1" step="0.05" value="0.7"></div>
+          <div id="rMeltBox" hidden>
+            <p class="mini" style="margin:0 0 6px">구름 아래 공기의 기온</p>
+            <div class="seg" role="group" aria-label="구름 아래 기온">
+              <button data-melt="1" aria-pressed="true">0 ℃보다 높음</button>
+              <button data-melt="0" aria-pressed="false">0 ℃보다 낮음</button>
+            </div>
+          </div>
+          <div class="checks" id="rBandBox" hidden>
+            <label style="grid-column:1/-1"><input type="checkbox" id="rBand"><span class="chip" style="background:var(--ice)"></span>그래프에 두 곡선 사이 영역 표시</label>
+          </div>
+          <button class="btn" id="rReset">처음부터</button>
+          <button class="btn primary btn-xl" id="rPlay">재생하기</button>
+        </div>
+        <div class="card">
+          <p class="card-title">두 이론 비교</p>
+          <div class="cmp">
+            <div><b>병합설</b>저위도 지방이나 여름철 중위도 지방<br>구름이 0 ℃ 이상, 대부분 물방울<br>크기가 다른 물방울이 충돌·병합하며 성장 → 비</div>
+            <div><b>빙정설</b>고위도 지방이나 중위도 지방<br>−40~0 ℃ 층에 빙정과 과냉각 물방울이 함께 존재<br>빙정이 성장 → 눈, 녹으면 비</div>
+          </div>
+          <div class="item"><div class="tile blue"><i class="em em-snowflake"></i></div><div class="item-text small"><b>과냉각 물방울</b><span>0 ℃ 이하에서도 얼지 않고 액체 상태로 존재하는 물방울</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>병합설에서 물방울 크기의 다양성을 0으로 줄이면 빗방울 성장은 어떻게 달라지나요? 그 까닭은?</li>
+            <li><span class="num">2</span>그래프에서 공기가 빙정에 대해 과포화 상태이고 과냉각 물방울에 대해 불포화 상태인 영역은 어디인가요?</li>
+            <li><span class="num">3</span>저위도의 비를 ‘따뜻한 비’, 중·고위도의 비를 ‘찬비’라고도 해요. 강수 과정과 관련지어 설명해 보세요.</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="rain"></div>
+      </div>
+    </div>
+  </section>
+</div>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+const FONT='"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- 색상 토큰 ---------- */
+const COL={};
+const NAMES=['bg','panel','ink','ink2','muted','sub','line','accent','canvas','sky','sea','sea-a','mud','land','land-edge','grav','cent','tide','siteA',
+  'dry','moist','dew','env','grid','diff','cloud','cloud-edge','warm','cold','ice','night','tag','zone-u','zone-c','zone-s','fogc','btn'];
+const themeFns=[];
+function readColors(){const s=getComputedStyle(document.documentElement);NAMES.forEach(n=>COL[n]=s.getPropertyValue('--'+n).trim());}
+function onTheme(){readColors();themeFns.forEach(f=>f());}
+readColors();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',onTheme);}catch(e){}
+new MutationObserver(onTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- 공통 도구 ---------- */
+(function(){const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'font');if(!d||!d.set)return;
+  Object.defineProperty(CanvasRenderingContext2D.prototype,'font',{configurable:true,get(){return d.get.call(this);},
+    set(v){const k=this.__fs||1;d.set.call(this,k===1?v:String(v).replace(/(\d+(?:\.\d+)?)px/,(m,n)=>(n*k).toFixed(1)+'px'));}});})();
+function fitCanvas(cv,LW,LH){
+  const w=cv.clientWidth||LW, dpr=window.devicePixelRatio||1;
+  const pw=Math.max(1,Math.round(w*dpr)), ph=Math.max(1,Math.round(w*LH/LW*dpr));
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
+  const ctx=cv.getContext('2d');ctx.setTransform(pw/LW,0,0,ph/LH,0,0);ctx.__fs=Math.min(1.7,Math.max(1,LW/w*0.6));return ctx;
+}
+function fitDuo(cv,LW,LH){const c=fitCanvas(cv,LW,LH);const w=cv.clientWidth||LW;c.__fs=clamp(LW/w*0.85,1,1.7);return c;}
+function sized(cv,LW,LHwide,LHnarrow){
+  const n=(cv.clientWidth||LW)<620;const LH=n?LHnarrow:LHwide;
+  const ar=LW+' / '+LH;if(cv.style.aspectRatio!==ar)cv.style.aspectRatio=ar;
+  return {ctx:fitCanvas(cv,LW,LH),LH,n};
+}
+function arrow(ctx,x1,y1,x2,y2,color,w,head){
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<1.5)return;
+  head=Math.min(head||11,len*.6);const ux=dx/len,uy=dy/len;
+  ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=w;ctx.lineCap='round';ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*head*.7,y2-uy*head*.7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-ux*head-uy*head*.5,y2-uy*head+ux*head*.5);ctx.lineTo(x2-ux*head+uy*head*.5,y2-uy*head-ux*head*.5);ctx.closePath();ctx.fill();
+}
+function bindRange(id,fmt,fn){
+  const el=document.getElementById(id),out=document.getElementById(id+'-v');
+  const upd=()=>{const v=+el.value;if(out)out.textContent=fmt(v);fn(v);};
+  el.addEventListener('input',upd);
+  return {el,upd,set(v){el.value=v;upd();},show(v){if(document.activeElement!==el)el.value=v;if(out)out.textContent=fmt(v);}};
+}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const esW=T=>6.112*Math.exp(17.67*T/(T+243.5));   // 물(과냉각 물방울) 포화 수증기압 hPa
+const esI=T=>6.112*Math.exp(22.46*T/(272.62+T));  // 얼음(빙정) 포화 수증기압 hPa
+const sgn=v=>v<0?'−':'';
+const f1=v=>{let r=Math.round(v*10)/10;if(Math.abs(r)<0.05)r=0;return sgn(r)+Math.abs(r).toFixed(1);};
+const f2=v=>{let r=Math.round(v*100)/100;if(Math.abs(r)<0.005)r=0;return sgn(r)+Math.abs(r).toFixed(2);};
+const fi=v=>{let r=Math.round(v);if(r===0)r=0;return sgn(r)+Math.abs(r);};
+const tick=v=>{const r=Math.round(v*1000)/1000;return sgn(r)+String(Math.abs(r));};
+function rgb(c){c=(c||'#000').trim();if(c.startsWith('rgb')){const m=c.match(/[\d.]+/g);return m.slice(0,3).map(Number);}c=c.replace('#','');if(c.length===3)c=c.split('').map(x=>x+x).join('');return [0,2,4].map(i=>parseInt(c.substr(i,2),16));}
+function mix(a,b,t,al){const A=rgb(a),B=rgb(b);t=clamp(t,0,1);return `rgba(${Math.round(lerp(A[0],B[0],t))},${Math.round(lerp(A[1],B[1],t))},${Math.round(lerp(A[2],B[2],t))},${al==null?1:al})`;}
+function alpha(c,a){const A=rgb(c);return `rgba(${A[0]},${A[1]},${A[2]},${a})`;}
+function rr(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function pill(ctx,text,x,y,o){
+  o=o||{};const sz=o.size||14,k=ctx.__fs||1;
+  ctx.font=`${o.weight||600} ${sz}px ${FONT}`;
+  const px=(o.padX||8),w=ctx.measureText(text).width+px*2,h=sz*k+(o.padY||5)*2;
+  const x0=o.align==='right'?x-w:o.align==='left'?x:x-w/2;
+  ctx.fillStyle=o.bg||COL.panel;rr(ctx,x0,y-h/2,w,h,Math.min(h/2,o.radius||9));ctx.fill();
+  if(o.stroke){ctx.strokeStyle=o.stroke;ctx.lineWidth=1.5;ctx.stroke();}
+  ctx.fillStyle=o.fg||COL.ink;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(text,x0+px,y+1);
+  return {x:x0,y:y-h/2,w,h};
+}
+function txt(ctx,s,x,y,o){o=o||{};ctx.font=`${o.weight||500} ${o.size||14}px ${FONT}`;ctx.fillStyle=o.color||COL.ink;ctx.textAlign=o.align||'left';ctx.textBaseline=o.base||'middle';ctx.fillText(s,x,y);}
+function mkPlot(l,t,r,b,xr,yr){return {l,t,r,b,xr,yr,
+  X:v=>l+(v-xr[0])/(xr[1]-xr[0])*(r-l),Y:v=>b-(v-yr[0])/(yr[1]-yr[0])*(b-t),
+  ix:px=>xr[0]+(px-l)/(r-l)*(xr[1]-xr[0]),iy:py=>yr[0]+(b-py)/(b-t)*(yr[1]-yr[0])};}
+/* 교과서식 축: 점선 격자, y축 위쪽 화살표, 축 이름 */
+function axes(ctx,P,o){
+  const {l,t,r,b}=P;
+  ctx.fillStyle=COL.panel;ctx.fillRect(l,t,r-l,b-t);
+  ctx.save();ctx.strokeStyle=COL.grid;ctx.lineWidth=1;ctx.setLineDash([2,4]);
+  const gx=o.gx||o.xs,gy=o.gy||o.ys;
+  for(let v=Math.ceil(P.xr[0]/gx-1e-9)*gx;v<=P.xr[1]+1e-9;v+=gx){const x=Math.round(P.X(v))+.5;ctx.beginPath();ctx.moveTo(x,t);ctx.lineTo(x,b);ctx.stroke();}
+  for(let v=Math.ceil(P.yr[0]/gy-1e-9)*gy;v<=P.yr[1]+1e-9;v+=gy){const y=Math.round(P.Y(v))+.5;ctx.beginPath();ctx.moveTo(l,y);ctx.lineTo(r,y);ctx.stroke();}
+  ctx.restore();
+  ctx.strokeStyle=COL.ink;ctx.lineWidth=1.6;ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(l,t-12);ctx.lineTo(l,b);ctx.lineTo(r,b);ctx.stroke();
+  ctx.fillStyle=COL.ink;ctx.beginPath();ctx.moveTo(l,t-20);ctx.lineTo(l-5,t-9);ctx.lineTo(l+5,t-9);ctx.closePath();ctx.fill();
+  if(o.right){ctx.beginPath();ctx.moveTo(r,t-12);ctx.lineTo(r,b);ctx.stroke();ctx.beginPath();ctx.moveTo(r,t-20);ctx.lineTo(r-5,t-9);ctx.lineTo(r+5,t-9);ctx.closePath();ctx.fill();}
+  const k=ctx.__fs||1;
+  ctx.font=`500 13px ${FONT}`;ctx.fillStyle=COL.muted;ctx.textAlign='center';ctx.textBaseline='top';
+  for(let v=Math.ceil(P.xr[0]/o.xs-1e-9)*o.xs;v<=P.xr[1]+1e-9;v+=o.xs)ctx.fillText((o.xf||tick)(v),P.X(v),b+7);
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let v=Math.ceil(P.yr[0]/o.ys-1e-9)*o.ys;v<=P.yr[1]+1e-9;v+=o.ys)ctx.fillText((o.yf||tick)(v),l-7,P.Y(v));
+  ctx.font=`700 13px ${FONT}`;ctx.fillStyle=COL.ink;
+  ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(o.ylab,l+10,t-6);
+  ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText(o.xlab,r,b+12+13*k);
+}
+function clipPlot(ctx,P){ctx.save();ctx.beginPath();ctx.rect(P.l,P.t,P.r-P.l,P.b-P.t);ctx.clip();}
+function seg(ctx,P,x1,y1,x2,y2,col,w,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P.X(x1),P.Y(y1));ctx.lineTo(P.X(x2),P.Y(y2));ctx.stroke();ctx.setLineDash([]);}
+function dot(ctx,x,y,r,fill,stroke){ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.lineWidth=2.5;ctx.strokeStyle=stroke;ctx.stroke();}}
+/* 단열선 묶음: slope ℃/km(또는 단위 높이당), 간격 step */
+function family(ctx,P,slope,step,col,lw,dash,al){
+  ctx.save();ctx.globalAlpha=al==null?.7:al;
+  const span=slope*(P.yr[1]-P.yr[0]);
+  for(let c=Math.floor(P.xr[0]/step)*step;c<=P.xr[1]+span+1e-9;c+=step)seg(ctx,P,c,P.yr[0],c-span,P.yr[1],col,lw,dash);
+  ctx.restore();
+}
+/* 뭉게구름 퍼프: 바닥 평평 */
+function cloudBlob(ctx,cx,yBase,w,hgt,seed,al){
+  if(hgt<2)return;
+  ctx.save();ctx.beginPath();ctx.rect(cx-w,yBase-hgt-w,w*2,hgt+w);ctx.clip();
+  const n=Math.max(3,Math.round(hgt/26)+2);
+  const puffs=[];
+  for(let i=0;i<n;i++){const f=i/(n-1);const y=yBase-f*hgt;const ww=w*(0.55+0.45*Math.sin(Math.PI*Math.min(1,f*1.15+0.2)))*0.5;
+    for(let j=-1;j<=1;j++){const r=ww*(j===0?0.62:0.48)*(0.85+0.3*Math.abs(Math.sin(seed+i*2.3+j)));puffs.push([cx+j*ww*0.75,y,Math.max(8,r)]);}}
+  ctx.globalAlpha=al==null?1:al;
+  ctx.fillStyle=COL['cloud-edge'];puffs.forEach(p=>{ctx.beginPath();ctx.arc(p[0]+2,p[1]+3,p[2]+2,0,7);ctx.fill();});
+  ctx.fillStyle=COL.cloud;puffs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],p[2],0,7);ctx.fill();});
+  ctx.restore();
+}
+function layerCloud(ctx,cx,y,w,h,al){
+  ctx.save();ctx.globalAlpha=al==null?1:al;
+  const n=9;
+  ctx.fillStyle=COL['cloud-edge'];for(let i=0;i<n;i++){const x=cx-w/2+w*(i+.5)/n;ctx.beginPath();ctx.ellipse(x+2,y+2,w/n*0.9,h*(0.55+0.25*Math.sin(i*1.7)),0,0,7);ctx.fill();}
+  ctx.fillStyle=COL.cloud;for(let i=0;i<n;i++){const x=cx-w/2+w*(i+.5)/n;ctx.beginPath();ctx.ellipse(x,y,w/n*0.9,h*(0.55+0.25*Math.sin(i*1.7)),0,0,7);ctx.fill();}
+  ctx.restore();
+}
+function sky(ctx,x,y,w,h,r){const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,COL.sky);g.addColorStop(1,COL.canvas);ctx.fillStyle=g;if(r){rr(ctx,x,y,w,h,r);ctx.fill();}else ctx.fillRect(x,y,w,h);}
+function ground(ctx,x,y,w,h){ctx.fillStyle=COL.land;ctx.fillRect(x,y,w,h);ctx.strokeStyle=COL['land-edge'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y);ctx.stroke();}
+function setTile(id,em,cls){const t=document.getElementById(id);if(!t)return;t.className='tile '+(cls||'');const i=t.querySelector('i');const c='em em-'+em;if(i.className!==c)i.className=c;}
+function setText(id,s){const e=document.getElementById(id);if(e&&e.textContent!==s)e.textContent=s;}
+function setHTML(id,s){const e=document.getElementById(id);if(e&&e.__h!==s){e.innerHTML=s;e.__h=s;}}
+function playBtn(id,st,labels){const b=document.getElementById(id);const sync=()=>{b.textContent=st.play?(labels[1]||'일시정지'):(labels[0]||'재생하기');};b.onclick=()=>{st.play=!st.play;if(st.onPlay)st.onPlay();sync();};sync();return sync;}
+function segGroup(attr,fn){const bs=$$('['+attr+']');bs.forEach(b=>b.addEventListener('click',()=>{bs.forEach(x=>x.setAttribute('aria-pressed',String(x===b)));fn(b.getAttribute(attr));}));}
+function pointerReader(cv,fn){
+  const h=e=>{const r=cv.getBoundingClientRect();fn((e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height);};
+  cv.addEventListener('pointermove',h);cv.addEventListener('pointerdown',h);cv.addEventListener('pointerleave',()=>fn(null,null));
+}
+
+/* =========================================================
+   1. 단열 변화
+   ========================================================= */
+const adia=(function(){
+  const cv=$('#cvAdia'),LW=1000,LH=560;
+  const st={T0:20,h:0,prev:0,v:0,mode:'stop',target:4.5,hold:0,dir:0};
+  const Y=h=>500-h*86;
+  const Ph=h=>1013.25*Math.pow(1-0.0065*h*1000/288.15,5.2559);
+  const Vr=h=>Math.pow(Ph(0)/Ph(h),1/1.4);  // 단열 과정의 부피 비
+  const mol=[];for(let i=0;i<18;i++){const a=Math.random()*6.283,r=Math.sqrt(Math.random())*.8,d=Math.random()*6.283;mol.push({x:Math.cos(a)*r,y:Math.sin(a)*r,dx:Math.cos(d),dy:Math.sin(d)});}
+  const U0=Math.exp(-5.4/2.0);
+  const mkDots=n=>Array.from({length:n},()=>({x:Math.random(),h:-2.0*Math.log(1-Math.random()*(1-U0))}));
+  const dotsSky=mkDots(260),dotsCol=mkDots(230);
+  const T0s=bindRange('aT0',v=>v+' ℃',v=>{st.T0=v;});T0s.set(20);
+  const Hs=bindRange('aH',v=>f2(v)+' km',v=>{st.h=v;st.mode='stop';sync();});
+  const pb=$('#aPlay');
+  function sync(){pb.textContent=st.mode==='auto'?'일시정지':'자동 왕복 재생';}
+  pb.onclick=()=>{if(st.mode==='auto')st.mode='stop';else{st.mode='auto';st.hold=0;st.target=st.h>2.2?0:4.5;}sync();};
+  const kb=$$('[data-ah]');kb.forEach(b=>b.onclick=()=>{st.mode='go';st.target=+b.dataset.ah;st.hold=0;sync();});
+  $('#aUp').onclick=()=>{st.mode='go';st.target=5;st.hold=0;sync();};
+  $('#aDown').onclick=()=>{st.mode='go';st.target=0;st.hold=0;sync();};
+  sync();
+
+  function step(dt){
+    if(st.mode==='auto'||st.mode==='go'){
+      if(st.hold>0)st.hold-=dt;
+      else{const d=st.target-st.h;
+        if(Math.abs(d)<0.004){st.h=st.target;if(st.mode==='auto'){st.hold=1.0;st.target=st.target>2?0:4.5;}else{st.mode='stop';sync();}}
+        else st.h+=Math.sign(d)*Math.min(Math.abs(d),0.8*dt*(0.3+0.7*Math.min(1,Math.abs(d)/0.5)));}
+    }
+    const vi=(st.h-st.prev)/Math.max(dt,1e-3);st.v=lerp(st.v,vi,0.2);st.prev=st.h;
+    st.dir=st.v>0.03?1:st.v<-0.03?-1:0;
+    const T=st.T0-10*st.h;
+    const sp=0.3+1.5*Math.pow(clamp((T+45)/80,0.02,1),1.5);
+    mol.forEach(m=>{m.x+=m.dx*sp*dt;m.y+=m.dy*sp*dt;const d=Math.hypot(m.x,m.y);
+      if(d>0.82){const nx=m.x/d,ny=m.y/d,dp=m.dx*nx+m.dy*ny;if(dp>0){m.dx-=2*dp*nx;m.dy-=2*dp*ny;}m.x=nx*0.82;m.y=ny*0.82;}});
+  }
+  function draw(){
+    const ctx=fitCanvas(cv,LW,LH),k=ctx.__fs;
+    const T=st.T0-10*st.h,P=Ph(st.h),V=Vr(st.h);
+    sky(ctx,0,0,LW,LH);
+    // 배경 공기 분자(아래로 갈수록 빽빽)
+    ctx.fillStyle=alpha(COL.muted,.28);
+    dotsSky.forEach(d=>{const y=Y(d.h);if(y<20)return;ctx.beginPath();ctx.arc(70+d.x*560,y,1.8,0,7);ctx.fill();});
+    ground(ctx,0,500,LW,60);
+    txt(ctx,'지표면',16,530,{size:14,weight:700,color:COL.ink});
+    // 높이 눈금
+    ctx.strokeStyle=COL.muted;ctx.lineWidth=1.2;
+    for(let h=0;h<=5;h++){const y=Y(h);ctx.beginPath();ctx.moveTo(52,y);ctx.lineTo(62,y);ctx.stroke();if(h>0)txt(ctx,h+' km',46,y,{size:12,align:'right',color:COL.muted});}
+    ctx.beginPath();ctx.moveTo(57,Y(0));ctx.lineTo(57,Y(5.3));ctx.stroke();
+    txt(ctx,'상층',22,Y(5.45),{size:13,weight:700,color:COL.muted});
+    // 공기 밀도 칸
+    const cx1=678,cw1=104;
+    ctx.fillStyle=alpha(COL.sea,.10);rr(ctx,cx1,60,cw1,440,10);ctx.fill();
+    ctx.fillStyle=alpha(COL.sea,.85);
+    dotsCol.forEach(d=>{const y=Y(d.h);if(y<66)return;ctx.beginPath();ctx.arc(cx1+6+d.x*(cw1-12),y,2.3,0,7);ctx.fill();});
+    pill(ctx,'공기 밀도',cx1+cw1/2,40,{size:14,bg:COL.panel,stroke:COL.line});
+    pill(ctx,'낮다',cx1+cw1/2,92,{size:13,bg:COL.panel});
+    pill(ctx,'높다',cx1+cw1/2,474,{size:13,bg:COL.panel});
+    // 기압 칸
+    const px=842;
+    const g=ctx.createLinearGradient(0,470,0,90);g.addColorStop(0,COL.siteA);g.addColorStop(1,COL.moist);
+    ctx.strokeStyle=g;ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(px,456);ctx.lineTo(px,104);ctx.stroke();
+    ctx.fillStyle=COL.moist;ctx.beginPath();ctx.moveTo(px,82);ctx.lineTo(px-13,108);ctx.lineTo(px+13,108);ctx.closePath();ctx.fill();
+    ctx.fillStyle=COL.siteA;ctx.beginPath();ctx.moveTo(px,478);ctx.lineTo(px-13,452);ctx.lineTo(px+13,452);ctx.closePath();ctx.fill();
+    pill(ctx,'기압',px,40,{size:14,bg:COL.panel,stroke:COL.line});
+    pill(ctx,'낮다',px,128,{size:13,bg:COL.panel});
+    pill(ctx,'높다',px,432,{size:13,bg:COL.panel});
+    // 현재 높이 표시선
+    ctx.save();ctx.setLineDash([5,5]);ctx.strokeStyle=alpha(COL.accent,.6);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(62,Y(st.h));ctx.lineTo(905,Y(st.h));ctx.stroke();ctx.restore();
+    // 온도계
+    const tx=950,ty0=96,ty1=448,TT=v=>ty1-(clamp(v,-40,30)+40)/70*(ty1-ty0);
+    ctx.fillStyle=COL.panel;rr(ctx,tx-11,ty0-10,22,ty1-ty0+30,11);ctx.fill();ctx.strokeStyle=COL.line;ctx.lineWidth=2;ctx.stroke();
+    dot(ctx,tx,ty1+28,19,COL.panel,COL.line);dot(ctx,tx,ty1+28,14,COL.warm);
+    ctx.fillStyle=COL.warm;ctx.fillRect(tx-5,TT(T),10,ty1+20-TT(T));
+    for(let v=-40;v<=30;v+=10){const y=TT(v);ctx.strokeStyle=COL.muted;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(tx-11,y);ctx.lineTo(tx-17,y);ctx.stroke();if(v%20===10||v===-30)txt(ctx,tick(v),tx-20,y,{size:11,align:'right',color:COL.muted});}
+    pill(ctx,'온도',tx,40,{size:14,bg:COL.panel,stroke:COL.line});
+    pill(ctx,f1(T)+' ℃',tx-2,TT(T),{size:13,bg:COL.warm,fg:'#fff',align:'right',padX:6});
+    // 공기 덩어리
+    const cx=330,cy=Y(st.h),R=30*V;
+    const NEU='#AEB9C6';const tcol=T>=5?mix(NEU,COL.warm,(T-5)/25):mix(COL.cold,NEU,(T+30)/35);
+    const rg=ctx.createRadialGradient(cx-R*.35,cy-R*.35,R*.1,cx,cy,R);
+    rg.addColorStop(0,alpha(COL.panel,.95));rg.addColorStop(1,tcol.replace(/,[\d.]+\)$/,',.55)'));
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
+    ctx.strokeStyle=tcol;ctx.lineWidth=2.2;ctx.setLineDash(st.dir?[6,4]:[]);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=alpha(COL.ink,.78);mol.forEach(m=>{ctx.beginPath();ctx.arc(cx+m.x*R,cy+m.y*R,3.1,0,7);ctx.fill();});
+    // 팽창/압축 화살표
+    if(st.dir){const L=12+10*Math.min(1,Math.abs(st.v)/0.6);
+      for(let i=0;i<8;i++){const a=i*Math.PI/4+Math.PI/8,ux=Math.cos(a),uy=Math.sin(a);
+        const a1=R+5,a2=R+5+L;
+        if(st.dir>0)arrow(ctx,cx+ux*a1,cy+uy*a1,cx+ux*a2,cy+uy*a2,COL.accent,2.4,8);
+        else arrow(ctx,cx+ux*(a2+2),cy+uy*(a2+2),cx+ux*(a1-1),cy+uy*(a1-1),COL.accent,2.4,8);}
+      // 이동 방향(빨간 화살표)
+      if(st.dir>0)arrow(ctx,cx-R-56,cy+46,cx-R-56,cy-10,COL.cent,4.5,14);
+      else arrow(ctx,cx-R-56,cy-46,cx-R-56,cy+10,COL.cent,4.5,14);
+    }
+    // 표지
+    const lx=cx+R+30;
+    if(st.dir>0){pill(ctx,'단열 팽창',lx,cy-14,{size:16,bg:COL.tag,fg:'#fff',align:'left',padX:12,padY:6,radius:14});txt(ctx,'부피 증가 · 내부 온도 하강',lx+4,cy+16*k,{size:13,color:COL.ink2,weight:600});}
+    else if(st.dir<0){pill(ctx,'단열 압축',lx,cy-14,{size:16,bg:COL.tag,fg:'#fff',align:'left',padX:12,padY:6,radius:14});txt(ctx,'부피 감소 · 내부 온도 상승',lx+4,cy+16*k,{size:13,color:COL.ink2,weight:600});}
+    else txt(ctx,'공기 덩어리',lx,cy,{size:14,weight:700,color:COL.ink2});
+
+    // 읽음값
+    setText('aT',f1(T)+' ℃');
+    setText('aTsub','공기 덩어리 온도 · 높이 '+f2(st.h)+' km');
+    setText('aPV','주위 기압 약 '+Math.round(P)+' hPa');
+    setText('aPVsub','부피: 지표면에 있을 때의 '+V.toFixed(2)+'배');
+    setTile('aTile',st.dir>0?'upwards-black-arrow':st.dir<0?'downwards-black-arrow':'thermometer',st.dir>0?'blue':st.dir<0?'red':'');
+    setHTML('aState',st.dir>0?'<b>상승</b> → 주위 기압이 낮아짐 → 내부 압력이 더 높아 <b>팽창</b> → 분자 운동 에너지 일부가 팽창에 쓰여 <b>온도 하강</b>'
+      :st.dir<0?'<b>하강</b> → 주위 기압이 높아짐 → 내부 압력이 더 낮아 <b>압축</b> → 분자 운동 에너지 증가로 <b>온도 상승</b>'
+      :'멈춤 · 높이를 바꾸거나 상승·하강시켜 보세요');
+    setHTML('advW',st.dir>0?'<b>＋</b> 팽창하며 주위 공기를 밀어내는 일을 해요.':st.dir<0?'<b>−</b> 주위 공기가 압축하며 일을 해 줘요.':'0 (부피 변화 없음)');
+    setHTML('advU',st.dir>0?'<b>−</b> 내부 에너지 감소 → 온도 하강':st.dir<0?'<b>＋</b> 내부 에너지 증가 → 온도 상승':'0');
+    Hs.show(st.h);
+    kb.forEach(b=>b.classList.toggle('on',Math.abs(st.h-(+b.dataset.ah))<0.004));
+  }
+  return {show(){},frame(dt){step(dt);draw();}};
+})();
+
+/* =========================================================
+   1-2. 포화 수증기압과 응결
+   ========================================================= */
+const svp=(function(){
+  const cv=$('#cvSvp'),LW=1000;
+  const T0=25,W0=+esW(15).toFixed(2);
+  const st={T:T0,W:W0,act:'cool',play:false,sp:3,goT:null,unit:'p',dew:false,rh:false,zone:false,stop:false,trail:[],drag:false,lastAct:null};
+  const SPD_T=[0.5,1,1.8,3,5],SPD_W=[0.4,0.8,1.5,2.5,4],SPL=['아주 느리게','느리게','보통','빠르게','아주 빠르게'];
+  const Tmin=0,Tmax=35,Wmin=2,Wmax=55;
+  const tdOf=e=>{const a=Math.log(e/6.112);return 243.5*a/(17.67-a);};
+  const toU=e=>st.unit==='q'?0.622*e/1013.25*1000:e;
+  const fromU=v=>st.unit==='q'?v*1013.25/622:v;
+  const uName=()=>st.unit==='q'?'g/kg':'hPa';
+  const fmtU=e=>toU(e).toFixed(1)+' '+uName();
+  const parts=()=>{const es=esW(st.T),e=Math.min(st.W,es),L=Math.max(0,st.W-es);return {es,e,L,rh:e/es*100,sat:st.W>=es-1e-6,td:tdOf(e)};};
+
+  /* ----- 조작 ----- */
+  const TS=bindRange('vT',v=>f1(v)+' ℃',v=>{st.T=v;st.goT=null;st.play=false;sync();});
+  const WS=bindRange('vW',v=>fmtU(v),v=>{st.W=v;st.play=false;sync();});
+  bindRange('vSp',v=>SPL[v-1],v=>{st.sp=v;}).set(3);
+  const kb=$$('[data-vt]');kb.forEach(b=>b.onclick=()=>{st.goT=+b.dataset.vt;st.play=false;sync();});
+  [['vcDew','dew'],['vcRh','rh'],['vcZone','zone'],['vcStop','stop']].forEach(([id,key])=>{const el=document.getElementById(id);el.checked=st[key];el.onchange=()=>{st[key]=el.checked;};});
+  const pb=$('#vPlay');const ACTL={cool:'냉각시키기',heat:'가열하기',add:'수증기 넣기'};
+  function sync(){pb.textContent=st.play?'일시정지':ACTL[st.act];}
+  pb.onclick=()=>{st.play=!st.play;st.goT=null;sync();};
+  segGroup('data-va',a=>{st.act=a;st.play=false;sync();});
+  segGroup('data-vu',u=>{st.unit=u;setText('vWlab','공기 속 수증기량');});
+  $('#vReset').onclick=()=>{st.T=T0;st.W=W0;st.play=false;st.goT=null;st.trail=[];resetMol();sync();};
+  sync();
+
+  /* ----- 분자 ----- */
+  const K=3.0;                       // 수증기압 1 hPa당 분자 수(표현용)
+  let box={x:14,y:44,w:420,h:390};
+  let mols=[],drops=[];
+  const air=Array.from({length:26},()=>({x:Math.random(),y:Math.random(),vx:Math.random()-.5,vy:Math.random()-.5}));
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  function newMol(x,y){const a=Math.random()*6.283;return {x:x??rnd(box.x+12,box.x+box.w-12),y:y??rnd(box.y+30,box.y+box.h-12),vx:Math.cos(a),vy:Math.sin(a),rot:Math.random()*6.28,s:'free',d:null};}
+  function resetMol(){mols=[];drops=[];const p=parts();const n=Math.round(st.W*K);for(let i=0;i<n;i++)mols.push(newMol());
+    const nl=Math.round(p.L*K);for(let i=0;i<nl&&i<mols.length;i++){mols[i].s='liq';}
+    if(nl>0){const nd=Math.min(6,Math.ceil(nl/14));for(let j=0;j<nd;j++)drops.push({x:rnd(box.x+40,box.x+box.w-40),y:rnd(box.y+60,box.y+box.h-40),vx:rnd(-6,6),vy:rnd(-3,6),n:0});
+      mols.filter(m=>m.s==='liq').forEach((m,i)=>{m.d=drops[i%drops.length];m.d.n++;});}}
+  resetMol();
+  let MS=1;
+  const dropR=d=>(5+4.2*Math.cbrt(Math.max(1,d.n)))*MS;
+  function molStep(dt){
+    const p=parts();
+    const NT=Math.round(st.W*K),NL=Math.round(p.L*K);
+    // 전체 분자 수 맞추기
+    while(mols.length<NT){const m=newMol();if(st.act==='add'&&st.play){m.y=box.y+box.h-10;m.vy=-Math.abs(m.vy);}mols.push(m);}
+    while(mols.length>NT){let i=mols.findIndex(m=>m.s==='free');if(i<0)i=mols.length-1;const m=mols[i];if(m.d&&m.s==='liq')m.d.n--;mols.splice(i,1);}
+    // 응결/증발 맞추기
+    const liq=mols.filter(m=>m.s!=='free');
+    let need=NL-liq.length;
+    if(need>0){
+      const free=mols.filter(m=>m.s==='free');
+      const want=Math.min(8,Math.max(1,Math.ceil(NL/10)));
+      for(let k=0;k<need&&k<free.length;k++){const m=free[k];
+        let d=null;
+        if(drops.length<want){d={x:m.x,y:m.y,vx:rnd(-6,6),vy:rnd(-3,6),n:0};drops.push(d);m.s='liq';m.d=d;d.n++;continue;}
+        let best=1e9;drops.forEach(q=>{const dd=Math.hypot(q.x-m.x,q.y-m.y);if(dd<best){best=dd;d=q;}});
+        m.s='join';m.d=d;}
+    }else if(need<0){
+      // 작은 물방울부터 증발
+      const order=liq.slice().sort((a,b)=>(a.d?a.d.n:0)-(b.d?b.d.n:0));
+      for(let k=0;k<-need&&k<order.length;k++){const m=order[k];const d=m.d;
+        if(m.s==='liq'&&d){d.n--;m.x=d.x+rnd(-3,3);m.y=d.y+rnd(-3,3);}
+        const a=Math.random()*6.283;m.vx=Math.cos(a);m.vy=Math.sin(a);m.s='free';m.d=null;}
+    }
+    drops=drops.filter(d=>d.n>0||mols.some(m=>m.d===d));
+    // 움직임
+    const sp=34+5.2*st.T;      // 기온이 높을수록 빠르게
+    const L=box.x+8,R=box.x+box.w-8,Tp=box.y+30,B=box.y+box.h-8;
+    mols.forEach(m=>{
+      if(m.s==='free'){m.x+=m.vx*sp*dt;m.y+=m.vy*sp*dt;m.rot+=dt*3;
+        if(m.x<L){m.x=L;m.vx=Math.abs(m.vx);}if(m.x>R){m.x=R;m.vx=-Math.abs(m.vx);}
+        if(m.y<Tp){m.y=Tp;m.vy=Math.abs(m.vy);}if(m.y>B){m.y=B;m.vy=-Math.abs(m.vy);}
+        if(Math.random()<dt*0.8){const a=Math.atan2(m.vy,m.vx)+rnd(-.8,.8);m.vx=Math.cos(a);m.vy=Math.sin(a);}}
+      else if(m.s==='join'&&m.d){const dx=m.d.x-m.x,dy=m.d.y-m.y,dd=Math.hypot(dx,dy);
+        if(dd<dropR(m.d)){m.s='liq';m.d.n++;}else{const v=Math.max(140,sp*1.6);m.x+=dx/dd*v*dt;m.y+=dy/dd*v*dt;}}
+    });
+    drops.forEach(d=>{const r=dropR(d);d.x+=d.vx*dt;d.y+=d.vy*dt;
+      if(Math.random()<dt*0.5){d.vx=rnd(-8,8);d.vy=rnd(-4,8);}
+      if(d.x<L+r){d.x=L+r;d.vx=Math.abs(d.vx);}if(d.x>R-r){d.x=R-r;d.vx=-Math.abs(d.vx);}
+      if(d.y<Tp+r){d.y=Tp+r;d.vy=Math.abs(d.vy);}if(d.y>B-r){d.y=B-r;d.vy=-Math.abs(d.vy);}});
+    air.forEach(a=>{a.x+=a.vx*0.05*dt*(1+st.T/20);a.y+=a.vy*0.05*dt*(1+st.T/20);if(a.x<0||a.x>1)a.vx*=-1;if(a.y<0||a.y>1)a.vy*=-1;a.x=clamp(a.x,0,1);a.y=clamp(a.y,0,1);});
+  }
+  function drawMolecule(ctx,x,y,rot){
+    const R=4.6*MS;ctx.fillStyle=COL.moist;ctx.beginPath();ctx.arc(x,y,R,0,7);ctx.fill();
+    ctx.fillStyle=mix(COL.moist,'#FFFFFF',.55);
+    for(const s of[-1,1]){const a=rot+s*0.95;ctx.beginPath();ctx.arc(x+Math.cos(a)*R,y+Math.sin(a)*R,R*0.52,0,7);ctx.fill();}
+  }
+  function drawDrop(ctx,d){
+    const r=dropR(d);
+    const g=ctx.createRadialGradient(d.x-r*.35,d.y-r*.4,r*.1,d.x,d.y,r);
+    g.addColorStop(0,mix(COL.sea,'#FFFFFF',.55));g.addColorStop(1,COL.sea);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(d.x,d.y,r,0,7);ctx.fill();
+    // 뭉친 분자 무늬
+    ctx.save();ctx.beginPath();ctx.arc(d.x,d.y,r-1,0,7);ctx.clip();ctx.fillStyle='rgba(255,255,255,.28)';
+    const s=5.2*MS;for(let yy=-r;yy<=r;yy+=s*0.87){const off=(Math.round(yy/(s*0.87))%2)*s/2;for(let xx=-r;xx<=r;xx+=s){ctx.beginPath();ctx.arc(d.x+xx+off,d.y+yy,1.6*MS,0,7);ctx.fill();}}
+    ctx.restore();
+    ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.ellipse(d.x-r*.35,d.y-r*.42,r*.28,r*.16,-0.6,0,7);ctx.fill();
+  }
+
+  /* ----- 그래프 끌기 ----- */
+  let P=null;
+  cv.addEventListener('pointerdown',e=>{if(!P)return;const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*LW,y=(e.clientY-r.top)/r.height*cvLH;
+    if(x>=P.l-10&&x<=P.r+10&&y>=P.t-10&&y<=P.b+10){st.drag=true;st.play=false;st.goT=null;sync();cv.setPointerCapture(e.pointerId);dragTo(x,y);e.preventDefault();}});
+  cv.addEventListener('pointermove',e=>{if(!st.drag)return;const r=cv.getBoundingClientRect();dragTo((e.clientX-r.left)/r.width*LW,(e.clientY-r.top)/r.height*cvLH);});
+  const endDrag=()=>{st.drag=false;};cv.addEventListener('pointerup',endDrag);cv.addEventListener('pointercancel',endDrag);
+  function dragTo(x,y){st.T=clamp(P.ix(x),Tmin,Tmax);st.W=clamp(fromU(P.iy(y)),Wmin,Wmax);}
+  let cvLH=560;
+
+  function step(dt){
+    const prev=parts(),T1=st.T,W1=st.W;
+    if(st.goT!=null){const d=st.goT-st.T,v=SPD_T[st.sp-1]*1.6*dt;if(Math.abs(d)<=v){st.T=st.goT;st.goT=null;}else st.T+=Math.sign(d)*v;}
+    else if(st.play){
+      if(st.act==='cool')st.T-=SPD_T[st.sp-1]*dt;
+      else if(st.act==='heat')st.T+=SPD_T[st.sp-1]*dt;
+      else st.W+=SPD_W[st.sp-1]*dt;
+      if(st.T<=Tmin||st.T>=Tmax||st.W>=Wmax){st.T=clamp(st.T,Tmin,Tmax);st.W=clamp(st.W,Wmin,Wmax);st.play=false;sync();}
+      if(st.stop&&!prev.sat){const es=esW(st.T);
+        if(st.W>=es){ if(st.act==='cool'){st.T=tdOf(st.W);} else if(st.act==='add'){st.W=es;} st.play=false;sync();}}
+    }
+    if(st.T!==T1||st.W!==W1){const last=st.trail[st.trail.length-1];const e=Math.min(st.W,esW(st.T));
+      if(!last||Math.hypot(last[0]-st.T,last[1]-e)>0.15)st.trail.push([st.T,e]);if(st.trail.length>400)st.trail.shift();}
+    molStep(dt);
+  }
+
+  function draw(){
+    const {ctx,LH,n}=sized(cv,LW,560,1060),k=ctx.__fs;cvLH=LH;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const p=parts();
+    /* ----- 분자 화면 ----- */
+    box=n?{x:14,y:44,w:972,h:380}:{x:14,y:44,w:420,h:392};MS=n?1.9:1;
+    const B=box;
+    pill(ctx,'공기 덩어리 확대',B.x+4,22,{size:13,align:'left',bg:COL.panel,stroke:COL.line});
+    const bg=ctx.createLinearGradient(0,B.y,0,B.y+B.h);bg.addColorStop(0,mix(COL.sky,COL.panel,.3));bg.addColorStop(1,COL.panel);
+    ctx.fillStyle=bg;rr(ctx,B.x,B.y,B.w,B.h,22);ctx.fill();ctx.strokeStyle=COL.line;ctx.lineWidth=2;ctx.stroke();
+    ctx.save();rr(ctx,B.x,B.y,B.w,B.h,22);ctx.clip();
+    ctx.fillStyle=alpha(COL.muted,.28);air.forEach(a=>{ctx.beginPath();ctx.arc(B.x+10+a.x*(B.w-20),B.y+34+a.y*(B.h-44),2.6*MS,0,7);ctx.fill();});
+    drops.forEach(d=>drawDrop(ctx,d));
+    mols.forEach(m=>{if(m.s!=='liq')drawMolecule(ctx,m.x,m.y,m.rot);});
+    ctx.restore();
+    // 범례(상자 안)
+    const nv=mols.filter(m=>m.s==='free').length,nl=mols.length-nv;
+    pill(ctx,'수증기 분자 '+nv+'개',B.x+12,B.y+18,{size:12,align:'left',bg:alpha(COL.panel,.9),fg:COL.moist});
+    if(nl>0)pill(ctx,'물방울 속 분자 '+nl+'개',B.x+B.w-12,B.y+18,{size:12,align:'right',bg:alpha(COL.panel,.9),fg:COL.sea});
+    // 가장 큰 물방울에 이름표
+    if(drops.length){const d=drops.reduce((a,b)=>b.n>a.n?b:a);const r=dropR(d),right=d.x<B.x+B.w*0.6;
+      pill(ctx,'물방울(액체)',d.x+(right?r+8:-r-8),d.y,{size:12,align:right?'left':'right',bg:alpha(COL.panel,.92),fg:COL.sea});}
+    txt(ctx,'회색 점: 공기 분자(질소·산소)',B.x+B.w-12,B.y+B.h-12,{size:11,align:'right',color:COL.sub,base:'bottom'});
+    // 눈으로 보면
+    const vx=B.x,vy=B.y+B.h+12,vw=n?B.w:B.w,vh=n?92:96;
+    const sg=ctx.createLinearGradient(0,vy,0,vy+vh);sg.addColorStop(0,mix(COL.sky,COL.accent,.18));sg.addColorStop(1,COL.sky);
+    ctx.fillStyle=sg;rr(ctx,vx,vy,vw,vh,16);ctx.fill();
+    ctx.save();rr(ctx,vx,vy,vw,vh,16);ctx.clip();
+    const al=clamp(p.L/5,0,1);
+    if(al>0.01){cloudBlob(ctx,vx+vw-(n?180:110),vy+vh-6,n?170:100,vh*0.5,1.7,al);}
+    ctx.restore();
+    pill(ctx,'눈으로 보면',vx+10,vy+18,{size:12,align:'left',bg:alpha(COL.panel,.9)});
+    txt(ctx,al>0.01?'물방울이 보여요(구름·안개)':'투명해요 — 수증기는 안 보여요',vx+12,vy+vh-16,{size:13,weight:700,color:COL.ink2,base:'bottom'});
+
+    /* ----- 그래프 ----- */
+    const gx0=n?14:470,gy0=n?vy+vh+60:56;
+    const Ymax=st.unit==='q'?40:60;
+    P=mkPlot(gx0+44+26*k,gy0+10*k,LW-26,LH-(30+34*k),[Tmin,Tmax],[0,Ymax]);
+    axes(ctx,P,{xs:5,ys:10,ylab:st.unit==='q'?'수증기량(g/kg)':'수증기압(hPa)',xlab:'기온(℃)'});
+    const Y=e=>P.Y(toU(e));
+    clipPlot(ctx,P);
+    // 영역
+    ctx.fillStyle=alpha(COL.moist,.07);ctx.beginPath();ctx.moveTo(P.l,P.t);for(let T=Tmin;T<=Tmax+1e-6;T+=0.5)ctx.lineTo(P.X(T),Y(esW(T)));ctx.lineTo(P.r,P.t);ctx.closePath();ctx.fill();
+    // 경로
+    if(st.trail.length>1){ctx.strokeStyle=alpha(COL.warm,.45);ctx.lineWidth=2;ctx.setLineDash([3,4]);ctx.beginPath();st.trail.forEach((q,i)=>{const x=P.X(q[0]),y=Y(q[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);}
+    // 곡선
+    ctx.strokeStyle=COL.moist;ctx.lineWidth=3.5;ctx.beginPath();for(let T=Tmin;T<=Tmax+1e-6;T+=0.25){const x=P.X(T),y=Y(esW(T));T>Tmin?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+    // 이슬점
+    const xT=P.X(st.T),yE=Y(p.e);
+    if(st.dew&&!p.sat&&p.td>=Tmin){const xd=P.X(p.td);ctx.setLineDash([5,5]);ctx.strokeStyle=COL.dew;ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(xT,yE);ctx.lineTo(xd,yE);ctx.lineTo(xd,P.b);ctx.stroke();ctx.setLineDash([]);dot(ctx,xd,yE,5,COL.dew,COL.panel);}
+    // 상대 습도 계산선
+    if(st.rh&&!p.sat){ctx.setLineDash([5,5]);ctx.strokeStyle=alpha(COL.warm,.8);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xT,P.b);ctx.lineTo(xT,Y(p.es));ctx.stroke();ctx.setLineDash([]);dot(ctx,xT,Y(p.es),5,COL.moist,COL.panel);}
+    // 응결량
+    if(p.L>0.02){const yW=Y(st.W),yS=Y(p.es);
+      ctx.strokeStyle=COL.sea;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xT,yS);ctx.lineTo(xT,yW);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(xT-7,yW);ctx.lineTo(xT+7,yW);ctx.moveTo(xT-7,yS);ctx.lineTo(xT+7,yS);ctx.stroke();
+      ctx.setLineDash([3,3]);dot(ctx,xT,yW,6,COL.panel,COL.sea);ctx.setLineDash([]);}
+    ctx.restore();
+    // 영역 이름
+    if(st.zone){
+      pill(ctx,'불포화',P.X(28),P.Y(Ymax*0.12),{size:13,bg:alpha(COL.panel,.9),fg:COL.muted});
+      pill(ctx,'과포화 → 남는 수증기 응결',P.X(9),P.Y(Ymax*0.82),{size:13,bg:alpha(COL.panel,.9),fg:COL.sea});
+    }
+    txt(ctx,(st.unit==='q'?'포화 수증기량 곡선':'포화 수증기압 곡선')+(st.zone?' = 포화':''),P.X(22)+10,Y(esW(22))+6,{size:12,weight:700,color:COL.moist,align:'left',base:'top'});
+    // 표지들
+    if(st.dew&&!p.sat&&p.td>=Tmin)pill(ctx,'이슬점 '+f1(p.td)+' ℃',P.X(p.td),P.b-14*k,{size:12,bg:COL.dew,fg:COL.panel});
+    if(st.rh&&!p.sat){pill(ctx,'포화 '+toU(p.es).toFixed(1),xT+10,Y(p.es)-12*k,{size:12,align:'left',bg:COL.moist,fg:'#fff'});
+      pill(ctx,'상대 습도 = '+toU(p.e).toFixed(1)+' ÷ '+toU(p.es).toFixed(1)+' × 100 = '+Math.round(p.rh)+' %',P.l+10,P.t+14*k,{size:12,align:'left',bg:alpha(COL.panel,.95),fg:COL.warm,stroke:COL.warm});}
+    if(p.L>0.02){const yW=Y(st.W),yS=Y(p.es),right=xT<P.X(26);
+      pill(ctx,'응결량 '+toU(p.L).toFixed(1)+' '+uName(),xT+(right?14:-14),(yW+yS)/2,{size:12,align:right?'left':'right',bg:COL.sea,fg:'#fff'});
+      pill(ctx,'처음 수증기량',xT+(right?14:-14),yW-4-12*k,{size:11,align:right?'left':'right',bg:alpha(COL.panel,.92),fg:COL.sea});}
+    dot(ctx,xT,yE,8,p.sat?COL.moist:COL.warm,COL.panel);
+    pill(ctx,p.sat?(p.L>0.02?'포화 · 응결':'포화'):'공기 '+f1(st.T)+' ℃',xT+(xT<P.X(27)?12:-12),yE+(p.L>0.02?16*k:-16*k),{size:12,align:xT<P.X(27)?'left':'right',bg:p.sat?COL.moist:COL.warm,fg:'#fff'});
+    if(!st.drag&&st.trail.length<2)txt(ctx,'점을 끌어 기온·수증기량을 바꿔 보세요',P.r-6,P.b-10,{size:12,color:COL.sub,align:'right',base:'bottom'});
+
+    /* ----- 읽음값 ----- */
+    const cond=p.L>0.02;
+    setText('vRh',p.sat?'100 %':Math.round(p.rh)+' %');
+    setText('vRhSub',cond?'상대 습도 · 포화, 응결이 일어남':p.sat?'상대 습도 · 포화 상태':'상대 습도 · 불포화 상태');
+    setTile('vTile',cond?'cloud':p.sat?'droplet':'thermometer',cond?'green':p.sat?'blue':'');
+    setText('vNow','기온 '+f1(st.T)+' ℃ · 이슬점 '+f1(p.td)+' ℃');
+    setText('vNowSub','수증기 '+fmtU(p.e)+' / 포화 '+fmtU(p.es)+(cond?' · 물방울 '+fmtU(p.L):''));
+    let msg;
+    const moving=st.play||st.goT!=null||st.drag;
+    const dir=st.play?st.act:null;
+    if(cond)msg=(dir==='heat'?'가열 → 포화 수증기압이 커져 <b>물방울이 증발</b>해 다시 수증기(기체)가 돼요. ':'')+
+      `포화 수증기압보다 많은 수증기 <b>${fmtU(p.L)}</b>가 응결해 <b>물방울(액체)</b>이 되었어요. 물방울은 눈에 보여요(구름·안개).`;
+    else if(p.sat)msg='<b>포화 상태</b>(상대 습도 100 %) — 지금 기온이 <b>이슬점</b>이에요. 더 냉각하거나 수증기를 더 넣으면 응결이 시작돼요.';
+    else if(dir==='cool')msg='수증기량은 그대로인데 기온이 낮아져 <b>포화 수증기압이 작아져요</b> → 상대 습도 증가';
+    else if(dir==='heat')msg='수증기량은 그대로인데 기온이 높아져 <b>포화 수증기압이 커져요</b> → 상대 습도 감소';
+    else if(dir==='add')msg='기온은 그대로, <b>수증기량이 늘어나요</b> → 상대 습도 증가';
+    else msg=`<b>불포화 상태</b> — 공기가 수증기를 <b>${fmtU(p.es-p.e)}</b> 더 포함할 수 있어요.`;
+    setHTML('vState',msg);
+    TS.show(+st.T.toFixed(1));WS.show(+st.W.toFixed(1));
+    kb.forEach(b=>b.classList.toggle('on',Math.abs(st.T-(+b.dataset.vt))<0.05));
+    if(!moving&&st.lastAct!==null){}
+  }
+  return {show(){},frame(dt){step(dt);draw();}};
+})();
+
+/* =========================================================
+   2. 단열선도 · 상승 응결 고도
+   ========================================================= */
+const lcl=(function(){
+  const cv=$('#cvLcl'),LW=1000;
+  const st={T:20,Td:12,h:0,play:false,hold:0,dry:false,moist:false,dew:false,pre:false,stop:false,sp:3};
+  const mm=h=>Math.round(h*1000).toLocaleString('ko-KR');
+  const SPD=[0.1,0.2,0.34,0.55,0.85],SPL=['아주 느리게','느리게','보통','빠르게','아주 빠르게'];
+  const H=()=>(st.T-st.Td)/8;
+  const Tp=h=>{const L=H();return h<=L?st.T-10*h:st.T-10*L-5*(h-L);};
+  const Tdp=h=>{const L=H();return h<=L?st.Td-2*h:Tp(h);};
+  const TdS=bindRange('lTd',v=>fi(v)+' ℃',v=>{if(v>st.T){TdS.set(st.T);return;}st.Td=v;question();});
+  const TS=bindRange('lT',v=>v+' ℃',v=>{st.T=v;if(st.Td>v)TdS.set(v);question();});
+  bindRange('lSp',v=>SPL[v-1],v=>{st.sp=v;}).set(3);
+  const HS=bindRange('lH',v=>mm(v)+' m',v=>{st.h=v;st.hold=0;st.play=false;syncPlay();});
+  const syncPlay=playBtn('lPlay',st,['상승시키기','일시정지']);
+  st.onPlay=()=>{if(st.play&&st.h>=4.999){st.h=0;st.hold=0;}};
+  $('#lReset').onclick=()=>{st.h=0;st.hold=0;};
+  $('#lGo').onclick=()=>{st.h=Math.min(5,H());st.play=false;syncPlay();};
+  [['lcDry','dry'],['lcMoist','moist'],['lcDew','dew'],['lcPre','pre'],['lcStop','stop']].forEach(([id,key])=>{const el=document.getElementById(id);el.checked=st[key];el.onchange=()=>{st[key]=el.checked;};});
+  // 계산 도우미
+  const ans=$('#lAns'),fb=$('#lFb'),sol=$('#lSol');
+  function question(){
+    setHTML('lAsk',`지표면 T = ${fi(st.T)} ℃, T<sub>d</sub> = ${fi(st.Td)} ℃일 때 상승 응결 고도 H는 몇 m?`);
+    fb.textContent='';fb.className='fb';
+    const L=H();
+    sol.innerHTML=`① 기온과 이슬점의 차: ${fi(st.T)} − (${fi(st.Td)}) = <b>${fi(st.T-st.Td)} ℃</b><br>`+
+      `② 1 km(1000 m) 오를 때마다 차가 10 − 2 = <b>8 ℃</b>씩 줄어요. → 1 ℃ 줄어드는 데 1000 ÷ 8 = <b>125 m</b><br>`+
+      `③ H = 125 × ${fi(st.T-st.Td)} = <b>${mm(L)} m</b> (= ${fi(st.T-st.Td)} ÷ 8 = ${f2(L)} km)<br>`+
+      `④ 이 높이의 기온 = ${fi(st.T)} − 10 × ${f2(L)} = <b>${f1(st.T-10*L)} ℃</b> (= 이슬점 ${fi(st.Td)} − 2 × ${f2(L)})`;
+  }
+  $('#lChk').onclick=()=>{const v=parseFloat(ans.value);if(isNaN(v)){fb.textContent='숫자를 입력해 주세요.';fb.className='fb no';return;}
+    const L=H();if(Math.abs(v-L*1000)<=5){fb.textContent='정답! 상승 응결 고도는 '+mm(L)+' m예요. ‘응결 고도로’를 눌러 확인해 보세요.';fb.className='fb ok';}
+    else{fb.textContent=(v>L*1000?'너무 높아요.':'너무 낮아요.')+' 기온과 이슬점의 차에 125를 곱해 보세요.';fb.className='fb no';}};
+  ans.addEventListener('keydown',e=>{if(e.key==='Enter')$('#lChk').click();});
+  $('#lSolBtn').onclick=()=>{sol.hidden=!sol.hidden;$('#lSolBtn').textContent=sol.hidden?'풀이 보기':'풀이 숨기기';};
+  TS.set(20);TdS.set(12);
+
+  function step(dt){
+    if(!st.play)return;
+    if(st.h>=5){st.hold+=dt;if(st.hold>2.2){st.h=0;st.hold=0;}return;}
+    const prev=st.h,L=H();st.h=Math.min(5,st.h+SPD[st.sp-1]*dt);
+    if(st.stop&&L<=5&&prev<L-1e-6&&st.h>=L-1e-6){st.h=L;st.play=false;syncPlay();}
+  }
+  function draw(){
+    const {ctx,LH,n}=sized(cv,LW,600,840),k=ctx.__fs;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const IW=n?290:300;
+    const P=mkPlot(IW+48+26*k,46+16*k,LW-22,LH-(30+34*k),[-20,40],[0,5]);
+    const L=H(),reached=st.h>=L-1e-6,showL=reached||st.pre;
+    // ----- 왼쪽 그림 -----
+    const sx=10,sw=IW-10,cx=sx+sw*0.42;
+    sky(ctx,sx,P.t-26,sw,P.b-P.t+26,0);
+    ground(ctx,sx,P.b,sw,22);
+    // 열원
+    const hg=ctx.createRadialGradient(cx,P.b,2,cx,P.b,40);hg.addColorStop(0,alpha(COL.warm,.55));hg.addColorStop(1,alpha(COL.warm,0));ctx.fillStyle=hg;ctx.fillRect(cx-40,P.b-40,80,40);
+    // 구름
+    if(st.h>=L-1e-6&&L<5){const top=Math.min(P.Y(st.h)-10,P.Y(L)-24);cloudBlob(ctx,cx,P.Y(L),sw*0.38,P.Y(L)-top,1.3);}
+    // 공기 덩어리
+    const py=P.Y(st.h),pr=16+st.h*3.2;
+    if(st.h<=L+1e-6){const rg=ctx.createRadialGradient(cx-pr*.3,py-pr*.3,2,cx,py,pr);rg.addColorStop(0,COL.panel);rg.addColorStop(1,alpha(COL.moist,.55));
+      ctx.fillStyle=rg;ctx.beginPath();ctx.arc(cx,py,pr,0,7);ctx.fill();ctx.strokeStyle=alpha(COL.moist,.9);ctx.lineWidth=2;ctx.stroke();}
+    else{ctx.strokeStyle=alpha(COL.moist,.9);ctx.lineWidth=2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.arc(cx,py,pr,0,7);ctx.stroke();ctx.setLineDash([]);}
+    if(st.h>0.18){arrow(ctx,cx,py+pr+34,cx,py+pr+8,COL.siteA,4,12);}
+    if(st.h<0.2&&!st.play)txt(ctx,'공기 덩어리',cx,py-pr-12,{size:13,align:'center',weight:700,color:COL.ink2});
+    // 감률 막대
+    const bx=IW-14;
+    const yL=P.Y(Math.min(L,5));
+    ctx.lineCap='round';
+    if(st.h>0){ctx.strokeStyle=COL.dry;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(bx,P.b);ctx.lineTo(bx,P.Y(Math.min(st.h,L)));ctx.stroke();}
+    if(st.h>L){ctx.strokeStyle=COL.moist;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(bx,yL);ctx.lineTo(bx,P.Y(st.h));ctx.stroke();}
+    function vtext(s,y0,y1,col){const len=y0-y1;ctx.save();ctx.font=`700 12px ${FONT}`;const w=ctx.measureText(s).width;if(w+10<len){ctx.translate(bx-14,(y0+y1)/2);ctx.rotate(-Math.PI/2);ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(s,0,0);}ctx.restore();}
+    if(st.h>0)vtext('건조 단열 감률 10 ℃/km',P.b,P.Y(Math.min(st.h,L)),COL.dry);
+    if(st.h>L)vtext('습윤 단열 감률 5 ℃/km',yL,P.Y(st.h),COL.moist);
+    // ----- 그래프 -----
+    axes(ctx,P,{xs:10,ys:1,ylab:'높이(km)',xlab:'기온(℃)'});
+    clipPlot(ctx,P);
+    if(st.dry)family(ctx,P,10,10,COL.dry,1.3,[7,5],.6);
+    if(st.moist)family(ctx,P,5,10,COL.moist,1.3,[7,5],.6);
+    if(st.dew)family(ctx,P,2,10,COL.dew,1.3,[3,5],.55);
+    const Lc=Math.min(L,5);
+    if(st.pre){ctx.globalAlpha=.35;
+      seg(ctx,P,st.T,0,Tp(Lc),Lc,COL.dry,4);if(L<5)seg(ctx,P,Tp(Lc),Lc,Tp(5),5,COL.moist,4);
+      seg(ctx,P,st.Td,0,Tdp(Lc),Lc,COL.dew,3.5);ctx.globalAlpha=1;}
+    const hl=Math.min(st.h,L);
+    if(st.h>0){seg(ctx,P,st.T,0,Tp(hl),hl,COL.dry,4.5);seg(ctx,P,st.Td,0,Tdp(hl),hl,COL.dew,4);}
+    if(st.h>L){seg(ctx,P,Tp(L),L,Tp(st.h),st.h,COL.moist,4.5);seg(ctx,P,Tp(L),L,Tp(st.h),st.h,COL.dew,1.8,[4,6]);}
+    ctx.restore();
+    // 상승 응결 고도선
+    if(showL&&L<=5){const y=P.Y(L);ctx.save();ctx.setLineDash([7,6]);ctx.strokeStyle=COL.ink;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(sx,y);ctx.lineTo(IW,y);ctx.moveTo(P.l,y);ctx.lineTo(P.r,y);ctx.stroke();ctx.restore();
+      pill(ctx,'상승 응결 고도 '+mm(L)+' m',P.r-6,y+17*k,{size:13,align:'right',bg:COL.ink,fg:COL.panel});
+      pill(ctx,'상승 응결 고도',sx+6,y-15*k,{size:12,align:'left',bg:alpha(COL.panel,.9)});}
+    // 현재 점
+    const T=Tp(st.h),Td=Tdp(st.h),y=P.Y(st.h),xT=P.X(T),xD=P.X(Td);
+    ctx.save();ctx.setLineDash([3,4]);ctx.strokeStyle=alpha(COL.ink,.4);ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.r,y);ctx.stroke();ctx.restore();
+    const sat=st.h>=L-1e-6;
+    if(!sat){ctx.strokeStyle=COL.warm;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(xD,y);ctx.lineTo(xT,y);ctx.stroke();}
+    dot(ctx,xD,y,7,COL.dew,COL.panel);dot(ctx,xT,y,8,COL.warm,COL.panel);
+    if(sat){pill(ctx,'기온 = 이슬점 '+f1(T)+' ℃',xT+14,y-16*k,{size:13,align:'left',bg:COL.moist,fg:'#fff'});}
+    else{
+      pill(ctx,'기온 '+f1(T)+' ℃',xT+14,y-14*k,{size:13,align:'left',bg:COL.warm,fg:'#fff'});
+      pill(ctx,'이슬점 '+f1(Td)+' ℃',xD-14,y-14*k,{size:13,align:'right',bg:COL.dew,fg:COL.panel});
+      if(xT-xD>70)pill(ctx,'차 '+f1(T-Td)+' ℃',(xT+xD)/2,y+16*k,{size:12,bg:alpha(COL.panel,.95),fg:COL.warm});
+    }
+    // 읽음값
+    const rh=Math.min(100,esW(Td)/esW(T)*100);
+    setText('lRh',sat?'100 %':Math.round(rh)+' %');
+    setText('lRhSub',sat?'상대 습도 · 포화 상태':'상대 습도 · 불포화 상태');
+    setText('lNow','높이 '+mm(st.h)+' m');
+    setText('lNowSub','기온 '+f1(T)+' ℃ · 이슬점 '+f1(Td)+' ℃');
+    setTile('lTile',sat?'cloud':'thermometer',sat?'green':'blue');
+    setHTML('lState',sat?(st.h-L<0.02?`기온과 이슬점이 같아져 상대 습도 100 % → 수증기가 응결하기 시작해 <b>상승 응결 고도 ${mm(L)} m</b>에서 <b>구름이 생성</b>돼요. 다시 ‘상승시키기’를 누르면 구름이 두꺼워지는 과정을 볼 수 있어요.`:`포화 상태로 상승 → 응결열이 방출되어 기온이 <b>습윤 단열 감률(약 5 ℃/km)</b>로 낮아지고 구름이 두꺼워져요.`)
+      :`불포화 상태 → 기온은 <b>10 ℃/km</b>, 이슬점은 <b>2 ℃/km</b>씩 낮아져 차가 1 km마다 8 ℃씩(125 m마다 1 ℃씩) 줄어요.`+(L>5?' (이 조건에서는 5000 m 안에서 포화되지 않아요)':''));
+    HS.show(st.h);
+  }
+  return {show(){},frame(dt){step(dt);draw();}};
+})();
+
+/* =========================================================
+   2-2. 푄
+   ========================================================= */
+const foehn=(function(){
+  const cv=$('#cvFoehn'),LW=1000,YMAX=3.5;
+  const st={T0:20,Td0:12,H:2.0,u:0,play:false,sp:3,goU:null,dry:false,moist:false,dew:false,pre:false,stopL:false,stopT:false,arrived:false,t:0};
+  const A=0.17,Bf=0.83;
+  const SPD=[1/34,1/24,1/15,1/10,1/6],SPL=['아주 느리게','느리게','보통','빠르게','아주 빠르게'];
+  const lcl=()=>(st.T0-st.Td0)/8;
+  const hOf=u=>{if(u<=A||u>=Bf)return 0;const t=(u-A)/(Bf-A);return st.H*(1-Math.cos(2*Math.PI*t))/2;};
+  const uLcl=()=>{const l=lcl();if(l>=st.H-1e-9)return null;if(l<=0)return A;const t=Math.acos(1-2*l/st.H)/(2*Math.PI);return A+t*(Bf-A);};
+  function up(h){const l=lcl();if(h<=l)return {T:st.T0-10*h,Td:st.Td0-2*h,sat:false};const T=st.T0-10*l-5*(h-l);return {T,Td:T,sat:true};}
+  function S(u){const h=hOf(u);if(u<=0.5){const s=up(h);return {T:s.T,Td:s.Td,sat:s.sat,h,phase:'up'};}
+    const top=up(st.H);const T=top.T+10*(st.H-h),Td=Math.min(T,top.Td+2*(st.H-h));return {T,Td,sat:false,h,phase:'down'};}
+  const rhOf=(T,Td)=>Math.min(100,esW(Td)/esW(T)*100);
+  const mm=h=>Math.round(h*1000).toLocaleString('ko-KR')+' m';
+
+  /* ----- 조작 ----- */
+  const US=bindRange('fhU',v=>mm(hOf(v)),v=>{st.u=v;st.goU=null;st.play=false;sync();});
+  const TdS=bindRange('fhTd0',v=>fi(v)+' ℃',v=>{if(v>st.T0){TdS.set(st.T0);return;}st.Td0=v;});
+  bindRange('fhT0',v=>v+' ℃',v=>{st.T0=v;if(st.Td0>v)TdS.set(v);}).set(20);TdS.set(12);
+  bindRange('fhH',v=>v.toLocaleString('ko-KR')+' m',v=>{st.H=v/1000;}).set(2000);
+  bindRange('fhSp',v=>SPL[v-1],v=>{st.sp=v;}).set(3);
+  [['fhcDry','dry'],['fhcMoist','moist'],['fhcDew','dew'],['fhcPre','pre'],['fhcStopL','stopL'],['fhcStopT','stopT']].forEach(([id,key])=>{const el=document.getElementById(id);el.checked=st[key];el.onchange=()=>{st[key]=el.checked;};});
+  const pb=$('#fhPlay');
+  function sync(){pb.textContent=st.play?'일시정지':(st.u>=0.999?'다시 불게 하기':'바람 불게 하기');}
+  pb.onclick=()=>{if(!st.play&&st.u>=0.999){st.u=0;}st.play=!st.play;st.goU=null;sync();};
+  $('#fhReset').onclick=()=>{st.u=0;st.play=false;st.goU=null;st.arrived=false;sync();};
+  const kb=$$('[data-fu]');
+  const target=k=>k==='start'?0:k==='lcl'?uLcl():k==='top'?0.5:1;
+  kb.forEach(b=>b.onclick=()=>{const t=target(b.dataset.fu);if(t==null)return;st.goU=t;st.play=false;sync();});
+  sync();
+
+  function step(dt){
+    st.t+=dt;
+    const prev=st.u;
+    if(st.goU!=null){const d=st.goU-st.u,v=SPD[st.sp-1]*2.2*dt;if(Math.abs(d)<=v){st.u=st.goU;st.goU=null;}else st.u+=Math.sign(d)*v;}
+    else if(st.play){
+      st.u=Math.min(1,st.u+SPD[st.sp-1]*dt);
+      const ul=uLcl();
+      if(st.stopL&&ul!=null&&prev<ul-1e-6&&st.u>=ul){st.u=ul;st.play=false;}
+      if(st.stopT&&prev<0.5-1e-6&&st.u>=0.5){st.u=0.5;st.play=false;}
+      if(st.u>=1){st.u=1;st.play=false;}
+      if(!st.play)sync();
+    }
+    if(st.u>=0.999)st.arrived=true;
+  }
+
+  /* ----- 그리기 ----- */
+  function puff(ctx,x,y,r,al){const g=ctx.createRadialGradient(x-r*.3,y-r*.35,r*.1,x,y,r);
+    g.addColorStop(0,`rgba(${COL.fogc},${.98*al})`);g.addColorStop(.6,`rgba(${COL.fogc},${.88*al})`);g.addColorStop(.88,`rgba(${COL.fogc},${.35*al})`);g.addColorStop(1,`rgba(${COL.fogc},0)`);
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();}
+  function draw(){
+    const {ctx,LH,n}=sized(cv,LW,620,1300),k=ctx.__fs;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const cur=S(st.u),ul=uLcl(),L=lcl(),end=S(1);
+    let P,SC,gy,Ys;
+    if(!n){
+      P=mkPlot(618,54+16*k,LW-22,LH-(30+34*k),[-10,40],[0,YMAX]);
+      SC={x:12,y:P.t-34,w:P.l-12-(40+16*k),h:P.b-P.t+34+34};gy=P.b;Ys=h=>P.Y(h);
+    }else{
+      SC={x:12,y:40,w:976,h:640};gy=SC.y+SC.h-46;const top=SC.y+40;Ys=h=>gy-h/YMAX*(gy-top);
+      P=mkPlot(14+44+26*k,SC.y+SC.h+70+10*k,LW-22,LH-(30+34*k),[-10,40],[0,YMAX]);
+    }
+    const xR=SC.x+SC.w-30,xL=SC.x+30,X=u=>lerp(xR,xL,u);
+    /* 장면 */
+    ctx.save();rr(ctx,SC.x,SC.y,SC.w,SC.h,20);ctx.clip();
+    const sg=ctx.createLinearGradient(0,SC.y,0,gy);sg.addColorStop(0,mix(COL.sky,COL.accent,.28));sg.addColorStop(1,COL.sky);ctx.fillStyle=sg;ctx.fillRect(SC.x,SC.y,SC.w,SC.h);
+    const sun=ctx.createRadialGradient(xR-60,SC.y+50,4,xR-60,SC.y+50,120);sun.addColorStop(0,'rgba(255,248,220,.8)');sun.addColorStop(1,'rgba(255,248,220,0)');ctx.fillStyle=sun;ctx.fillRect(SC.x,SC.y,SC.w,SC.h);
+    // 먼 산줄기
+    [[0.62,.5],[0.42,.62]].forEach(([hh,al],i)=>{ctx.fillStyle=mix(COL.moist,COL.sky,i?0.62:0.78,al);ctx.beginPath();ctx.moveTo(SC.x,gy);
+      for(let x=SC.x;x<=SC.x+SC.w+1;x+=8){const f=(x-SC.x)/SC.w;const h=st.H*hh*(0.55+0.45*Math.sin(f*7.3+i*2)*Math.sin(f*3.1+1.3+i));ctx.lineTo(x,Ys(Math.max(0.15,h)));}
+      ctx.lineTo(SC.x+SC.w,gy);ctx.closePath();ctx.fill();});
+    // 땅·바다
+    const seaX=X(A-0.03);
+    const sea=ctx.createLinearGradient(0,gy,0,SC.y+SC.h);sea.addColorStop(0,mix(COL.sea,COL.sky,.2));sea.addColorStop(1,COL.sea);ctx.fillStyle=sea;ctx.fillRect(seaX,gy,SC.x+SC.w-seaX,SC.y+SC.h-gy);
+    ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1.5;for(let i=0;i<4;i++){const y=gy+8+i*8;ctx.beginPath();for(let x=seaX+10;x<SC.x+SC.w;x+=26){ctx.moveTo(x+(i%2)*10,y);ctx.lineTo(x+(i%2)*10+12,y);}ctx.stroke();}
+    const land=ctx.createLinearGradient(SC.x,0,seaX,0);land.addColorStop(0,mix(COL.land,'#E3B866',.35));land.addColorStop(1,mix(COL.env,COL.land,.55));
+    ctx.fillStyle=land;ctx.fillRect(SC.x,gy,seaX-SC.x,SC.y+SC.h-gy);
+    ctx.strokeStyle=COL['land-edge'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(SC.x,gy);ctx.lineTo(seaX,gy);ctx.stroke();
+    pill(ctx,'바다',(seaX+SC.x+SC.w)/2,gy+(SC.y+SC.h-gy)/2,{size:12,bg:'rgba(255,255,255,.0)',fg:'#fff'});
+    // 산
+    const path=()=>{ctx.beginPath();ctx.moveTo(X(A)+6,gy);for(let u=A;u<=Bf+1e-9;u+=0.004){const t=(u-A)/(Bf-A);ctx.lineTo(X(u),Ys(hOf(u))+Math.sin(t*41)*2*Math.sin(Math.PI*t));}ctx.lineTo(X(Bf)-6,gy);ctx.closePath();};
+    const mg=ctx.createLinearGradient(X(A),0,X(Bf),0);
+    mg.addColorStop(0,mix(COL.env,'#1E4D2E',.45));mg.addColorStop(.36,mix(COL.env,'#9FC3A8',.3));mg.addColorStop(.64,mix('#B7A57C',COL.land,.2));mg.addColorStop(1,mix(COL.land,'#D9B46A',.45));
+    path();ctx.fillStyle=mg;ctx.fill();
+    ctx.save();path();ctx.clip();
+    const sh=ctx.createLinearGradient(X(0.5),0,X(Bf),0);sh.addColorStop(0,'rgba(20,30,20,.0)');sh.addColorStop(.25,'rgba(20,30,20,.18)');sh.addColorStop(1,'rgba(20,30,20,.06)');ctx.fillStyle=sh;ctx.fillRect(X(0.5),SC.y,X(Bf)-X(0.5)-1,SC.h);
+    for(let b=1;b<=4;b++){ctx.strokeStyle=`rgba(255,255,255,${0.12-b*0.02})`;ctx.lineWidth=9;ctx.beginPath();
+      for(let u=A;u<=Bf;u+=0.01){const y=Ys(hOf(u))+b*(gy-Ys(st.H))*0.16;const x=X(u);u===A?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+    // 나무(바람받이 쪽은 푸르게, 반대쪽은 듬성듬성)
+    for(let i=0;i<34;i++){const u=A+0.02+i*((Bf-A-0.04)/33);const ws=u<0.5;if(!ws&&i%3)continue;const t=(u-A)/(Bf-A);
+      const x=X(u)+Math.sin(i*7.1)*4,y=Ys(hOf(u))+10+Math.abs(Math.sin(i*3.3))*(gy-Ys(hOf(u)))*0.35;const h=(ws?16:12)*(0.8+Math.abs(Math.sin(i*5.1))*0.5);
+      ctx.fillStyle=ws?mix(COL.env,'#0E2A18',.5):mix('#8B7A4A',COL.env,.25);ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x+h*0.42,y);ctx.lineTo(x-h*0.42,y);ctx.closePath();ctx.fill();}
+    ctx.restore();
+    ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=2.4;ctx.beginPath();for(let u=A;u<=Bf;u+=0.004){const t=(u-A)/(Bf-A);const x=X(u),y=Ys(hOf(u))+Math.sin(t*41)*2*Math.sin(Math.PI*t);u===A?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+    // 바람 흐름선
+    for(let j=0;j<3;j++){ctx.save();ctx.strokeStyle=`rgba(255,255,255,${0.32-j*0.08})`;ctx.lineWidth=2.4;ctx.setLineDash([16,14]);ctx.lineDashOffset=st.play?-st.t*40:0;
+      ctx.beginPath();for(let u=0;u<=1.0001;u+=0.01){const y=Ys(hOf(u)+0.45+j*0.32)-0;const x=X(u);u===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();ctx.restore();}
+    arrow(ctx,X(0.06),Ys(0.75),X(0.14),Ys(0.75),'rgba(255,255,255,.9)',3,11);
+    pill(ctx,'바람',X(0.06),Ys(0.75)-16*k,{size:12,bg:alpha(COL.panel,.85),fg:COL.ink2});
+    // 상승 응결 고도
+    if(ul!=null&&(st.pre||st.u>=ul-1e-6)){const y=Ys(L);ctx.save();ctx.setLineDash([7,6]);ctx.strokeStyle=alpha(COL.ink,.7);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(SC.x,y);ctx.lineTo(SC.x+SC.w,y);ctx.stroke();ctx.restore();}
+    // 구름·비
+    if(ul!=null){const u1=Math.min(st.u,0.52);
+      if(u1>ul){const pts=[];for(let u=ul;u<=u1+1e-9;u+=0.016)pts.push(u);
+        pts.forEach((u,i)=>{if(u>0.5)return;const x=X(u)+4,y0=Ys(hOf(u))-26;
+          for(let r=0;r<3;r++){const ph=((st.t*(st.play?1:0)*90+i*23+r*15)%38);ctx.strokeStyle=alpha(COL.moist,.55);ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-8+r*8,y0+8+ph);ctx.lineTo(x-11+r*8,y0+16+ph);ctx.stroke();}});
+        pts.forEach((u,i)=>{const grow=Math.min(1,(u1-u)*14+0.35);const x=X(u),y=Ys(hOf(u))-30-6*Math.sin(i*1.9);const r=(30+8*Math.sin(i*2.7))*grow;
+          ctx.fillStyle=alpha(COL['cloud-edge'],.35);ctx.beginPath();ctx.arc(x+4,y+6,r,0,7);ctx.fill();puff(ctx,x,y,r*1.12,1);if(i%2===0)puff(ctx,x-r*.6,y-r*.45,r*.7,.95);});
+        pill(ctx,'구름 · 비',X((ul+Math.min(u1,0.5))/2)+20,Ys(Math.max(L,hOf((ul+Math.min(u1,0.5))/2)))-64,{size:12,bg:alpha(COL.panel,.9),fg:COL.moist});}}
+    // 단열 설명
+    pill(ctx,'↑ 상승 · 단열 팽창 · 기온 하강',xR,SC.y+20*k,{size:12,align:'right',bg:alpha(COL.panel,.88),fg:COL.cold});
+    pill(ctx,'↓ 하강 · 단열 압축 · 기온 상승',xL,SC.y+20*k,{size:12,align:'left',bg:alpha(COL.panel,.88),fg:COL.warm});
+    if(st.arrived&&end.T>st.T0+0.05)pill(ctx,'고온 건조',X(1)+26,gy-16*k,{size:14,weight:800,align:'left',bg:COL.warm,fg:'#fff',padX:12});
+    // 공기 덩어리
+    const px=X(st.u),py=Ys(cur.h)-17,R=15;
+    ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(px+4,Ys(cur.h)-1,R*.9,R*.28,0,0,7);ctx.fill();
+    const tc=cur.sat?COL.cloud:mix(COL.cold,COL.warm,clamp((cur.T+5)/35,0,1));
+    const pg=ctx.createRadialGradient(px-R*.4,py-R*.45,R*.1,px,py,R);pg.addColorStop(0,'rgba(255,255,255,.98)');pg.addColorStop(.55,mix(tc,'#FFFFFF',.45));pg.addColorStop(1,tc);
+    ctx.fillStyle=pg;ctx.beginPath();ctx.arc(px,py,R,0,7);ctx.fill();ctx.strokeStyle=alpha(COL.ink,.25);ctx.lineWidth=1.2;ctx.stroke();
+    const lbl=f1(cur.T)+' ℃ · 이슬점 '+f1(cur.Td)+' ℃';
+    pill(ctx,lbl,clamp(px,SC.x+100*k,SC.x+SC.w-100*k),py-R-14*k,{size:12,bg:alpha(COL.panel,.94),fg:COL.ink});
+    // 좁은 화면: 높이 눈금
+    if(n){for(let h=0;h<=3;h++){const y=Ys(h);ctx.strokeStyle=alpha(COL.ink,.4);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(SC.x,y);ctx.lineTo(SC.x+10,y);ctx.stroke();txt(ctx,h+' km',SC.x+14,y,{size:11,color:COL.ink2});}}
+    ctx.restore();
+    if(ul!=null&&(st.pre||st.u>=ul-1e-6))pill(ctx,'상승 응결 고도 '+mm(L),SC.x+8,Ys(L)-13*k,{size:12,align:'left',bg:alpha(COL.panel,.92)});
+
+    /* 단열선도 */
+    axes(ctx,P,{xs:10,ys:1,gy:0.5,ylab:'높이(km)',xlab:'기온(℃)'});
+    clipPlot(ctx,P);
+    if(st.dry)family(ctx,P,10,10,COL.dry,1.2,[7,5],.5);
+    if(st.moist)family(ctx,P,5,10,COL.moist,1.2,[7,5],.5);
+    if(st.dew)family(ctx,P,2,10,COL.dew,1.1,[3,5],.5);
+    // 산 정상 높이
+    ctx.save();ctx.setLineDash([2,5]);ctx.strokeStyle=alpha(COL.ink,.45);ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(P.l,P.Y(st.H));ctx.lineTo(P.r,P.Y(st.H));ctx.stroke();ctx.restore();
+    function trace(u0,u1,al){
+      const segs=[];let lastT=null,lastD=null;
+      for(let u=u0;u<=u1+1e-9;u+=0.003){const s=S(Math.min(u,u1));
+        if(lastT){const up=s.phase==='up';
+          segs.push([lastT,[s.T,s.h],up?(s.sat?COL.moist:COL.dry):COL.dry,4.5,[]]);
+          segs.push([lastD,[s.Td,s.h],up&&s.sat?COL.moist:COL.dew,up&&s.sat?1.8:4,up&&s.sat?[4,6]:[]]);}
+        lastT=[s.T,s.h];lastD=[s.Td,s.h];}
+      ctx.globalAlpha=al;segs.forEach(q=>seg(ctx,P,q[0][0],q[0][1],q[1][0],q[1][1],q[2],q[3],q[4]));ctx.globalAlpha=1;
+    }
+    if(st.pre)trace(0,1,.3);
+    if(st.u>0)trace(0,st.u,1);
+    // 방향 화살표
+    const arr=(u,which)=>{const a=S(u-0.01),b=S(u+0.01);const x1=P.X(which?a.Td:a.T),y1=P.Y(a.h),x2=P.X(which?b.Td:b.T),y2=P.Y(b.h);if(Math.hypot(x2-x1,y2-y1)<2)return;arrow(ctx,x1,y1,x2,y2,which?COL.dew:COL.dry,0.01,11);};
+    [0.3,0.7].forEach(u=>{if(st.u>u+0.02||(st.pre)){arr(u,0);arr(u,1);}});
+    ctx.restore();
+    if(st.u>0.5||st.pre)pill(ctx,'산 정상 '+mm(st.H),P.r-4,P.Y(st.H)-12*k,{size:11,align:'right',bg:alpha(COL.panel,.92),fg:COL.ink2});
+    if(ul!=null&&(st.pre||st.u>=ul-1e-6)){ctx.save();ctx.setLineDash([7,6]);ctx.strokeStyle=alpha(COL.ink,.7);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(P.l,P.Y(L));ctx.lineTo(P.r,P.Y(L));ctx.stroke();ctx.restore();}
+    // 현재 점
+    const yy=P.Y(cur.h),xT=P.X(cur.T),xD=P.X(cur.Td);
+    if(!n){ctx.save();ctx.setLineDash([3,4]);ctx.strokeStyle=alpha(COL.ink,.35);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px+R+4,yy);ctx.lineTo(P.r,yy);ctx.stroke();ctx.restore();}
+    if(xT-xD>2){ctx.strokeStyle=COL.warm;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(xD,yy);ctx.lineTo(xT,yy);ctx.stroke();}
+    dot(ctx,xD,yy,6,COL.dew,COL.panel);dot(ctx,xT,yy,7,cur.sat?COL.moist:COL.warm,COL.panel);
+    // 출발·도착
+    pill(ctx,'출발 '+fi(st.T0)+' ℃',P.X(st.T0),P.b-14*k,{size:11,bg:COL.ink,fg:COL.panel});
+    if(st.arrived){const d=end.T-st.T0;pill(ctx,'도착 '+f1(end.T)+' ℃'+(d>0.05?' (+'+f1(d)+')':''),P.X(end.T)+6,P.b-38*k,{size:11,align:'left',bg:COL.warm,fg:'#fff'});}
+
+    /* 읽음값 */
+    const rh=rhOf(cur.T,cur.Td);
+    setText('fhT',f1(cur.T)+' ℃');
+    setText('fhTsub','공기 덩어리 기온 · 높이 '+mm(cur.h));
+    setText('fhNow','이슬점 '+f1(cur.Td)+' ℃ · 상대 습도 '+(cur.sat?'100':Math.round(rh))+' %');
+    const atL=ul!=null&&Math.abs(st.u-ul)<0.004&&cur.phase==='up',atTop=Math.abs(st.u-0.5)<0.004,atEnd=st.u>=0.999,atStart=st.u<=0.001;
+    const where=atStart?'출발 지점(바다 쪽)':atEnd?'도착 지점(산 넘은 쪽)':atTop?'산 정상':cur.phase==='up'?(cur.sat?'산을 오르는 중 · 구름 속(포화)':'산을 오르는 중 · 불포화'):'산을 내려오는 중 · 불포화';
+    setText('fhNowSub',where);
+    setTile('fhTile',atEnd&&end.T>st.T0+0.05?'fire':cur.sat?'cloud-with-rain':cur.phase==='down'?'black-sun-with-rays':'thermometer',atEnd&&end.T>st.T0+0.05?'red':cur.sat?'blue':cur.phase==='down'?'yellow':'');
+    let msg;
+    if(atStart)msg=`기온 ${fi(st.T0)} ℃, 이슬점 ${fi(st.Td0)} ℃인 불포화 공기 덩어리예요. ‘바람 불게 하기’를 눌러 산을 넘겨 보세요.`;
+    else if(atEnd)msg=end.T>st.T0+0.05?`산을 넘은 뒤 기온 <b>${fi(st.T0)} → ${f1(end.T)} ℃</b>, 상대 습도 <b>${Math.round(rhOf(st.T0,st.Td0))} → ${Math.round(rhOf(end.T,end.Td))} %</b>. 산을 넘어오면서 <b>고온 건조</b>해졌어요(푄).`
+      :`산 정상까지 포화되지 않아 오를 때와 내려올 때 모두 <b>건조 단열 감률</b>을 따랐어요 → 도착 기온 = 출발 기온`;
+    else if(atL)msg=`기온과 이슬점이 같아졌어요 → <b>상승 응결 고도 ${mm(L)}</b>에서 구름이 생기기 시작해요.`;
+    else if(atTop)msg=`산 정상: 기온 ${f1(cur.T)} ℃, 이슬점 ${f1(cur.Td)} ℃. 여기부터 공기 덩어리가 <b>하강</b>해요.`;
+    else if(cur.phase==='up'&&cur.sat)msg='포화 상태로 상승 → 수증기가 응결하며 <b>응결열</b>이 방출돼 기온과 이슬점이 <b>약 5 ℃/km</b>씩 낮아지고, <b>비나 눈</b>이 내려요.';
+    else if(cur.phase==='up')msg='불포화 상태로 상승 → 단열 팽창으로 기온은 <b>10 ℃/km</b>, 이슬점은 <b>2 ℃/km</b>씩 낮아져요.'+(ul==null?' (이 조건에서는 산 정상까지 포화되지 않아요)':'');
+    else msg='하강 → 단열 압축으로 기온은 <b>10 ℃/km</b>(건조 단열 감률), 이슬점은 <b>2 ℃/km</b>(이슬점 감률)씩 높아져요.';
+    setHTML('fhState',msg);
+    // 비교표
+    setText('fhC1',fi(st.T0)+' ℃');setText('fhC3',fi(st.Td0)+' ℃');setText('fhC5',Math.round(rhOf(st.T0,st.Td0))+' %');
+    if(st.arrived){setText('fhC2',f1(end.T)+' ℃');setText('fhC4',f1(end.Td)+' ℃');setText('fhC6',Math.round(rhOf(end.T,end.Td))+' %');setText('fhCmpNote','상대 습도는 기온·이슬점으로 계산한 근삿값이에요.');}
+    else{setText('fhC2','?');setText('fhC4','?');setText('fhC6','?');setText('fhCmpNote','공기 덩어리가 도착하면 결과가 보여요.');}
+    US.show(st.u);
+    const lb=kb.find(b=>b.dataset.fu==='lcl');if(lb)lb.disabled=ul==null;
+    kb.forEach(b=>{const t=target(b.dataset.fu);b.classList.toggle('on',t!=null&&Math.abs(st.u-t)<0.002);});
+  }
+  return {show(){},frame(dt){step(dt);draw();}};
+})();
+
+/* =========================================================
+   3. 대기 안정도
+   ========================================================= */
+const stab=(function(){
+  const cv=$('#cvStab'),LW=1000,T0=30;
+  const st={G:4,L:2,h:0,play:false,hold:0,zone:false,pre:false,dry:true,moist:true};
+  const Te=h=>T0-st.G*h;
+  const Tp=h=>h<=st.L?T0-10*h:T0-10*st.L-5*(h-st.L);
+  const hc=()=>st.G>5?5*st.L/(st.G-5):Infinity;      // 공기 덩어리가 주위보다 따뜻해지기 시작하는 높이
+  function kind(){const G=st.G;
+    if(G<5)return{k:'s',name:'절대 안정',tile:'white-heavy-check-mark',cls:'blue',sub:(G<0?'역전층! 높이 올라갈수록 기온 상승':`기온 감률 ${f1(G)} < 습윤 단열 감률 5 (℃/km)`)};
+    if(G===5)return{k:'b1',name:'안정의 경계',tile:'scales',cls:'',sub:'기온 감률 = 습윤 단열 감률 5 ℃/km'};
+    if(G<10)return{k:'c',name:'조건부 불안정',tile:'sun-behind-cloud',cls:'green',sub:`습윤 단열 감률 5 < 기온 감률 ${f1(G)} < 건조 단열 감률 10 (℃/km)`};
+    if(G===10)return{k:'b2',name:'불안정의 경계',tile:'scales',cls:'',sub:'기온 감률 = 건조 단열 감률 10 ℃/km'};
+    return{k:'u',name:'절대 불안정',tile:'thunder-cloud-and-rain',cls:'red',sub:`기온 감률 ${f1(G)} > 건조 단열 감률 10 (℃/km)`};}
+  const tall=()=>hc()<5.6;
+  const topH=()=>tall()?6:Math.min(6,st.L+0.3);
+  const GS=bindRange('sG',v=>f1(v)+' ℃/km',v=>{st.G=v;restart();});
+  const LS=bindRange('sL',v=>f1(v)+' km (지표 이슬점 '+fi(T0-8*v)+' ℃)',v=>{st.L=v;restart();});
+  GS.set(4);LS.set(2);
+  const syncPlay=playBtn('sPlay',st,['강제로 상승시키기','일시정지']);
+  st.onPlay=()=>{if(st.play&&st.h>=topH()-1e-6){st.h=0;st.hold=0;}};
+  function restart(){st.h=0;st.hold=0;}
+  $('#sReset').onclick=()=>{restart();};
+  $$('[data-pre]').forEach(b=>b.onclick=()=>{GS.set(+b.dataset.pre);LS.set(2);restart();st.play=true;syncPlay();});
+  [['scZone','zone'],['scPre','pre'],['scDry','dry'],['scMoist','moist']].forEach(([id,key])=>{const el=document.getElementById(id);el.checked=st[key];el.onchange=()=>{st[key]=el.checked;};});
+
+  function step(dt){
+    if(!st.play)return;
+    const top=topH();
+    if(st.h>=top-1e-6){st.hold+=dt;if(st.hold>2.6){st.h=0;st.hold=0;}return;}
+    const free=Tp(st.h)>Te(st.h)+1e-6;
+    st.h=Math.min(top,st.h+(free?0.85:0.42)*dt);
+  }
+  function draw(){
+    const {ctx,LH,n}=sized(cv,LW,640,880),k=ctx.__fs;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const IW=n?320:370;
+    const P=mkPlot(IW+48+26*k,46+16*k,LW-22,LH-(30+34*k),[-20,40],[0,6]);
+    const K=kind(),L=st.L,h=st.h;
+    // ----- 왼쪽 그림 (교과서 그림 Ⅲ-15~17 구도) -----
+    const sx=10,sw=IW-10;
+    sky(ctx,sx,P.t-40,sw,P.b-P.t+40,0);ground(ctx,sx,P.b,sw,22);
+    txt(ctx,'지표면',sx+sw*0.45,P.b+12,{size:12,weight:700,color:COL.ink2,align:'center'});
+    ctx.save();ctx.setLineDash([2,4]);ctx.strokeStyle=COL.grid;ctx.lineWidth=1;
+    for(let i=1;i<=6;i++){const y=P.Y(i);ctx.beginPath();ctx.moveTo(sx+60*k,y);ctx.lineTo(IW,y);ctx.stroke();}ctx.restore();
+    for(let i=0;i<=6;i++)txt(ctx,fi(Te(i))+' ℃',sx+8,P.Y(i)-(i===0?12:0),{size:13,weight:700,color:COL.env});
+    pill(ctx,'기온 감률 ('+f1(st.G)+' ℃/km)',sx+6,P.t-24,{size:12,align:'left',bg:COL.panel,fg:COL.env});
+    const cx=sx+60*k+(sw-60*k)*0.5;
+    // 구름
+    if(h>L){
+      if(tall()){cloudBlob(ctx,cx,P.Y(L),Math.min(sw*0.42,150),P.Y(L)-P.Y(h)+14,2.1);}
+      else layerCloud(ctx,cx,P.Y(L)-6,Math.min(sw*0.8,260)*Math.min(1,(h-L)/0.3+0.35),11);
+    }
+    if(st.pre||h>=L-1e-6){const y=P.Y(L);ctx.save();ctx.setLineDash([7,6]);ctx.strokeStyle=COL.ink;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(sx+60*k,y);ctx.lineTo(IW,y);ctx.moveTo(P.l,y);ctx.lineTo(P.r,y);ctx.stroke();ctx.restore();
+      pill(ctx,'상승 응결 고도',IW-4,y+15*k,{size:12,align:'right',bg:alpha(COL.panel,.92)});}
+    // 지나온 정수 높이의 공기 덩어리
+    for(let i=0;i<Math.min(h,L)-0.15&&i<=6;i++){const y=P.Y(i);ctx.globalAlpha=.55;dot(ctx,cx,y,15+i*1.5,alpha(COL.moist,.25),alpha(COL.moist,.6));ctx.globalAlpha=1;txt(ctx,fi(Tp(i))+'℃',cx,y,{size:11,align:'center',weight:700,color:COL.ink2});}
+    // 현재 공기 덩어리
+    const y=P.Y(h),pr=17+Math.min(h,L)*1.6,tp=Tp(h),te=Te(h),d=tp-te;
+    const rg=ctx.createRadialGradient(cx-pr*.3,y-pr*.3,2,cx,y,pr);rg.addColorStop(0,COL.panel);rg.addColorStop(1,h>L?alpha(COL.cloud,.95):alpha(COL.moist,.5));
+    ctx.fillStyle=rg;ctx.beginPath();ctx.arc(cx,y,pr,0,7);ctx.fill();ctx.strokeStyle=COL.moist;ctx.lineWidth=2;ctx.stroke();
+    txt(ctx,fi(tp)+'℃',cx,y,{size:13,align:'center',weight:800,color:COL.ink});
+    if(h>0.05){
+      const up=d>0.05,dn=d<-0.05,ax=cx+pr+22;
+      if(up)arrow(ctx,ax,y+22,ax,y-26,COL.warm,4,12);else if(dn)arrow(ctx,ax,y-22,ax,y+26,COL.cold,4,12);
+      pill(ctx,'주위 '+fi(te)+'℃',ax+14,y,{size:12,align:'left',bg:COL.panel,fg:COL.env});
+    }
+    // ----- 그래프 -----
+    axes(ctx,P,{xs:10,ys:1,ylab:'높이(km)',xlab:'기온(℃)'});
+    clipPlot(ctx,P);
+    if(st.dry)family(ctx,P,10,10,COL.dry,1.2,[7,5],.5);
+    if(st.moist)family(ctx,P,5,10,COL.moist,1.2,[7,5],.5);
+    if(st.zone){
+      const A=[P.X(T0),P.Y(0)],top=6,xd=P.X(T0-10*top),xm=P.X(T0-5*top);
+      ctx.fillStyle=COL['zone-u'];ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(xd,P.Y(top));ctx.lineTo(P.l-200,P.Y(top));ctx.lineTo(P.l-200,A[1]);ctx.closePath();ctx.fill();
+      ctx.fillStyle=COL['zone-c'];ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(xd,P.Y(top));ctx.lineTo(xm,P.Y(top));ctx.closePath();ctx.fill();
+      ctx.fillStyle=COL['zone-s'];ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(xm,P.Y(top));ctx.lineTo(P.r+50,P.Y(top));ctx.lineTo(P.r+50,A[1]);ctx.closePath();ctx.fill();
+      seg(ctx,P,T0,0,T0-10*top,top,COL.dry,1.6,[6,5]);seg(ctx,P,T0,0,T0-5*top,top,COL.moist,1.6,[6,5]);
+    }
+    ctx.restore();
+    if(st.zone){
+      pill(ctx,'절대 불안정',P.X(-11),P.Y(3.6),{size:12,bg:alpha(COL.panel,.85),fg:COL.dry});
+      pill(ctx,'조건부 불안정',P.X(3),P.Y(5.2),{size:12,bg:alpha(COL.panel,.85),fg:COL.env});
+      pill(ctx,'절대 안정',P.X(31),P.Y(3.2),{size:12,bg:alpha(COL.panel,.85),fg:COL.moist});
+    }
+    clipPlot(ctx,P);
+    seg(ctx,P,T0,0,Te(6),6,COL.env,4.5);
+    if(st.pre){ctx.globalAlpha=.35;seg(ctx,P,T0,0,Tp(L),L,COL.dry,4);seg(ctx,P,Tp(L),L,Tp(6),6,COL.moist,4);ctx.globalAlpha=1;}
+    const hl=Math.min(h,L);
+    if(h>0)seg(ctx,P,T0,0,Tp(hl),hl,COL.dry,4.5);
+    if(h>L)seg(ctx,P,Tp(L),L,Tp(h),h,COL.moist,4.5);
+    ctx.restore();
+    // 현재 비교
+    const yy=P.Y(h),xp=P.X(tp),xe=P.X(te);
+    if(h>0.02){ctx.strokeStyle=d>0.05?COL.warm:d<-0.05?COL.cold:COL.muted;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xe,yy);ctx.lineTo(xp,yy);ctx.stroke();}
+    dot(ctx,xe,yy,7,COL.env,COL.panel);dot(ctx,xp,yy,8,h>L?COL.moist:COL.dry,COL.panel);
+    if(h>0.02){const right=xp>=xe;
+      pill(ctx,'공기 덩어리 '+fi(tp)+'℃',xp+(right?12:-12),yy-15*k,{size:12,align:right?'left':'right',bg:h>L?COL.moist:COL.dry,fg:'#fff'});
+      pill(ctx,'주위 '+fi(te)+'℃',xe+(right?-12:12),yy+15*k,{size:12,align:right?'right':'left',bg:COL.env,fg:'#fff'});}
+    // 판정 표지
+    pill(ctx,K.name,P.r-8,P.t+16*k,{size:15,align:'right',bg:K.k==='s'?COL.moist:K.k==='u'?COL.warm:K.k==='c'?COL.env:COL.muted,fg:'#fff',padX:12,padY:6});
+    // 읽음값
+    setText('sKind',K.name);setText('sKindSub',K.sub);setTile('sTile',K.tile,K.cls);
+    setText('sNow','높이 '+f2(h)+' km · 공기 덩어리 '+f1(tp)+' ℃');
+    setText('sNowSub','주위 공기 '+f1(te)+' ℃ → '+(h<0.02?'출발 전':d<-0.05?'주위보다 차가워 되돌아가려 함':d>0.05?'주위보다 따뜻해 저절로 상승':'주위와 같은 온도'));
+    let msg;
+    if(h<L-1e-6)msg=d<-0.05?'불포화 상태로 강제 상승 중 · 주위보다 <b>차가워</b> 강제로 올리는 힘이 없으면 원래 위치로 되돌아가려 해요.':d>0.05?'불포화 상태로 상승 중 · 주위보다 <b>따뜻해</b> 저절로 계속 올라가요.':'불포화 상태로 상승 중 · 주위와 온도가 같아요.';
+    else if(tall())msg=`상승 응결 고도 위에서도 계속 상승 → 두께가 두꺼운 <b>적운형 구름</b>`+(K.k==='c'||K.k==='b2'?' (주위보다 따뜻해지는 높이부터는 저절로 상승)':'');
+    else msg='구름이 생겨도 주위보다 차가워 <b>연직 운동이 억제</b> → 두께가 얇은 <b>층운형 구름</b>';
+    setHTML('sState',msg);
+  }
+  /* ----- 탐구: 단열선도로 대기 안정도 해석하기 ----- */
+  const iq=(function(){
+    const cv=$('#cvInq'),LW=800,LH=640;
+    const H=[0,50,100,150,200,250,300,350,400,450,500];
+    const A=[12.0,12.5,13.0,13.5,14.0,14.5,15.0,14.3,13.6,12.9,12.2];
+    const B=[16.0,15.7,15.4,15.1,14.8,14.5,14.2,13.9,13.6,13.3,13.0];
+    const s={a:false,b:false,j:false,l:true,hov:null};
+    $('#iqTable').innerHTML=H.map((h,i)=>`<tr><td>${h}</td><td>${A[i].toFixed(1)}</td><td>${B[i].toFixed(1)}</td></tr>`).join('');
+    [['iqA','a'],['iqB','b'],['iqJ','j'],['iqL','l']].forEach(([id,key])=>{const el=document.getElementById(id);el.checked=s[key];el.onchange=()=>{s[key]=el.checked;};});
+    let P0=null;
+    pointerReader(cv,(fx,fy)=>{if(fx==null||!P0){s.hov=null;return;}const h=P0.iy(fy*LH);s.hov=clamp(Math.round(h/50),0,10);});
+    function draw(){
+      const ctx=fitCanvas(cv,LW,LH),k=ctx.__fs;
+      ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+      const P=P0=mkPlot(40+30*k,44+16*k,LW-20,LH-(28+34*k),[10,20],[0,500]);
+      axes(ctx,P,{xs:1,ys:100,gx:1,gy:50,ylab:'높이(m)',xlab:'기온(℃)'});
+      clipPlot(ctx,P);
+      if(s.l){family(ctx,P,1/100,1,COL.dry,1.2,[],.75);family(ctx,P,1/200,1,COL.moist,1.2,[],.7);family(ctx,P,1/500,1,COL.dew,1.1,[],.55);}
+      function line(D,col){ctx.strokeStyle=col;ctx.lineWidth=3.5;ctx.lineJoin='round';ctx.beginPath();D.forEach((t,i)=>{const x=P.X(t),y=P.Y(H[i]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();D.forEach((t,i)=>dot(ctx,P.X(t),P.Y(H[i]),4.5,col,COL.panel));}
+      if(s.a)line(A,COL.siteA);if(s.b)line(B,COL.env);
+      if(s.hov!=null){const y=P.Y(H[s.hov]);ctx.setLineDash([4,4]);ctx.strokeStyle=alpha(COL.ink,.5);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.r,y);ctx.stroke();ctx.setLineDash([]);}
+      ctx.restore();
+      if(s.a)pill(ctx,'(가)',P.X(A[10])-10,P.Y(500)+14*k,{size:13,align:'right',bg:COL.siteA,fg:'#fff'});
+      if(s.b)pill(ctx,'(나)',P.X(B[10])+10,P.Y(500)+14*k,{size:13,align:'left',bg:COL.env,fg:'#fff'});
+      if(s.j){
+        if(s.a){pill(ctx,'0~300 m: 높이 올라갈수록 기온 상승(역전층) → 절대 안정',P.X(10.15),P.Y(120),{size:12,align:'left',bg:alpha(COL.panel,.94),fg:COL.siteA,stroke:COL.siteA});
+          pill(ctx,'300~500 m: 14 ℃/km > 10 → 절대 불안정',P.X(10.15),P.Y(420),{size:12,align:'left',bg:alpha(COL.panel,.94),fg:COL.siteA,stroke:COL.siteA});}
+        if(s.b)pill(ctx,'0~500 m: 6 ℃/km → 조건부 불안정',P.X(19.85),P.Y(s.a?260:300),{size:12,align:'right',bg:alpha(COL.panel,.94),fg:COL.env,stroke:COL.env});
+      }
+      if(!s.a&&!s.b)txt(ctx,'오른쪽에서 (가), (나) 지점을 켜 보세요',(P.l+P.r)/2,P.Y(250),{size:15,weight:700,align:'center',color:COL.muted});
+      // 범례
+      if(s.l){const lx=P.r-8,ly=P.t+12;ctx.fillStyle=alpha(COL.panel,.94);rr(ctx,lx-150*k,ly-6,150*k,72*k,10);ctx.fill();ctx.strokeStyle=COL.line;ctx.lineWidth=1;ctx.stroke();
+        [['건조 단열선',COL.dry],['습윤 단열선',COL.moist],['이슬점 감률선',COL.dew]].forEach((it,i)=>{const yy=ly+10*k+i*21*k;ctx.strokeStyle=it[1];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(lx-140*k,yy);ctx.lineTo(lx-112*k,yy);ctx.stroke();txt(ctx,it[0],lx-104*k,yy,{size:12,color:COL.ink2});});}
+      setText('inqRead',s.hov==null?'그래프를 누르거나 마우스를 올리면 그 높이의 기온을 읽어 줘요.':`높이 ${H[s.hov]} m · (가) ${A[s.hov].toFixed(1)} ℃ · (나) ${B[s.hov].toFixed(1)} ℃`);
+    }
+    return {draw};
+  })();
+  return {show(){},frame(dt){step(dt);draw();iq.draw();}};
+})();
+
+/* =========================================================
+   4. 안개의 생성
+   ========================================================= */
+const fog=(function(){
+  const cS=$('#cvFogS'),cD=$('#cvFogD'),cP=$('#cvFogP');
+  const DEF={rad:{T:14,Td:8},adv:{T:18,Td:13},up:{T:18,Td:14}};
+  const st={m:'rad',T:14,Td:8,p:0,play:false,hold:0,sp:3};
+  const COOL=10;
+  const stars=Array.from({length:40},()=>({x:Math.random(),y:Math.random(),s:Math.random()}));
+  const trees=[60,130,880,945];
+  const cf=p=>(1-Math.exp(-2.4*p))/(1-Math.exp(-2.4));
+  const Lm=()=>(st.T-st.Td)/8*1000;     // 활승: 상승 응결 고도(m)
+  function S(p){
+    if(st.m==='up'){const z=p*1000,L=Lm();let T,Td;
+      if(z<=L){T=st.T-z/100;Td=st.Td-z/500;}else{T=st.T-L/100-(z-L)/200;Td=T;}
+      return {T,Td,z,L,sat:z>=L-1e-6};}
+    const cool=COOL*cf(p),raw=st.T-cool,T=Math.max(raw,st.Td);
+    return {T,Td:st.Td,raw,cool,sat:raw<=st.Td+1e-6};
+  }
+  const prof=(z,cool)=>st.T-5*z/1000-cool*Math.exp(-z/(st.m==='rad'?160:110));
+  const dprof=z=>st.Td-5*z/1000;   // 위쪽은 기온 변화선과 나란하게(개념도)
+  function fogTop(cool){let top=0;for(let z=0;z<=1000;z+=5){if(prof(z,cool)<=dprof(z)+1e-6)top=z;else break;}return top;}
+
+  const PS=bindRange('fP',v=>pLabel(v),v=>{st.p=v;st.play=false;syncPlay();});
+  const TdS=bindRange('fTd',v=>fi(v)+' ℃',v=>{if(v>st.T){TdS.set(st.T);return;}st.Td=v;});
+  const TS=bindRange('fT',v=>v+' ℃',v=>{st.T=v;if(st.Td>v)TdS.set(v);});
+  bindRange('fSp',v=>['아주 느리게','느리게','보통','빠르게','아주 빠르게'][v-1],v=>{st.sp=v;}).set(3);
+  const syncPlay=playBtn('fPlay',st,['재생하기','일시정지']);
+  st.onPlay=()=>{if(st.play&&st.p>=1){st.p=0;st.hold=0;}};
+  $('#fReset').onclick=()=>{st.p=0;st.hold=0;};
+  $('#fEnd').onclick=()=>{st.p=1;st.play=false;syncPlay();};
+  function pLabel(p){
+    if(st.m==='rad'){const m=Math.round((18*60+p*720)/10)*10%1440;return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');}
+    if(st.m==='adv')return '진행 '+Math.round(p*100)+' %';
+    return Math.round(p*1000)+' m';
+  }
+  function setMode(m){st.m=m;st.p=0;st.hold=0;TS.set(DEF[m].T);TdS.set(DEF[m].Td);
+    setText('fPlab',m==='rad'?'시각':m==='adv'?'차가운 지표면 위로 이동':'산 사면을 따라 오른 높이');
+    setText('fTlab',m==='up'?'산기슭 공기의 기온':'처음 기온');
+    setText('fogDcap',m==='up'?'높이-기온 그래프: 공기 덩어리의 기온과 이슬점':'높이-기온 그래프: 기온 변화선과 이슬점 (지표면 부근)');
+    const how={rad:['crescent-moon','yellow','맑고 바람이 약한 밤 · 지표면의 복사 냉각','지표면이 식으며 그 위 공기가 냉각돼요. 수증기량은 그대로라 이슬점은 일정해요.'],
+      adv:['wind-blowing-face','blue','온난 습윤한 공기가 차가운 지표면 위로 이동','공기가 아래에서부터 냉각돼요. 수증기량은 그대로라 이슬점은 일정해요.'],
+      up:['mountain','green','산 사면을 따라 상승 · 단열 팽창','기온은 10 ℃/km, 이슬점은 2 ℃/km씩 낮아지다 같아지는 높이에서 포화돼요.']}[m];
+    setTile('fHowTile',how[0],how[1]);setText('fHow',how[2]);setText('fHowSub',how[3]);
+    PS.show(st.p);}
+  segGroup('data-fm',setMode);
+  setMode('rad');
+
+  function step(dt){
+    if(!st.play)return;
+    if(st.p>=1){st.hold+=dt;if(st.hold>2.2){st.p=0;st.hold=0;}return;}
+    st.p=Math.min(1,st.p+dt/[22,14,9,6,3.5][st.sp-1]);
+  }
+  /* --- 장면 --- */
+  function scene(s){
+    const LW=1000,LH=380,ctx=fitCanvas(cS,LW,LH),k=ctx.__fs,m=st.m,p=st.p;
+    if(m==='rad'){
+      const nt=1-Math.pow(2*p-1,4);
+      const g=ctx.createLinearGradient(0,0,0,300);g.addColorStop(0,mix(COL.sky,COL.night,.15+.8*nt));g.addColorStop(1,mix(COL.canvas,COL.night,.05+.6*nt));
+      ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+      ctx.fillStyle=`rgba(255,255,255,${0.85*nt})`;stars.forEach(t=>{ctx.beginPath();ctx.arc(t.x*LW,t.y*230,1+t.s*1.3,0,7);ctx.fill();});
+      ctx.fillStyle=mix('#FFF4C2','#FFFFFF',.3,0.2+0.8*nt);ctx.beginPath();ctx.arc(820,70,24,0,7);ctx.fill();
+      ground(ctx,0,300,LW,80);
+      trees.forEach(x=>{ctx.fillStyle=COL['land-edge'];ctx.fillRect(x-4,262,8,40);ctx.fillStyle=mix(COL.env,'#000',.35);ctx.beginPath();ctx.arc(x,248,24,0,7);ctx.fill();});
+      // 복사 냉각 화살표
+      if(p>0.02&&p<0.999){ctx.strokeStyle=alpha(COL.warm,.8);ctx.lineWidth=2.5;
+        for(let i=0;i<5;i++){const x0=300+i*95;ctx.beginPath();for(let y=0;y<=110;y+=3){const xx=x0+Math.sin((y+performance.now()/40)/10)*6;y?ctx.lineTo(xx,295-y):ctx.moveTo(xx,295);}ctx.stroke();arrow(ctx,x0,190,x0,176,alpha(COL.warm,.9),2.5,10);}
+        pill(ctx,'복사 냉각',490,160,{size:14,bg:alpha(COL.panel,.9),fg:COL.warm});}
+      const ft=fogTop(s.cool);
+      if(ft>0)fogBand(ctx,0,LW,300,Math.min(150,ft*0.55+18));
+      pill(ctx,pLabel(p),18,26,{size:15,align:'left',bg:alpha(COL.panel,.92)});
+      pill(ctx,'맑음 · 바람 거의 없음',18,26+30*k,{size:12,align:'left',bg:alpha(COL.panel,.92),fg:COL.muted});
+    }else if(m==='adv'){
+      sky(ctx,0,0,LW,LH);
+      const sea0=620;
+      ctx.fillStyle=COL.sea;ctx.fillRect(sea0,300,LW-sea0,80);
+      ctx.fillStyle=mix(COL.land,COL.cold,.35);ctx.fillRect(0,300,sea0,80);
+      ctx.strokeStyle=COL['land-edge'];ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,300);ctx.lineTo(sea0,300);ctx.stroke();
+      txt(ctx,'바다',sea0+(LW-sea0)/2,345,{size:15,weight:700,align:'center',color:'#fff'});
+      txt(ctx,'차가운 지표면 ('+fi(st.T-COOL)+' ℃)',sea0/2,345,{size:15,weight:700,align:'center',color:COL.ink});
+      const x=880-p*740;
+      const ft=fogTop(s.cool);
+      if(ft>0){const fh=Math.min(150,ft*0.55+18);fogBand(ctx,Math.max(0,x-120),Math.min(sea0+40,x+260),300,fh);}
+      const pr=52;const col=s.sat?COL.cloud:alpha(COL.warm,.18);
+      ctx.fillStyle=col;rr(ctx,x-pr*1.5,232-pr*.6,pr*3,pr*1.2,26);ctx.fill();ctx.strokeStyle=COL.warm;ctx.lineWidth=2;ctx.stroke();
+      txt(ctx,'온난 습윤 공기',x,224,{size:14,weight:700,align:'center',color:COL.ink});
+      txt(ctx,f1(s.T)+' ℃',x,246,{size:13,weight:700,align:'center',color:COL.warm});
+      arrow(ctx,x-pr*1.5-8,232,x-pr*1.5-62,232,COL.warm,4,13);
+      for(let i=0;i<3;i++){const ax=sea0+80+i*90;arrow(ctx,ax+40,140+i*20,ax-10,140+i*20,alpha(COL.muted,.6),2.5,9);}
+    }else upScene(ctx,s,k,p);
+  }
+  /* 활승 안개 장면 (입체 표현) */
+  const UA=[120,336],UB=[858,80];
+  const ux=q=>UA[0]+(UB[0]-UA[0])*Math.pow(q,0.72),uy=q=>lerp(UA[1],UB[1],q);
+  const utrees=Array.from({length:26},(_,i)=>({q:0.03+i*0.036+Math.sin(i*7.3)*0.01,d:14+Math.abs(Math.sin(i*3.7))*34,s:0.8+Math.abs(Math.sin(i*5.1))*0.5}));
+  const ridges=[[0,170,140,120,260,150,420,95,560,135,700,85,820,120,1000,100],[0,215,120,190,250,205,380,165,520,195,640,160,760,185,1000,170]];
+  function upScene(ctx,s,k,p){
+    const LW=1000,LH=380;
+    const g=ctx.createLinearGradient(0,0,0,LH);g.addColorStop(0,mix(COL.sky,COL.accent,.22));g.addColorStop(.75,COL.sky);g.addColorStop(1,COL.canvas);
+    ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+    const sg=ctx.createRadialGradient(90,40,5,90,40,180);sg.addColorStop(0,'rgba(255,248,220,.75)');sg.addColorStop(1,'rgba(255,248,220,0)');ctx.fillStyle=sg;ctx.fillRect(0,0,320,260);
+    // 먼 산줄기
+    ridges.forEach((r,i)=>{ctx.fillStyle=mix(COL.moist,COL.sky,i?0.62:0.78,i?.55:.45);ctx.beginPath();ctx.moveTo(0,LH);
+      for(let j=0;j<r.length;j+=2){const x=r[j],y=r[j+1];if(j===0)ctx.lineTo(x,y);else{const px=r[j-2],py=r[j-1];ctx.quadraticCurveTo(px+(x-px)*0.5,Math.min(py,y)-14,x,y);}}
+      ctx.lineTo(LW,LH);ctx.closePath();ctx.fill();});
+    // 바다
+    const sea=ctx.createLinearGradient(0,330,0,LH);sea.addColorStop(0,mix(COL.sea,COL.sky,.25));sea.addColorStop(1,COL.sea);ctx.fillStyle=sea;ctx.fillRect(0,332,170,LH-332);
+    // 산
+    const N=60;const path=()=>{ctx.beginPath();ctx.moveTo(0,LH);ctx.lineTo(0,340);ctx.lineTo(70,340);ctx.quadraticCurveTo(100,338,UA[0],UA[1]);
+      for(let i=1;i<=N;i++){const q=i/N;ctx.lineTo(ux(q),uy(q)-Math.sin(q*23)*2.5);}
+      ctx.quadraticCurveTo(872,64,890,76);ctx.quadraticCurveTo(940,110,1000,150);ctx.lineTo(LW,LH);ctx.closePath();};
+    const mg=ctx.createLinearGradient(140,330,860,70);
+    mg.addColorStop(0,mix(COL.env,'#1F4A2C',.55));mg.addColorStop(.6,mix(COL.env,'#7FA88A',.45));mg.addColorStop(1,mix('#9DB5A3','#C9D3CC',.5));
+    path();ctx.fillStyle=mg;ctx.fill();
+    // 뒷면 그늘
+    ctx.save();path();ctx.clip();
+    ctx.fillStyle='rgba(15,45,28,.38)';ctx.beginPath();ctx.moveTo(886,70);ctx.lineTo(1000,148);ctx.lineTo(1000,LH);ctx.lineTo(905,LH);ctx.closePath();ctx.fill();
+    // 겹 능선(입체감)
+    for(let b=1;b<=4;b++){ctx.strokeStyle=`rgba(255,255,255,${0.10-b*0.015})`;ctx.lineWidth=10;ctx.beginPath();
+      for(let i=0;i<=N;i++){const q=i/N,x=ux(q)+b*18,y=uy(q)+b*26;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+    // 나무
+    utrees.forEach(t=>{const x=ux(t.q)+t.d*0.4,y=uy(t.q)+t.d,h=16*t.s,w=7*t.s;
+      ctx.fillStyle=mix(COL.env,'#0E2A18',.55);ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x+w,y);ctx.lineTo(x-w,y);ctx.closePath();ctx.fill();
+      ctx.fillStyle=mix(COL.env,'#FFFFFF',.15,.75);ctx.beginPath();ctx.moveTo(x,y-h);ctx.lineTo(x,y);ctx.lineTo(x-w,y);ctx.closePath();ctx.fill();});
+    ctx.restore();
+    ctx.strokeStyle=alpha('#FFFFFF',.55);ctx.lineWidth=2.5;ctx.beginPath();for(let i=0;i<=N;i++){const q=i/N,x=ux(q),y=uy(q)-Math.sin(q*23)*2.5;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+    // 상승 응결 고도
+    const tL=Math.min(1,s.L/1000);
+    if(s.L<=1000){const y=uy(tL);ctx.save();ctx.setLineDash([7,6]);ctx.strokeStyle=alpha(COL.ink,.7);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(LW,y);ctx.stroke();ctx.restore();
+      pill(ctx,'상승 응결 고도 '+Math.round(s.L)+' m',14,y-15*k,{size:12,align:'left',bg:alpha(COL.panel,.92)});}
+    // 바람(사면을 따라)
+    const tt=performance.now()/1000;
+    for(let i=0;i<3;i++){const q0=((tt*0.12+i/3)%1)*0.85,q1=q0+0.12;ctx.strokeStyle=alpha('#FFFFFF',.7*Math.sin(Math.PI*((q0/0.85))));ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();
+      for(let q=q0;q<=q1;q+=0.01){const x=ux(q)-6,y=uy(q)-48-i*10;q===q0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();}
+    // 활승 안개(사면에 붙은 구름)
+    if(p>tL){const list=[];for(let t=tL;t<=p+1e-9;t+=0.024)list.push(t);
+      list.forEach((t,i)=>{const x=ux(t),y=uy(t)-14,r=28+9*Math.sin(t*41)+Math.min(1,(p-t)*12)*6;
+        const sh=ctx.createRadialGradient(x+6,y+9,r*.2,x+6,y+9,r*1.15);sh.addColorStop(0,alpha(COL['cloud-edge'],.55));sh.addColorStop(1,alpha(COL['cloud-edge'],0));
+        ctx.fillStyle=sh;ctx.beginPath();ctx.arc(x+6,y+9,r*1.15,0,7);ctx.fill();});
+      list.forEach((t,i)=>{const x=ux(t),y=uy(t)-14,r=28+9*Math.sin(t*41)+Math.min(1,(p-t)*12)*6;
+        const cg=ctx.createRadialGradient(x-r*.35,y-r*.4,r*.1,x,y,r);cg.addColorStop(0,`rgba(${COL.fogc},.97)`);cg.addColorStop(.55,`rgba(${COL.fogc},.88)`);cg.addColorStop(.85,`rgba(${COL.fogc},.35)`);cg.addColorStop(1,`rgba(${COL.fogc},0)`);
+        ctx.fillStyle=cg;ctx.beginPath();ctx.arc(x,y,r*1.15,0,7);ctx.fill();
+        if(i%2===0){const x2=x-r*0.7,y2=y+r*0.35,r2=r*0.6;const c2=ctx.createRadialGradient(x2-r2*.3,y2-r2*.35,1,x2,y2,r2);c2.addColorStop(0,`rgba(${COL.fogc},.9)`);c2.addColorStop(.7,`rgba(${COL.fogc},.5)`);c2.addColorStop(1,`rgba(${COL.fogc},0)`);ctx.fillStyle=c2;ctx.beginPath();ctx.arc(x2,y2,r2*1.2,0,7);ctx.fill();}});
+      const tm=(tL+p)/2;pill(ctx,'활승 안개',ux(tm)-20,uy(tm)-62,{size:13,bg:alpha(COL.panel,.9),fg:COL.ink});}
+    // 공기 덩어리(구)
+    const qx=ux(p),qy=uy(p)-34,R=19;
+    ctx.fillStyle='rgba(0,0,0,.16)';ctx.beginPath();ctx.ellipse(qx+6,uy(p)-3,R*0.95,R*0.3,0,0,7);ctx.fill();
+    const pg=ctx.createRadialGradient(qx-R*.4,qy-R*.45,R*.08,qx,qy,R);
+    pg.addColorStop(0,'rgba(255,255,255,.98)');pg.addColorStop(.55,s.sat?alpha(COL.cloud,.95):mix(COL.warm,'#FFFFFF',.55,.9));pg.addColorStop(1,s.sat?alpha(COL['cloud-edge'],.95):alpha(COL.warm,.85));
+    ctx.fillStyle=pg;ctx.beginPath();ctx.arc(qx,qy,R,0,7);ctx.fill();ctx.strokeStyle=alpha(COL.warm,.6);ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.ellipse(qx-R*.38,qy-R*.45,R*.28,R*.16,-0.6,0,7);ctx.fill();
+    if(p<0.97)arrow(ctx,qx+R+6,qy-6,qx+R+44,qy-24,COL.warm,4,12);
+    pill(ctx,f1(s.T)+' ℃ · '+Math.round(s.z)+' m',qx-R-8,qy-R-14*k,{size:12,align:'right',bg:alpha(COL.panel,.92),fg:COL.warm});
+    pill(ctx,'온난 습윤 공기 → 산 사면을 따라 상승 · 단열 팽창',16,24,{size:13,align:'left',bg:alpha(COL.panel,.85),fg:COL.ink2});
+  }
+  function fogBand(ctx,x0,x1,yGround,h){
+    ctx.save();ctx.beginPath();ctx.rect(0,0,2000,yGround+1);ctx.clip();
+    const n=Math.max(2,Math.ceil((x1-x0)/55));
+    for(let i=0;i<n;i++){const x=x0+(i+.5)*(x1-x0)/n,y=yGround-h*0.25,r=h*1.05+24+8*Math.sin(i*2.1);
+      const g=ctx.createRadialGradient(x,y,r*0.15,x,y,r);g.addColorStop(0,`rgba(${COL.fogc},.8)`);g.addColorStop(.6,`rgba(${COL.fogc},.45)`);g.addColorStop(1,`rgba(${COL.fogc},0)`);
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();}
+    ctx.restore();
+    pill(ctx,'안개',(x0+x1)/2,yGround-Math.min(h*0.45,40),{size:15,bg:alpha(COL.panel,.0),fg:COL.ink});
+  }
+  /* --- 높이-기온 그래프 --- */
+  function diag(s){
+    const LW=600,LH=500,ctx=fitDuo(cD,LW,LH),k=ctx.__fs;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const P=mkPlot(42+26*k,40+16*k,LW-16,LH-(26+34*k),[-5,30],[0,1000]);
+    axes(ctx,P,{xs:5,ys:200,ylab:'높이(m)',xlab:'기온(℃)'});
+    clipPlot(ctx,P);
+    if(st.m==='up'){
+      const L=s.L,Lc=Math.min(L,1000);
+      family(ctx,P,1/100,10,COL.dry,1.1,[7,5],.4);
+      ctx.globalAlpha=.3;seg(ctx,P,st.T,0,st.T-Lc/100,Lc,COL.dry,3.5);seg(ctx,P,st.Td,0,st.Td-Lc/500,Lc,COL.dew,3);if(L<1000)seg(ctx,P,st.T-Lc/100,Lc,st.T-Lc/100-(1000-Lc)/200,1000,COL.moist,3.5);ctx.globalAlpha=1;
+      const z=s.z,zl=Math.min(z,L);
+      if(z>0){seg(ctx,P,st.T,0,st.T-zl/100,zl,COL.dry,4.5);seg(ctx,P,st.Td,0,st.Td-zl/500,zl,COL.dew,4);}
+      if(z>L)seg(ctx,P,st.T-L/100,L,s.T,z,COL.moist,4.5);
+      ctx.restore();
+      if(L<=1000){const y=P.Y(L);ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle=COL.ink;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(P.l,y);ctx.lineTo(P.r,y);ctx.stroke();ctx.restore();
+        if(s.sat)pill(ctx,'안개 생성 '+Math.round(L)+' m',P.r-4,y-14*k,{size:12,align:'right',bg:COL.ink,fg:COL.panel});}
+      const y=P.Y(z);dot(ctx,P.X(s.Td),y,6,COL.dew,COL.panel);dot(ctx,P.X(s.T),y,7,COL.warm,COL.panel);
+      pill(ctx,'기온 '+f1(s.T),P.X(s.T)+10,y-12*k,{size:12,align:'left',bg:COL.warm,fg:'#fff'});
+      if(!s.sat)pill(ctx,'이슬점 '+f1(s.Td),P.X(s.Td)-10,y-12*k,{size:12,align:'right',bg:COL.dew,fg:COL.panel});
+    }else{
+      const ft=fogTop(s.cool);
+      if(ft>0){ctx.fillStyle=alpha(COL.muted,.18);ctx.fillRect(P.l,P.Y(ft),P.r-P.l,P.b-P.Y(ft));}
+      const path=(fn,col,w,dash,al)=>{ctx.globalAlpha=al||1;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();for(let z=0;z<=1000;z+=10){const x=P.X(fn(z)),y=P.Y(z);z?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;};
+      path(z=>prof(z,0),COL.env,3,[6,5],.4);
+      path(dprof,COL.dew,3,[]);
+      path(z=>Math.max(prof(z,s.cool),dprof(z)),COL.env,4.5,[]);
+      ctx.restore();
+      if(ft>0)pill(ctx,'안개층 (기온 = 이슬점)',P.r-4,P.Y(ft)-14*k,{size:12,align:'right',bg:COL.ink,fg:COL.panel});
+      const y=P.b;dot(ctx,P.X(s.Td),y,6,COL.dew,COL.panel);dot(ctx,P.X(s.T),y,7,COL.warm,COL.panel);
+      txt(ctx,'기온 변화선',P.X(prof(700,s.cool))+8,P.Y(700),{size:12,weight:700,color:COL.env});
+      txt(ctx,'이슬점',P.X(dprof(820))-8,P.Y(820),{size:12,weight:700,color:COL.dew,align:'right'});
+      if(!s.sat&&s.cool>0.3)txt(ctx,'처음',P.X(prof(450,0))+6,P.Y(450),{size:12,color:COL.muted});
+    }
+  }
+  /* --- 포화 수증기압 곡선 --- */
+  function svp(s){
+    const LW=600,LH=500,ctx=fitDuo(cP,LW,LH),k=ctx.__fs;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const P=mkPlot(42+26*k,40+16*k,LW-16,LH-(26+34*k),[-5,30],[0,45]);
+    axes(ctx,P,{xs:5,ys:10,ylab:'포화 수증기압(hPa)',xlab:'기온(℃)'});
+    clipPlot(ctx,P);
+    ctx.fillStyle=alpha(COL.moist,.08);ctx.beginPath();ctx.moveTo(P.l,P.t);for(let T=-5;T<=30.01;T+=0.5)ctx.lineTo(P.X(T),P.Y(esW(T)));ctx.lineTo(P.r,P.t);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=COL.moist;ctx.lineWidth=3.5;ctx.beginPath();for(let T=-5;T<=30.01;T+=0.5){const x=P.X(T),y=P.Y(esW(T));T>-5?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+    // 경로
+    const N=60,pts=[];for(let i=0;i<=N;i++){const q=S(st.p*i/N);pts.push([q.T,esW(q.Td)]);}
+    const s0=S(0);
+    ctx.globalAlpha=.4;dot(ctx,P.X(s0.T),P.Y(esW(s0.Td)),6,COL.warm);ctx.globalAlpha=1;
+    ctx.strokeStyle=COL.warm;ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.beginPath();pts.forEach((q,i)=>{const x=P.X(q[0]),y=P.Y(q[1]);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.stroke();ctx.setLineDash([]);
+    const e=esW(s.Td),x=P.X(s.T),y=P.Y(e);
+    if(!s.sat){ctx.setLineDash([3,4]);ctx.strokeStyle=alpha(COL.dew,.8);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(P.X(s.Td),y);ctx.lineTo(P.X(s.Td),P.b);ctx.stroke();ctx.setLineDash([]);}
+    ctx.restore();
+    txt(ctx,'과포화(응결)',P.X(3),P.Y(36),{size:13,weight:700,color:COL.moist});
+    txt(ctx,'불포화',P.X(24),P.Y(6),{size:13,weight:700,color:COL.muted});
+    txt(ctx,'포화 수증기압 곡선',P.X(20)+10,P.Y(esW(20))+8,{size:12,weight:700,color:COL.moist,align:'left',base:'top'});
+    if(!s.sat)pill(ctx,'이슬점 '+f1(s.Td)+'℃',P.X(s.Td),P.b-14*k,{size:12,bg:COL.dew,fg:COL.panel});
+    dot(ctx,x,y,8,s.sat?COL.moist:COL.warm,COL.panel);
+    pill(ctx,s.sat?'포화!':'현재 공기',x+12,y-14*k,{size:12,align:'left',bg:s.sat?COL.moist:COL.warm,fg:'#fff'});
+  }
+  function readout(s){
+    const rh=Math.min(100,esW(s.Td)/esW(s.T)*100);
+    setText('fRh',s.sat?'100 %':Math.round(rh)+' %');
+    setText('fRhSub','상대 습도 · 기온 '+f1(s.T)+' ℃ · 이슬점 '+f1(s.Td)+' ℃');
+    setTile('fTile',s.sat?'fog':'thermometer',s.sat?'green':'blue');
+    const nm={rad:'복사 안개',adv:'이류 안개',up:'활승 안개'}[st.m];
+    setHTML('fState',s.sat?`기온이 이슬점까지 내려가 <b>포화</b> → 수증기가 응결해 <b>${nm}</b> 생성!`
+      :(st.m==='up'?'불포화 · 상승할수록 단열 팽창으로 기온이 낮아져요.':'불포화 · 수증기량은 그대로인 채 기온만 낮아지고 있어요.')+` (기온 − 이슬점 = ${f1(s.T-s.Td)} ℃)`);
+    PS.show(st.p);
+  }
+  return {show(){},frame(dt){step(dt);const s=S(st.p);scene(s);diag(s);svp(s);readout(s);}};
+})();
+
+/* =========================================================
+   5. 강수 과정
+   ========================================================= */
+const rain=(function(){
+  const cv=$('#cvRain'),cvG=$('#cvIce'),LW=1000,LH=560;
+  const st={m:'coal',div:0.7,play:false,melt:true,band:false,t:0,iceT:-12};
+  const dES=T=>esW(T)-esI(T);
+  const TMAX=(()=>{let b=-40;for(let T=-40;T<=0;T+=0.1)if(dES(T)>dES(b))b=T;return b;})(),DMAX=dES(TMAX);
+  const rate=()=>dES(st.iceT)/DMAX;
+  const GY=520;  // 지면
+  const CL={x0:110,x1:610,top:110,base:400};
+  const inBox=(x,y)=>x>CL.x0+30&&x<CL.x1-30&&y>CL.top+26&&y<CL.base-6;
+  const puffs=(function(){const a=[];for(let i=0;i<9;i++){const f=i/8;a.push([CL.x0+40+f*(CL.x1-CL.x0-80),CL.top+50+Math.sin(f*Math.PI*2.2)*14+(1-Math.sin(f*Math.PI))*70,62+26*Math.sin(f*Math.PI)]);}
+    for(let i=0;i<7;i++){const f=i/6;a.push([CL.x0+60+f*(CL.x1-CL.x0-120),CL.top+150+Math.cos(i)*12,80]);}
+    for(let i=0;i<8;i++){const f=i/7;a.push([CL.x0+20+f*(CL.x1-CL.x0-40),CL.base-40,60+10*Math.sin(i*1.7)]);}return a;})();
+  function drawCloud(ctx){
+    ctx.save();ctx.beginPath();ctx.rect(0,0,LW,CL.base);ctx.clip();
+    ctx.fillStyle=COL['cloud-edge'];puffs.forEach(p=>{ctx.beginPath();ctx.arc(p[0]+3,p[1]+4,p[2]+3,0,7);ctx.fill();});
+    ctx.fillStyle=alpha(COL.cloud,1);puffs.forEach(p=>{ctx.beginPath();ctx.arc(p[0],p[1],p[2],0,7);ctx.fill();});
+    ctx.restore();
+    ctx.fillStyle=alpha(COL['cloud-edge'],.5);ctx.fillRect(CL.x0+10,CL.base-3,CL.x1-CL.x0-20,4);
+  }
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  /* ----- 병합설 ----- */
+  const RS=3,K=2.4,U=K*RS*RS;
+  let drops=[],col=null,rains=[],flashes=[],last=null,zoom=[];
+  const newSmall=()=>({x:rnd(CL.x0+32,CL.x1-32),y:rnd(CL.top+28,CL.base-8),r:Math.max(1.2,RS*(1+st.div*(Math.random()-0.5)*1.4)),j:Math.random()*10});
+  const newCol=()=>{const r0=RS*(1.15+1.7*st.div);return {x:rnd(CL.x0+90,CL.x1-90),y:CL.top+40,r0,r:r0,n:0};};
+  function initCoal(){drops=Array.from({length:300},newSmall);col=newCol();rains=[];flashes=[];last=null;
+    zoom=Array.from({length:22},()=>({x:rnd(-1,1),y:rnd(-1.3,1.3),r:rnd(.5,1.4)}));}
+  const vfall=r=>K*r*r-U;
+  function stepCoal(dt){
+    const t=st.t;
+    drops.forEach(d=>{d.vy=vfall(d.r)+Math.sin(t*1.3+d.j*6)*6;d.y+=d.vy*dt;d.x+=Math.sin(t*0.7+d.j*9)*6*dt;
+      if(d.y>CL.base-6)d.y=CL.top+28;if(d.y<CL.top+26)d.y=CL.base-8;d.x=clamp(d.x,CL.x0+30,CL.x1-30);});
+    const c=col;c.vy=Math.max(5,vfall(c.r));c.y+=c.vy*dt;
+    for(const d of drops){const dx=d.x-c.x,dy=d.y-c.y,rr2=(c.r+d.r)*1.6;
+      if(dx*dx+dy*dy<rr2*rr2&&c.vy>d.vy){c.r=Math.cbrt(c.r**3+d.r**3);c.n++;flashes.push({x:d.x,y:d.y,t:.35});Object.assign(d,newSmall());d.y=Math.random()<.5?CL.top+28:rnd(CL.top+28,CL.base-8);}}
+    if(c.y>CL.base){rains.push({x:c.x,y:c.y,r:c.r});last={ratio:c.r/c.r0,n:c.n};col=newCol();}
+    rains.forEach(r=>{r.y+=260*dt;});rains=rains.filter(r=>r.y<GY+20);
+    flashes.forEach(f=>f.t-=dt);flashes=flashes.filter(f=>f.t>0);
+    // 확대 보기 입자 (큰 물방울 기준 상대 운동)
+    const rel=clamp((c.vy-0)/90,0.05,1.6);
+    zoom.forEach(z=>{z.y-=rel*0.55*dt*(1.4-z.r*0.3);if(z.y<-1.35){z.y=1.35;z.x=rnd(-1,1);}});
+  }
+  function teardrop(ctx,x,y,r,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,y-r*2.1);ctx.bezierCurveTo(x+r*0.9,y-r*0.9,x+r,y,x+r,y+r*0.15);ctx.arc(x,y+r*0.15,r,0,Math.PI);ctx.bezierCurveTo(x-r,y,x-r*0.9,y-r*0.9,x,y-r*2.1);ctx.fill();}
+  function drawCoal(ctx,k){
+    // 0 ℃ 선(구름 위)
+    zeroLine(ctx,CL.top-26,'0 ℃');
+    drawCloud(ctx);
+    ctx.fillStyle=alpha(COL.moist,.75);drops.forEach(d=>{ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,7);ctx.fill();});
+    flashes.forEach(f=>{ctx.strokeStyle=alpha(COL.moist,f.t*2.4);ctx.lineWidth=2;ctx.beginPath();ctx.arc(f.x,f.y,8+(0.35-f.t)*30,0,7);ctx.stroke();});
+    const c=col;
+    ctx.strokeStyle=alpha(COL.warm,.5);ctx.setLineDash([3,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(c.x,CL.top+30);ctx.lineTo(c.x,c.y-c.r-3);ctx.stroke();ctx.setLineDash([]);
+    dot(ctx,c.x,c.y,c.r,COL.moist,COL.warm);
+    pill(ctx,'큰 물방울',c.x+c.r+10,c.y,{size:12,align:'left',bg:alpha(COL.panel,.9),fg:COL.warm});
+    rains.forEach(r=>teardrop(ctx,r.x,r.y,r.r,COL.moist));
+    txt(ctx,'빗방울',CL.x0+40,CL.base+40,{size:14,weight:700,color:COL.moist});
+    // 확대 보기
+    zoomBox(ctx,k,'확대해 보기',(ox,oy,R)=>{
+      const big=clamp(c.r*7,24,R*0.62);
+      ctx.fillStyle=alpha(COL.moist,.8);zoom.forEach(z=>{const x=ox+z.x*R*0.85,y=oy+z.y*R*0.8,r=z.r*7*(0.6+st.div*0.6);
+        if(Math.hypot(x-ox,y-oy)<big+r){z.y=1.35;z.x=rnd(-1,1);return;}ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();});
+      dot(ctx,ox,oy,big,COL.moist,COL.warm);
+      arrow(ctx,ox,oy+big+10,ox,oy+big+46,COL.warm,3,10);
+      txt(ctx,'큰 물방울이 빨리 떨어지며',ox,oy+R*0.98,{size:12,align:'center',color:COL.ink2,weight:600});
+      txt(ctx,'작은 물방울과 충돌·병합',ox,oy+R*0.98+17*k,{size:12,align:'center',color:COL.ink2,weight:600});
+    });
+  }
+  /* ----- 빙정설 ----- */
+  const Y40=215;
+  let ices=[],sc=[],ws=[],F=null,vap=[],iceLast='';
+  function zeroY(){return st.melt?330:GY-14;}
+  function initIce(){
+    ices=Array.from({length:34},()=>({x:rnd(CL.x0+40,CL.x1-40),y:rnd(CL.top+26,Y40-8),s:rnd(3,5),a:Math.random()*6}));
+    for(let i=0;i<10;i++)ices.push({x:rnd(CL.x0+40,CL.x1-40),y:rnd(Y40+10,zeroY()-10),s:rnd(3,4.5),a:Math.random()*6});
+    sc=Array.from({length:46},()=>({x:rnd(CL.x0+36,CL.x1-36),y:rnd(Y40+8,Math.min(CL.base,zeroY())-8),r0:rnd(2.6,4),r:0,j:Math.random()*9}));sc.forEach(d=>d.r=d.r0);
+    ws=st.melt?Array.from({length:26},()=>({x:rnd(CL.x0+30,CL.x1-30),y:rnd(334,CL.base-8),r:rnd(2.5,4)})):[];
+    F={x:360,y:268,s:4,st:'grow',vy:0,m:0};vap=[];
+  }
+  function stepIce(dt){
+    const t=st.t;
+    ices.forEach((c,i)=>{c.a+=dt*0.4;c.x+=Math.sin(t*0.6+i)*4*dt;});
+    sc.forEach(d=>{d.x+=Math.sin(t*0.8+d.j)*5*dt;});
+    if(F.st==='grow'){
+      sc.forEach(d=>{const dist=Math.hypot(d.x-F.x,d.y-F.y);if(dist<150&&d.r>0.7){d.r-=dt*0.32*(1-dist/170);if(Math.random()<dt*2.2)vap.push({x:d.x,y:d.y});}});
+      F.s=Math.min(16,F.s+dt*0.75*(0.08+0.92*rate()));
+      if(F.s>=16){F.st='fall';}
+    }else{
+      F.vy=Math.min(95,F.vy+60*dt);F.y+=F.vy*dt;F.x+=Math.sin(t*2)*10*dt;
+      if(st.melt&&F.y>zeroY())F.m=clamp((F.y-zeroY())/60,0,1);
+      if(F.y>GY-8){iceLast=st.melt?'비':'눈';initIce();}
+    }
+    vap.forEach(v=>{const dx=F.x-v.x,dy=F.y-v.y,d=Math.hypot(dx,dy)||1;v.x+=dx/d*90*dt;v.y+=dy/d*90*dt;v.d=d;});
+    vap=vap.filter(v=>v.d>F.s+2&&F.st==='grow');
+  }
+  function crystal(ctx,x,y,s,a,col,w){ctx.strokeStyle=col;ctx.lineWidth=w||1.6;ctx.lineCap='round';
+    for(let i=0;i<6;i++){const an=a+i*Math.PI/3,ux=Math.cos(an),uy=Math.sin(an);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+ux*s,y+uy*s);
+      if(s>6){const bx=x+ux*s*0.55,by=y+uy*s*0.55;for(const sd of[-1,1]){const an2=an+sd*0.7;ctx.moveTo(bx,by);ctx.lineTo(bx+Math.cos(an2)*s*0.32,by+Math.sin(an2)*s*0.32);}}ctx.stroke();}}
+  function drawIce(ctx,k){
+    drawCloud(ctx);
+    zeroLine(ctx,Y40,'−40 ℃');
+    zeroLine(ctx,zeroY(),'0 ℃');
+    ices.forEach(c=>crystal(ctx,c.x,c.y,c.s,c.a,COL.ice,1.5));
+    sc.forEach(d=>{if(d.r>0.5){ctx.fillStyle=alpha(COL.moist,.8);ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,7);ctx.fill();}});
+    ws.forEach(d=>{ctx.fillStyle=alpha(COL.moist,.8);ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,7);ctx.fill();});
+    ctx.fillStyle=alpha(COL.warm,.85);vap.forEach(v=>{ctx.beginPath();ctx.arc(v.x,v.y,1.8,0,7);ctx.fill();});
+    if(F.m<0.99)crystal(ctx,F.x,F.y,F.s*(1-F.m*0.6),st.t*0.3,mix(COL.ice,COL.accent,.5),2.6);
+    if(F.m>0.01){ctx.globalAlpha=F.m;teardrop(ctx,F.x,F.y,4+F.m*3,COL.moist);ctx.globalAlpha=1;}
+    if(F.st==='grow')pill(ctx,'빙정',F.x+F.s+10,F.y,{size:12,align:'left',bg:alpha(COL.panel,.9),fg:COL.accent});
+    else if(F.y>CL.base+10)pill(ctx,F.m>0.5?'녹아서 비':'눈',F.x+18,F.y,{size:13,align:'left',bg:alpha(COL.panel,.9),fg:F.m>0.5?COL.moist:COL.accent});
+    // 층 표지
+    pill(ctx,'빙정',CL.x1-34,(CL.top+Y40)/2+12,{size:12,align:'right',bg:alpha(COL.panel,.85),fg:COL.ice});
+    pill(ctx,'빙정 + 과냉각 물방울',CL.x1-34,(Y40+Math.min(zeroY(),CL.base))/2+20,{size:12,align:'right',bg:alpha(COL.panel,.85),fg:COL.moist});
+    if(st.melt)pill(ctx,'물방울',CL.x1-34,365,{size:12,align:'right',bg:alpha(COL.panel,.85),fg:COL.moist});
+    zoomBox(ctx,k,'확대해 보기',(ox,oy,R)=>{
+      const g=F.st==='grow'?F.s/16:1;
+      const near=[[-0.55,-0.5],[0.6,-0.35],[-0.5,0.55],[0.55,0.5]];
+      near.forEach((q,i)=>{const x=ox+q[0]*R,y=oy+q[1]*R,r=Math.max(4,26*(1-g*0.8));ctx.fillStyle=alpha(COL.moist,.75);ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();
+        if(F.st==='grow'){for(let j=0;j<3;j++){const f=((st.t*0.8+j/3+i*0.17)%1);const px=lerp(x,ox,f),py=lerp(y,oy,f);ctx.fillStyle=alpha(COL.warm,.9);ctx.beginPath();ctx.arc(px,py,2.6,0,7);ctx.fill();}
+          arrow(ctx,lerp(x,ox,.3),lerp(y,oy,.3),lerp(x,ox,.6),lerp(y,oy,.6),alpha(COL.warm,.7),2,8);}});
+      crystal(ctx,ox,oy,16+g*34,st.t*0.2,mix(COL.ice,COL.accent,.5),3);
+      txt(ctx,'과냉각 물방울 증발 → 수증기가',ox,oy+R*0.98,{size:12,align:'center',color:COL.ink2,weight:600});
+      txt(ctx,'빙정에 달라붙어 빙정 성장',ox,oy+R*0.98+17*k,{size:12,align:'center',color:COL.ink2,weight:600});
+    });
+  }
+  function zeroLine(ctx,y,label){ctx.save();ctx.setLineDash([3,5]);ctx.strokeStyle=COL.ink;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(78,y);ctx.lineTo(CL.x1+10,y);ctx.stroke();ctx.restore();
+    txt(ctx,label,72,y,{size:13,weight:700,align:'right',color:COL.ink});}
+  function zoomBox(ctx,k,title,fn){
+    const x0=650,y0=60,w=330,h=440,ox=x0+w/2,oy=y0+h*0.44,R=w*0.42;
+    ctx.fillStyle=COL.panel;rr(ctx,x0,y0,w,h,20);ctx.fill();ctx.strokeStyle=COL.line;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.save();rr(ctx,x0,y0,w,h,20);ctx.clip();ctx.fillStyle=alpha(COL.sky,.6);ctx.fillRect(x0,y0,w,h);fn(ox,oy,R);ctx.restore();
+    pill(ctx,title,x0+14,y0+22,{size:13,align:'left',bg:COL.accent,fg:'#fff'});
+    ctx.strokeStyle=alpha(COL.accent,.5);ctx.setLineDash([4,4]);ctx.lineWidth=1.5;
+    const src=st.m==='coal'?[col.x,col.y]:[F.x,F.y];
+    ctx.beginPath();ctx.moveTo(src[0]+10,src[1]);ctx.lineTo(x0,y0+60);ctx.stroke();ctx.setLineDash([]);
+  }
+  /* ----- 그림 Ⅲ-21 그래프 ----- */
+  let hov=null,PG=null;
+  pointerReader(cvG,(fx)=>{if(fx==null||!PG){hov=null;return;}const T=PG.ix(fx*LW);hov=(T>=-40&&T<=0)?T:null;});
+  cvG.addEventListener('pointerdown',()=>{if(hov!=null)iceTS.set(Math.round(hov));});
+  function graph(){
+    const W=1000,H=470,ctx=fitCanvas(cvG,W,H),k=ctx.__fs;
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,W,H);
+    const P=PG=mkPlot(60+26*k,50+16*k,W-(60+26*k),H-(26+34*k),[-40,0],[0,8]);
+    axes(ctx,P,{xs:10,ys:2,ylab:'포화 수증기압(hPa)',xlab:'기온(℃)',right:true});
+    const Yr=v=>P.b-v/0.4*(P.b-P.t);
+    ctx.font=`500 13px ${FONT}`;ctx.fillStyle=COL.muted;ctx.textAlign='left';ctx.textBaseline='middle';
+    for(let v=0;v<=0.4001;v+=0.1)ctx.fillText(v.toFixed(1),P.r+7,Yr(v));
+    ctx.font=`700 13px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('포화 수증기압 차(hPa)',P.r-10,P.t-6);
+    clipPlot(ctx,P);
+    const line=(fn,yf,col,w)=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();for(let T=-40;T<=0.001;T+=0.5){const x=P.X(T),y=yf(fn(T));T>-40?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();};
+    if(st.band){ctx.fillStyle=alpha(COL.ice,.35);ctx.beginPath();for(let T=-40;T<=0.001;T+=0.5)ctx.lineTo(P.X(T),P.Y(esW(T)));for(let T=0;T>=-40.001;T-=0.5)ctx.lineTo(P.X(T),P.Y(esI(T)));ctx.closePath();ctx.fill();}
+    line(esW,P.Y,COL.moist,3.2);line(esI,P.Y,COL.dry,3.2);line(dES,Yr,COL.diff,3.2);
+    {const x=P.X(st.iceT);ctx.strokeStyle=alpha(COL.accent,.75);ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x,P.t);ctx.lineTo(x,P.b);ctx.stroke();dot(ctx,x,Yr(dES(st.iceT)),7,COL.accent,COL.panel);}
+    {const x=P.X(TMAX),y=Yr(DMAX);ctx.setLineDash([3,4]);ctx.strokeStyle=alpha(COL.diff,.7);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,P.b);ctx.stroke();ctx.setLineDash([]);dot(ctx,x,y,6,COL.diff,COL.panel);}
+    if(hov!=null){const x=P.X(hov);ctx.setLineDash([4,4]);ctx.strokeStyle=alpha(COL.ink,.5);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,P.t);ctx.lineTo(x,P.b);ctx.stroke();ctx.setLineDash([]);
+      dot(ctx,x,P.Y(esW(hov)),5,COL.moist,COL.panel);dot(ctx,x,P.Y(esI(hov)),5,COL.dry,COL.panel);dot(ctx,x,Yr(esW(hov)-esI(hov)),5,COL.diff,COL.panel);}
+    ctx.restore();
+    pill(ctx,'과냉각 물방울',P.X(-6),P.Y(esW(-6))-26,{size:12,align:'right',bg:alpha(COL.panel,.92),fg:COL.moist});
+    pill(ctx,'빙정',P.X(-6)+10,P.Y(esI(-6))+18,{size:12,align:'left',bg:alpha(COL.panel,.92),fg:COL.dry});
+    pill(ctx,'차가 가장 큼 (약 '+fi(TMAX)+' ℃) → 빙정 성장 가장 활발',P.X(TMAX),Yr(DMAX)-24*k,{size:12,bg:COL.diff,fg:'#fff'});
+    pill(ctx,'과냉각 물방울과 빙정의 포화 수증기압 차',P.X(-27),Yr(dES(-27))-20*k,{size:12,bg:alpha(COL.panel,.92),fg:COL.diff});
+    if(st.band)pill(ctx,'빙정에 대해 과포화 · 과냉각 물방울에 대해 불포화',P.X(-30),P.Y(4.6),{size:12,bg:alpha(COL.panel,.92),fg:COL.ink,stroke:COL.ice});
+    setText('iceRead',hov==null?'그래프를 누르거나 마우스를 올리면 값을 읽어 줘요.':`${f1(hov)} ℃ · 과냉각 물방울 ${esW(hov).toFixed(2)} hPa · 빙정 ${esI(hov).toFixed(2)} hPa · 차 ${(esW(hov)-esI(hov)).toFixed(3)} hPa`);
+  }
+  /* ----- 조작 ----- */
+  bindRange('rDiv',v=>Math.round(v*100)+' %',v=>{st.div=v;if(st.m==='coal')initCoal();}).set(0.7);
+  const syncPlay=playBtn('rPlay',st,['재생하기','일시정지']);
+  $('#rReset').onclick=()=>{st.m==='coal'?initCoal():initIce();};
+  const band=$('#rBand');band.checked=st.band;band.onchange=()=>{st.band=band.checked;};
+  segGroup('data-melt',v=>{st.melt=v==='1';initIce();});
+  segGroup('data-rm',m=>{st.m=m;const ice=m==='ice';
+    $('#rDivBox').hidden=ice;$('#rMeltBox').hidden=!ice;$('#rBandBox').hidden=!ice;$('#iceFig').hidden=!ice;
+    ice?initIce():initCoal();});
+  const iceTS=bindRange('rIceT',v=>fi(v)+' ℃',v=>{st.iceT=v;});iceTS.set(-12);
+  /* 포화 수증기압 차가 클수록: 수증기 이동·빙정 성장 그림 */
+  const cvR=$('#cvRate');let rt={drop:1,ice:0.25,dots:[]};
+  function rateStep(dt){const r=rate();
+    if(Math.random()<dt*(2+26*r))rt.dots.push({f:0,y:(Math.random()-0.5)*0.9});
+    rt.dots.forEach(d=>d.f+=dt*(0.35+0.9*r));rt.dots=rt.dots.filter(d=>d.f<1);
+    rt.ice+=dt*0.09*r;rt.drop-=dt*0.06*r;if(rt.ice>1){rt.ice=0.25;rt.drop=1;}}
+  function rateDraw(){
+    const W=1000,{ctx,n}=sized(cvR,W,330,640),k=ctx.__fs,r=rate(),d=dES(st.iceT);
+    ctx.clearRect(0,0,W,2000);
+    txt(ctx,'포화 수증기압 차가 클수록?',8,22,{size:16,weight:800,color:COL.ink});
+    // 물방울 → 빙정
+    const dx=n?220:150,ix=n?720:470,cy=n?190:175;
+    const R=Math.max(14,46*Math.cbrt(Math.max(0.05,rt.drop)));
+    const gR=ctx.createRadialGradient(dx-R*.35,cy-R*.4,2,dx,cy,R);gR.addColorStop(0,'#FFFFFF');gR.addColorStop(1,COL.moist);
+    ctx.fillStyle=gR;ctx.beginPath();ctx.arc(dx,cy,R,0,7);ctx.fill();
+    txt(ctx,'과냉각 물방울',dx,cy+70,{size:13,weight:700,align:'center',color:COL.moist});
+    txt(ctx,'증발',dx,cy+90,{size:12,align:'center',color:COL.muted});
+    ctx.fillStyle=COL.warm;rt.dots.forEach(q=>{const x=lerp(dx+R,ix-30,q.f),y=cy+q.y*60*Math.sin(Math.PI*q.f);ctx.beginPath();ctx.arc(x,y,3.2,0,7);ctx.fill();});
+    const aw=2+10*r;ctx.globalAlpha=0.35+0.5*r;arrow(ctx,dx+R+18,cy-62,ix-50,cy-62,COL.warm,aw,12+aw);ctx.globalAlpha=1;
+    txt(ctx,'수증기 이동',(dx+ix)/2,cy-84,{size:13,weight:700,align:'center',color:COL.warm});
+    crystal(ctx,ix,cy,22+46*rt.ice,st.t*0.15,mix(COL.ice,COL.accent,.5),3.2);
+    txt(ctx,'빙정 (달라붙어 성장)',ix,cy+70,{size:13,weight:700,align:'center',color:COL.accent});
+    // 오른쪽 게이지
+    const gx=n?20:600,gw=n?940:370,gy=n?330:0;
+    ctx.save();ctx.translate(0,gy);
+    txt(ctx,'구름 속 기온 '+fi(st.iceT)+' ℃ · 포화 수증기압 차 '+d.toFixed(3)+' hPa',gx,70,{size:13,weight:700,color:COL.ink2});
+    ctx.fillStyle=COL.btn;rr(ctx,gx,90,gw,22,11);ctx.fill();
+    ctx.fillStyle=COL.diff;rr(ctx,gx,90,Math.max(22,gw*r),22,11);ctx.fill();
+    txt(ctx,'빙정 성장 빠르기 '+Math.round(r*100)+' %',gx,130,{size:13,weight:700,color:COL.diff});
+    txt(ctx,'(차가 가장 큰 약 '+fi(TMAX)+' ℃를 100 %로 했어요)',gx,130+20*k,{size:11,color:COL.muted});
+    const lines=['차가 클수록 공기가 빙정에 대해 더 크게 과포화되어','과냉각 물방울은 더 빨리 증발하고 수증기는 빙정에','더 많이 달라붙어요. → 빙정이 빨리 자라 눈·비가 잘 만들어져요.'];
+    lines.forEach((t,i)=>txt(ctx,t,gx,150+22*k+i*22*k,{size:13,color:COL.ink2}));ctx.restore();
+  }
+  initCoal();initIce();
+  function draw(){
+    const ctx=fitCanvas(cv,LW,LH),k=ctx.__fs;
+    sky(ctx,0,0,LW,LH);ground(ctx,0,GY,LW,LH-GY);
+    if(st.m==='coal'){drawCoal(ctx,k);
+      const cur=col.r/col.r0;
+      setText('rBig','반지름 '+cur.toFixed(2)+'배');
+      setText('rBigSub','떨어지는 큰 물방울 · 지금까지 합쳐진 작은 물방울 '+col.n+'개');
+      setTile('rTile','droplet','blue');
+      setHTML('rState',(last?`직전 빗방울: 반지름 <b>${last.ratio.toFixed(2)}배</b>로 성장(물방울 ${last.n}개 병합). `:'')+
+        (st.div<0.15?'물방울 크기가 비슷하면 낙하 속도 차가 작아 <b>잘 충돌하지 않아요</b>.':'크기가 다른 물방울은 낙하 속도가 달라 <b>충돌·병합</b>하며 자라요.'));
+    }else{drawIce(ctx,k);graph();rateDraw();
+      setText('rBig','빙정 크기 '+(F.s/4).toFixed(1)+'배');
+      setText('rBigSub',F.st==='grow'?'−40~0 ℃ 층에서 성장 중':'무거워져 떨어지는 중');
+      setTile('rTile',F.m>0.5?'umbrella-with-rain-drops':'snowflake',F.m>0.5?'blue':'');
+      setHTML('rState',F.st==='grow'?'같은 온도에서 과냉각 물방울의 포화 수증기압이 더 높아 → 과냉각 물방울은 <b>증발</b>, 수증기는 <b>빙정에 달라붙어</b> 빙정이 성장해요.'
+        :(st.melt?'빙정이 무거워져 떨어지다가 0 ℃보다 따뜻한 층에서 <b>녹아 비</b>가 돼요.':'빙정이 무거워져 떨어지며 녹지 않고 <b>눈</b>으로 내려요.')+(iceLast?` (직전 강수: ${iceLast})`:''));
+    }
+  }
+  return {show(){},frame(dt){if(st.play){st.t+=dt;st.m==='coal'?stepCoal(dt):stepIce(dt);}if(st.play&&st.m==='ice')rateStep(dt);draw();}};
+})();
+
+
+/* =========================================================
+   형성평가 (객관식: 버튼 / 주관식: 입력)
+   ========================================================= */
+(function(){
+  const Q={
+    adia:[
+      {t:'num',q:'지표면에서 기온이 25 ℃인 불포화 공기 덩어리가 2 km 상승하면 공기 덩어리의 기온은 몇 ℃가 될까요?',a:5,tol:0.05,unit:'℃',
+        hint:'불포화 공기 덩어리는 1 km 상승할 때마다 약 10 ℃씩 낮아져요.',exp:'건조 단열 감률 약 10 ℃/km → 25 − 10 × 2 = <b>5 ℃</b>'},
+      {t:'mc',q:'공기 덩어리가 하강할 때 일어나는 변화로 옳은 것은?',o:['부피 증가, 내부 온도 하강','부피 감소, 내부 온도 상승','부피 증가, 내부 온도 상승','부피 감소, 내부 온도 하강'],a:1,
+        hint:'하강하면 주위 기압이 높아져요.',exp:'하강 → 주위 기압이 높아 <b>압축</b> → 분자 운동 에너지가 증가해 <b>온도 상승</b>(단열 압축)'},
+      {t:'text',q:'공기 덩어리가 외부와 열을 주고받지 않으면서 부피 변화로 온도가 변하는 현상을 무엇이라고 할까요?',a:['단열변화'],unit:'',
+        hint:'‘열을 주고받지 않는다’는 뜻의 낱말이 들어가요.',exp:'<b>단열 변화</b> — 상승할 때는 단열 팽창, 하강할 때는 단열 압축'}
+    ],
+    svp:[
+      {t:'mc',q:'주전자에서 물이 끓을 때 보이는 하얀 김의 정체로 옳은 것은?',o:['수증기(기체)','작은 물방울(액체)','공기','연기'],a:1,
+        hint:'수증기는 눈에 보일까요?',exp:'수증기는 <b>눈에 보이지 않는 기체</b>예요. 하얀 김은 수증기가 식어 응결한 <b>작은 물방울(액체)</b>이에요.'},
+      {t:'num',q:'기온이 20 ℃(포화 수증기압 약 23.4 hPa)인 공기의 현재 수증기압이 11.7 hPa일 때 상대 습도는 몇 %일까요?',a:50,tol:0.6,unit:'%',
+        hint:'현재 수증기압 ÷ 포화 수증기압 × 100',exp:'11.7 ÷ 23.4 × 100 = <b>50 %</b>'},
+      {t:'mc',q:'수증기량이 일정한 공기를 계속 냉각시킬 때 일어나는 변화로 옳은 것은?',o:['포화 수증기압이 커진다.','상대 습도가 점점 낮아진다.','상대 습도가 높아지다가 이슬점에서 100 %가 되고, 더 냉각하면 응결이 일어난다.','이슬점이 계속 낮아진다.'],a:2,
+        hint:'그래프에서 점이 왼쪽으로 움직이면 곡선과 어떻게 되나요?',exp:'기온이 낮아지면 포화 수증기압이 작아져 상대 습도가 높아지고, <b>이슬점에서 포화(100 %)</b>된 뒤 더 냉각하면 남는 수증기가 <b>응결</b>해요. 수증기량이 일정하면 이슬점도 일정해요.'}
+    ],
+    lcl:[
+      {t:'num',q:'지표면에서 기온이 24 ℃, 이슬점이 16 ℃인 공기 덩어리가 상승할 때 상승 응결 고도는 몇 m일까요?',a:1000,tol:5,unit:'m',
+        hint:'H(m) = 125 × (T − T<sub>d</sub>)',exp:'125 × (24 − 16) = <b>1000 m</b>'},
+      {t:'mc',q:'상승 응결 고도에 도달한 공기 덩어리에 대한 설명으로 옳은 것은?',o:['기온이 이슬점보다 높다.','상대 습도가 100 %이다.','이후 기온이 약 10 ℃/km씩 낮아진다.','이후 이슬점이 약 2 ℃/km씩 낮아진다.'],a:1,
+        hint:'구름이 생기기 시작하는 높이예요.',exp:'기온 = 이슬점 → <b>상대 습도 100 %</b>. 이후에는 기온과 이슬점이 함께 습윤 단열 감률(약 5 ℃/km)로 낮아져요.'},
+      {t:'num',q:'지표면 기온이 20 ℃, 상승 응결 고도가 1000 m인 공기 덩어리가 2000 m까지 상승하면 기온은 몇 ℃일까요?',a:5,tol:0.05,unit:'℃',
+        hint:'1000 m까지는 건조 단열 감률, 그 위로는 습윤 단열 감률을 적용해요.',exp:'0~1000 m: 20 − 10 = 10 ℃ → 1000~2000 m: 10 − 5 = <b>5 ℃</b>'}
+    ],
+    foehn:[
+      {t:'num',q:'지표면에서 기온 20 ℃, 이슬점 12 ℃인 공기 덩어리가 높이 2000 m인 산을 넘어 반대편 지표면(0 m)까지 내려왔어요. 도착했을 때 기온은 몇 ℃일까요?',a:25,tol:0.05,unit:'℃',
+        hint:'상승 응결 고도 = 125 × (20 − 12) m. 그 위로는 습윤 단열 감률, 내려올 때는 건조 단열 감률을 써요.',exp:'상승 응결 고도 1000 m → 0~1000 m: 20 − 10 = 10 ℃ → 1000~2000 m: 10 − 5 = 5 ℃ → 내려올 때 2000 m 하강: 5 + 20 = <b>25 ℃</b>'},
+      {t:'mc',q:'산을 넘은 공기 덩어리의 기온이 산을 넘기 전보다 높아지는 까닭으로 옳은 것은?',o:['내려올 때 습윤 단열 감률에 따라 기온이 높아지기 때문','오를 때 응결이 일어나 습윤 단열 감률로 덜 냉각되고, 내려올 때는 건조 단열 감률로 기온이 높아지기 때문','산 정상에서 햇빛을 많이 받기 때문','내려올 때 수증기가 응결하며 응결열을 방출하기 때문'],a:1,
+        hint:'단열선도에서 오를 때와 내려올 때 기온 그래프의 기울기를 비교해 보세요.',exp:'구름 속에서는 응결열 때문에 <b>약 5 ℃/km</b>씩만 낮아지지만, 내려올 때는 <b>약 10 ℃/km</b>씩 높아져 출발할 때보다 기온이 높아져요.'},
+      {t:'mc',q:'우리나라에서 나타나는 높새바람에 대한 설명으로 옳은 것은?',o:['서풍이 불 때 태백산맥을 넘어 영동 지방으로 부는 바람','동풍이 불 때 태백산맥을 넘어 영서 지방으로 부는 고온 건조한 바람','남풍이 불 때 남해안으로 부는 고온 다습한 바람','북풍이 불 때 수도권으로 부는 한랭 건조한 바람'],a:1,
+        hint:'바다(동해)에서 불어와 태백산맥을 넘는 바람이에요.',exp:'높새바람은 <b>동풍</b>이 불 때 태백산맥을 넘어 <b>영서 지방</b>으로 부는 <b>고온 건조</b>한 바람이에요.'}
+    ],
+    stab:[
+      {t:'mc',q:'기온 감률이 7 ℃/km인 대기의 안정도는? (건조 단열 감률 10 ℃/km, 습윤 단열 감률 5 ℃/km)',o:['절대 안정','조건부 불안정','절대 불안정'],a:1,
+        hint:'기온 감률을 두 단열 감률과 비교해 보세요.',exp:'5 &lt; 7 &lt; 10 → <b>조건부 불안정</b> (불포화이면 안정, 포화이면 불안정)'},
+      {t:'num',q:'지표면 기온이 30 ℃, 기온 감률이 12 ℃/km인 대기에서 불포화 공기 덩어리를 1 km 상승시켰어요. 공기 덩어리는 주위 공기보다 몇 ℃ 높을까요?',a:2,tol:0.05,unit:'℃',
+        hint:'공기 덩어리는 10 ℃/km, 주위 공기는 12 ℃/km로 낮아져요.',exp:'공기 덩어리 30 − 10 = 20 ℃, 주위 30 − 12 = 18 ℃ → <b>2 ℃</b> 높아 계속 상승해요(절대 불안정).'},
+      {t:'mc',q:'절대 안정한 대기에서 공기 덩어리가 강제로 상승해 구름이 생길 때, 생기는 구름은?',o:['두께가 얇은 층운형 구름','두께가 두꺼운 적운형 구름'],a:0,
+        hint:'공기 덩어리가 주위보다 항상 차가워 연직 운동이 억제돼요.',exp:'연직 운동이 억제되어 <b>층운형 구름</b>이 생겨요.'}
+    ],
+    fog:[
+      {t:'mc',q:'바람이 거의 없고 맑은 날 밤, 지표면의 복사 냉각으로 기온이 이슬점까지 내려가 생기는 안개는?',o:['복사 안개','이류 안개','활승 안개','증발 안개'],a:0,
+        hint:'냉각의 원인을 이름으로 생각해 보세요.',exp:'<b>복사 안개</b> — 지표면의 복사 냉각으로 지표면 부근 공기가 냉각돼요.'},
+      {t:'mc',q:'활승 안개가 생성되는 원리로 옳은 것은?',o:['지표면의 복사 냉각','온난 습윤한 공기가 차가운 지표면 위로 이동','산 사면을 따라 상승하며 단열 팽창으로 냉각','수면에서 증발한 수증기량 증가'],a:2,
+        hint:'공기가 산 사면을 따라 올라가요.',exp:'활승 안개는 <b>단열 팽창으로 공기가 냉각</b>되어 생성돼요.'},
+      {t:'num',q:'산기슭에서 기온 18 ℃, 이슬점 14 ℃인 공기가 산 사면을 따라 상승할 때, 몇 m 높이부터 안개가 생기기 시작할까요?',a:500,tol:5,unit:'m',
+        hint:'상승 응결 고도 공식을 써 보세요.',exp:'125 × (18 − 14) = <b>500 m</b>'}
+    ],
+    rain:[
+      {t:'mc',q:'저위도 지방이나 여름철 중위도 지방의 강수 과정을 설명하는 이론은?',o:['병합설','빙정설'],a:0,
+        hint:'구름이 주로 0 ℃ 이상인 물방울로 이루어져 있어요.',exp:'<b>병합설</b> — 크기가 다른 물방울이 충돌·병합하며 성장해요.'},
+      {t:'mc',q:'−40~0 ℃에서 같은 온도일 때 포화 수증기압을 옳게 비교한 것은?',o:['과냉각 물방울 > 빙정','과냉각 물방울 = 빙정','과냉각 물방울 < 빙정'],a:0,
+        hint:'그림 Ⅲ-21의 두 곡선을 비교해 보세요.',exp:'<b>과냉각 물방울의 포화 수증기압이 더 높아요.</b> 그래서 공기가 빙정에 대해 과포화일 때 과냉각 물방울에 대해서는 불포화일 수 있어요.'},
+      {t:'text',q:'빙정과 과냉각 물방울이 함께 있을 때, 증발이 일어나 크기가 작아지는 것은 무엇일까요?',a:['과냉각물방울','물방울'],unit:'',
+        hint:'증발한 수증기는 빙정에 달라붙어요.',exp:'<b>과냉각 물방울</b>이 증발하고, 그 수증기가 빙정에 달라붙어 빙정이 성장해요.'}
+    ]
+  };
+  const norm=v=>String(v).replace(/[\s.()]/g,'');
+  const num=v=>parseFloat(String(v).replace(/[−–—]/g,'-').replace(/,/g,'').replace(/[^\d.\-]/g,''));
+  const CIRC='①②③④⑤';
+  document.querySelectorAll('[data-quiz]').forEach(card=>{
+    const key=card.dataset.quiz,items=Q[key];if(!items)return;
+    const state=items.map(()=>({tries:0,done:false,first:false}));
+    function render(){
+      card.innerHTML=`<p class="card-title">형성평가 <span class="blue">${items.length}문항</span></p>
+        <div class="qz-score"><span>첫 시도에 맞힌 문항 <b class="qz-n">0</b> / ${items.length}</span><button class="btn qz-reset">다시 풀기</button></div>`+
+        items.map((it,i)=>`<div class="qz" data-i="${i}"><p class="qz-q"><span class="num">${i+1}</span><span><span class="qz-tag">${it.t==='mc'?'객관식':'주관식'}</span>${it.q}</span></p>`+
+          (it.t==='mc'?`<div class="qz-opts">${it.o.map((o,j)=>`<button class="qz-opt" data-j="${j}">${CIRC[j]} ${o}</button>`).join('')}</div>`
+            :`<div class="ansrow"><input type="${it.t==='num'?'text':'text'}" ${it.t==='num'?'inputmode="decimal"':''} placeholder="답 입력" aria-label="${i+1}번 답 입력">${it.unit?`<span class="unit">${it.unit}</span>`:''}<button class="btn qz-chk">확인</button></div>`)+
+          `<p class="qz-fb" hidden></p></div>`).join('');
+      card.querySelector('.qz-reset').onclick=()=>{state.forEach(s=>{s.tries=0;s.done=false;s.first=false;});render();};
+      card.querySelectorAll('.qz').forEach(box=>{
+        const i=+box.dataset.i,it=items[i],fb=box.querySelector('.qz-fb');
+        const judge=(ok,el)=>{const s=state[i];if(s.done)return;s.tries++;
+          if(ok){s.done=true;s.first=s.tries===1;fb.className='qz-fb ok';fb.innerHTML='정답! '+it.exp;}
+          else if(s.tries>=2){s.done=true;fb.className='qz-fb no';fb.innerHTML='아쉬워요. 정답: '+it.exp;}
+          else{fb.className='qz-fb no';fb.innerHTML='다시 생각해 보세요. 힌트: '+it.hint;}
+          fb.hidden=false;
+          if(it.t==='mc'){if(el)el.classList.add(ok?'ok':'no');if(s.done){box.querySelectorAll('.qz-opt').forEach((b,j)=>{b.disabled=true;if(j===it.a)b.classList.add('ok');});}}
+          else if(s.done){box.querySelector('input').disabled=true;box.querySelector('.qz-chk').disabled=true;}
+          card.querySelector('.qz-n').textContent=state.filter(x=>x.first).length;};
+        if(it.t==='mc')box.querySelectorAll('.qz-opt').forEach(b=>b.onclick=()=>{if(b.classList.contains('no'))return;judge(+b.dataset.j===it.a,b);});
+        else{const inp=box.querySelector('input');
+          const go=()=>{const v=inp.value.trim();if(!v){fb.hidden=false;fb.className='qz-fb';fb.textContent='답을 입력해 주세요.';return;}
+            if(it.t==='num'){const x=num(v);if(isNaN(x)){fb.hidden=false;fb.className='qz-fb';fb.textContent='숫자로 입력해 주세요.';return;}judge(Math.abs(x-it.a)<=it.tol);}
+            else judge(it.a.some(a=>norm(v).includes(a)));};
+          box.querySelector('.qz-chk').onclick=go;inp.addEventListener('keydown',e=>{if(e.key==='Enter')go();});}
+      });
+    }
+    render();
+  });
+})();
+
+/* ---------- 탭 & 루프 ---------- */
+const mods={adia,svp,lcl,foehn,stab,fog,rain};const ORDER=Object.keys(mods);let active=ORDER[0];
+function setTab(id,save){
+  if(!mods[id])id=ORDER[0];active=id;
+  document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
+  ORDER.forEach(k=>{document.getElementById(k).hidden=k!==id;});
+  mods[id].show();
+  if(save){try{history.replaceState(null,'','#'+id);}catch(e){}}
+}
+document.querySelectorAll('[role=tab]').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab,true)));
+setTab((location.hash||'').slice(1)||ORDER[0]);
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{mods[active].frame(dt);}catch(e){console.error(e);}requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{onTheme();});
+})();
+</script>
+<script src="../pwa.js" defer></script>

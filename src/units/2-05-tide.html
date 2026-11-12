@@ -1,0 +1,1165 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#3182F6"><link rel="manifest" href="../manifest.webmanifest"><link rel="icon" href="../icons/icon-192.png"><link rel="apple-touch-icon" href="../icons/apple-touch-icon.png"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="지구과학 시뮬"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}.hdA h1 .subj{display:block;font-size:.58em;font-weight:700;color:var(--ink2);letter-spacing:-.02em;line-height:1.3;margin-bottom:2px}
+</style></head><body>
+<title>지구시스템과학 · Ⅱ-05 조석</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/*@@FONT_FACE@@*/
+/* 레이아웃: 단원 헤더 + 탭 3개. 각 탭은 [시뮬레이션 화면 | 조작 패널] 2단, 좁은 화면에서는 1단 */
+:root{
+  --bg:#EDF1F2; --panel:#FFFFFF; --ink:#14232D; --muted:#566872; --line:#D2DBDF;
+  --accent:#1F6F93; --accent-ink:#FFFFFF; --accent-soft:#DCEBF2;
+  --canvas:#F7FAFB; --sky:#E4EEF3;
+  --sea:#2E86B3; --sea-a:rgba(46,134,179,.5); --mud:#9B7443; --land:#D3C29C; --land-edge:#8C7A57;
+  --grav:#1B2833; --cent:#D9443A; --tide:#1D6BD6; --earth:#3D7F9E; --moon:#AEB4BA;
+  --siteC:#D9811A; --siteB:#D9443A; --siteA:#7C5CE6;
+  --font:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E161B; --panel:#152129; --ink:#E2EBEF; --muted:#90A3AD; --line:#2A3A44;
+    --accent:#5BB0D6; --accent-ink:#0B1418; --accent-soft:#1B3442;
+    --canvas:#111D24; --sky:#142630;
+    --sea:#4CA8D4; --sea-a:rgba(76,168,212,.42); --mud:#C2955C; --land:#5B5240; --land-edge:#A08C64;
+    --grav:#E2EBEF; --cent:#FF6B5E; --tide:#5AA6FF; --earth:#2F6C88; --moon:#C9CED4;
+    --siteC:#F0A33F; --siteB:#FF6B5E; --siteA:#A48BFF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E161B; --panel:#152129; --ink:#E2EBEF; --muted:#90A3AD; --line:#2A3A44;
+  --accent:#5BB0D6; --accent-ink:#0B1418; --accent-soft:#1B3442;
+  --canvas:#111D24; --sky:#142630;
+  --sea:#4CA8D4; --sea-a:rgba(76,168,212,.42); --mud:#C2955C; --land:#5B5240; --land-edge:#A08C64;
+  --grav:#E2EBEF; --cent:#FF6B5E; --tide:#5AA6FF; --earth:#2F6C88; --moon:#C9CED4;
+  --siteC:#F0A33F; --siteB:#FF6B5E; --siteA:#A48BFF;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.6 var(--font);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+h1{font-size:clamp(24px,3.2vw,34px);line-height:1.15;margin:6px 0 0;letter-spacing:-.02em;text-wrap:balance}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:5px}
+.tabs button{font:500 14px/1.2 var(--font);color:var(--muted);background:transparent;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;display:flex;gap:8px;align-items:center}
+.tabs button .n{font:500 12px var(--mono);opacity:.8}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.lab-head{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin-bottom:12px}
+.lab-head h2{font-size:21px;margin:0;letter-spacing:-.01em}
+.lab-head p{margin:0;color:var(--muted);max-width:70ch}
+.lab{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+@media (max-width:920px){.lab{grid-template-columns:minmax(0,1fr)}}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;min-width:0}
+.stage canvas{display:block;width:100%;height:auto;border-radius:8px;background:var(--canvas)}
+.note{font-size:13px;color:var(--muted);margin:8px 4px 0}
+.controls{display:flex;flex-direction:column;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.group{display:flex;flex-direction:column;gap:10px}
+.group + .group{border-top:1px solid var(--line);padding-top:14px}
+.group h3{margin:0;font-size:12px;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.ctl{display:flex;flex-direction:column;gap:4px}
+.ctl .row{display:flex;justify-content:space-between;gap:8px;font-size:14px}
+.ctl output{font:500 13px var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font:500 13px/1.2 var(--font);color:var(--ink);background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;font-size:14px}
+.checks label{display:flex;gap:7px;align-items:center;cursor:pointer}
+.chip{display:inline-block;width:18px;height:4px;border-radius:2px;flex:none}
+table.read{width:100%;border-collapse:collapse;font-size:14px}
+table.read th,table.read td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+table.read th:first-child,table.read td:first-child{text-align:left}
+table.read thead th{font-size:12px;color:var(--muted);font-weight:500}
+table.read td{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:13px}
+table.read td:first-child{font-family:var(--font);font-weight:500}
+.big{font:500 15px/1.5 var(--font)}
+.big b{font-family:var(--mono)}
+.formula{font:500 13px var(--mono);background:var(--accent-soft);border-radius:8px;padding:8px 10px}
+.qs{margin:0;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.info{font-size:14px;background:var(--accent-soft);border-radius:8px;padding:10px 12px;min-height:84px}
+.info b{font-family:var(--mono);font-weight:500}
+.gl-host{position:relative;width:100%;border-radius:8px;overflow:hidden;background:var(--canvas);touch-action:none;cursor:grab;min-height:200px}
+.gl-host:active{cursor:grabbing}
+.gl-host canvas{display:block}
+.gl-clock{position:absolute;left:12px;top:10px;font:500 13px var(--mono);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;pointer-events:none}
+.gl-hint{position:absolute;right:12px;bottom:10px;font-size:12px;color:var(--muted);pointer-events:none}
+.gl-error{padding:40px 20px;text-align:center;color:var(--muted)}
+.charts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+@media (max-width:760px){.charts{grid-template-columns:minmax(0,1fr)}}
+.chart{border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}
+.chart-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:4px 8px;font-size:14px;font-weight:500}
+.chart-top .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.badge{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;border:1px solid currentColor}
+.chart canvas{display:block;width:100%;height:auto;margin-top:4px}
+.chart .sub{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.chart .sub b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+#cvForce{touch-action:none}
+.real{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.real-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:920px){.real-grid{grid-template-columns:minmax(0,1fr)}}
+.real figure{margin:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.real canvas{display:block;width:100%;height:auto;border-radius:8px;background:var(--canvas);touch-action:pan-y}
+.real-top{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin-bottom:10px}
+.real-top .ctl{flex:1;min-width:180px}
+.real-read{font:500 13px var(--mono);margin:8px 4px 0;min-height:1.5em}
+.real figcaption{font-size:13px;color:var(--muted);margin:8px 4px 0}
+.tide-mini{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.tide-mini-top{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:14px;font-weight:500}
+.muted-s{font-size:12px;font-weight:400;color:var(--muted)}
+.tide-mini canvas{display:block;width:100%;height:auto;margin-top:4px}
+.tide-state{display:flex;flex-direction:column;gap:2px;border-radius:10px;padding:12px 14px;background:var(--accent-soft)}
+.tide-state b{font-size:22px;letter-spacing:-.01em;color:var(--accent)}
+.tide-state span{font-size:14px;color:var(--muted)}
+.terms{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}
+.terms dt{font-weight:700}
+.terms dd{margin:0;color:var(--muted)}
+.brand{display:flex;align-items:center;gap:16px;min-width:0}
+.brand .logo{width:72px;height:auto;flex:none}
+
+@media (prefers-reduced-motion: reduce){*{scroll-behavior:auto}}
+.em{display:inline-block;width:1.3em;height:1.3em;background:center/contain no-repeat;vertical-align:-.28em;flex:none}
+/*@@EMOJI_CSS@@*/
+
+/* ===== 토스 스타일 시안 ===== */
+:root{
+  --bg:#F2F4F6; --panel:#FFFFFF; --ink:#191F28; --ink2:#333D4B; --muted:#6B7684; --sub:#8B95A1; --line:#E5E8EB;
+  --accent:#3182F6; --accent-ink:#FFFFFF; --accent-soft:#E8F3FF; --accent-deep:#1B64DA;
+  --btn:#F2F4F6; --btn-ink:#4E5968; --chip-on:#FFFFFF;
+  --canvas:#F9FAFB; --sky:#EAF2FE; --sea:#3D8BFD; --sea-a:rgba(61,139,253,.32); --mud:#B98A55; --land:#F3E4C8; --land-edge:#C9A877;
+  --grav:#191F28; --cent:#F04452; --tide:#1B64DA; --earth:#4A90E2; --moon:#B0B8C1;
+  --hero1:#FFFFFF; --hero2:#D6E8FF; --hero3:#86B8FF; --hero-big:#FFFFFF;
+  --tile-blue:#E8F3FF; --tile-red:#FFEEF0; --tile-gray:#F2F4F6; --tile-yellow:#FFF6DC; --tile-green:#E5F8EE;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#101013; --panel:#1E1E24; --ink:#ECECEE; --ink2:#C9C9CF; --muted:#9E9EA6; --sub:#7E7E87; --line:#2C2C35;
+  --accent:#3B8BFF; --accent-ink:#FFFFFF; --accent-soft:#1B2B46; --accent-deep:#7DB3FF;
+  --btn:#2C2C35; --btn-ink:#C9C9CF; --chip-on:#2C2C35;
+  --canvas:#18181D; --sky:#1A2232; --sea:#3B82F6; --sea-a:rgba(59,130,246,.38); --mud:#C79A62; --land:#4A4136; --land-edge:#A08A68;
+  --grav:#ECECEE; --cent:#FF6B76; --tide:#6AA8FF; --earth:#3A78C2; --moon:#C9CED4;
+  --hero1:#101013; --hero2:#172846; --hero3:#2A5BB0; --hero-big:#FFFFFF;
+  --tile-blue:#1B2B46; --tile-red:#3A2026; --tile-gray:#2C2C35; --tile-yellow:#3A3320; --tile-green:#1C3528;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101013; --panel:#1E1E24; --ink:#ECECEE; --ink2:#C9C9CF; --muted:#9E9EA6; --sub:#7E7E87; --line:#2C2C35;
+  --accent:#3B8BFF; --accent-ink:#FFFFFF; --accent-soft:#1B2B46; --accent-deep:#7DB3FF;
+  --btn:#2C2C35; --btn-ink:#C9C9CF; --chip-on:#2C2C35;
+  --canvas:#18181D; --sky:#1A2232; --sea:#3B82F6; --sea-a:rgba(59,130,246,.38); --mud:#C79A62; --land:#4A4136; --land-edge:#A08A68;
+  --grav:#ECECEE; --cent:#FF6B76; --tide:#6AA8FF; --earth:#3A78C2; --moon:#C9CED4;
+  --hero1:#101013; --hero2:#172846; --hero3:#2A5BB0; --hero-big:#FFFFFF;
+  --tile-blue:#1B2B46; --tile-red:#3A2026; --tile-gray:#2C2C35; --tile-yellow:#3A3320; --tile-green:#1C3528;
+  color-scheme:dark}
+body{letter-spacing:-.01em}
+.wrap{max-width:1180px}
+/* 공통: 카드·버튼 */
+header{display:block;border:0;padding:0;margin-bottom:22px}
+.stage,.controls{border:0;border-radius:24px;padding:16px}
+.stage canvas{border-radius:16px}
+.btn{font:600 15px/1.2 var(--font);background:var(--btn);color:var(--btn-ink);border:0;border-radius:12px;padding:11px 15px}
+.btn.primary{background:var(--accent);color:var(--accent-ink)}
+.btn:hover{filter:brightness(.97)}
+.btn:active{transform:scale(.98)}
+.btn-xl{width:100%;font-size:17px;padding:17px;border-radius:16px;display:flex;justify-content:center;gap:8px;align-items:center}
+.lab-head{margin:4px 4px 14px;gap:4px 14px}
+.lab-head h2{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.lab-head p{color:var(--muted);font-size:15px}
+.group h3{font-size:17px;font-weight:700;letter-spacing:-.02em;color:var(--ink)}
+.group + .group{border-top:0;padding-top:6px}
+.ctl .row{font-size:15px;color:var(--ink2)}
+.ctl output{font:600 15px var(--font);color:var(--accent)}
+input[type=range]{accent-color:var(--accent);height:22px}
+.tide-mini{border:0;background:var(--canvas);border-radius:16px;padding:12px 14px}
+/* 토스식 카드 스택 */
+.t-cards{background:transparent;padding:0;gap:12px}
+.card{background:var(--panel);border-radius:24px;padding:22px 20px;display:flex;flex-direction:column;gap:16px}
+.card-title{font-size:18px;font-weight:700;letter-spacing:-.02em;margin:0}
+.card-title .blue{color:var(--accent)}
+.card-sub{font-size:14px;color:var(--sub);margin:-10px 0 0}
+.item{display:flex;align-items:center;gap:14px;min-width:0}
+.tile{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;flex:none;background:var(--tile-gray)}
+.tile .em{width:28px;height:28px}
+.tile.blue{background:var(--tile-blue)} .tile.red{background:var(--tile-red)} .tile.yellow{background:var(--tile-yellow)} .tile.green{background:var(--tile-green)}
+.item-text{display:flex;flex-direction:column;min-width:0;flex:1}
+.item-text b{font-size:22px;font-weight:700;letter-spacing:-.03em;color:var(--ink);font-variant-numeric:tabular-nums}
+.item-text span{font-size:14px;color:var(--sub)}
+.item-text.big b{font-size:28px}
+.item-text.small b{font-size:16px;letter-spacing:-.01em}
+.item .btn{flex:none}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.divider{height:1px;background:var(--line);margin:0 -20px}
+.qlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px}
+.qlist li{display:flex;gap:12px;align-items:flex-start;font-size:15px;color:var(--ink2);line-height:1.5}
+.qlist .num{flex:none;width:26px;height:26px;border-radius:9px;background:var(--accent-soft);color:var(--accent);font:700 14px/26px var(--font);text-align:center}
+/* 헤더: 칩 탭 */
+.hdA{display:flex;flex-direction:column;gap:16px}
+.hdA .top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.hdA .brandrow{display:flex;align-items:center;gap:12px;min-width:0}
+.hdA .brandrow img{width:52px;height:auto;flex:none}
+.hdA .eyebrow{font:600 14px var(--font);color:var(--accent);letter-spacing:0;text-transform:none}
+.hdA h1{font-size:clamp(24px,3vw,32px);font-weight:800;letter-spacing:-.035em;margin:2px 0 0}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.chips::-webkit-scrollbar{display:none}
+.tchip{flex:none;display:flex;align-items:center;gap:7px;font:500 16px var(--font);color:var(--muted);background:transparent;border:0;border-radius:14px;padding:10px 16px;cursor:pointer;white-space:nowrap}
+.tchip[aria-selected="true"]{background:var(--chip-on);color:var(--ink);font-weight:700;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+@media (prefers-reduced-motion: reduce){.cat .ct{transition:none}.btn:active{transform:none}}
+
+/* 2~4번 탭: 그룹마다 카드 */
+.controls:not(.t-cards){background:transparent;padding:0;gap:12px;border-radius:0}
+.controls:not(.t-cards) > .group{background:var(--panel);border-radius:24px;padding:22px 20px;gap:14px}
+.controls:not(.t-cards) > .group + .group{padding-top:22px}
+.group h3{display:flex;align-items:center;gap:8px}
+table.read th,table.read td{border-bottom:1px solid var(--line);padding:10px 4px}
+table.read thead th{color:var(--sub);font-weight:500}
+table.read td{font:600 15px var(--font);color:var(--ink)}
+table.read td:first-child{font-weight:600;color:var(--ink2)}
+.formula{font:600 14px var(--font);background:var(--accent-soft);color:var(--accent-deep);border-radius:14px;padding:12px 14px}
+.big{font:500 15px/1.6 var(--font);color:var(--ink2)} .big b{font:700 17px var(--font);color:var(--accent)}
+.info{background:var(--btn);border-radius:16px;padding:14px 16px;font-size:15px}
+.info b{font:700 15px var(--font);color:var(--ink)}
+.qs{font-size:15px;color:var(--ink2);gap:8px}
+.checks{gap:10px}
+.checks label{background:var(--btn);border-radius:12px;padding:9px 10px;font-size:14px}
+.chart{border:0;background:var(--canvas);border-radius:16px;padding:12px}
+.badge{border:0;background:var(--accent-soft);padding:4px 10px}
+.gl-host{border-radius:16px}
+.gl-clock{border:0;border-radius:12px;font:600 14px var(--font);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.real{border-top:0;padding-top:8px}
+.real figure{border:0;border-radius:24px;padding:16px}
+.real canvas{border-radius:16px}
+.real-read{font:600 14px var(--font);color:var(--ink2)}
+</style>
+<!-- 동적으로 쓰는 이모지: em-upwards-black-arrow em-downwards-black-arrow em-water-wave em-crab -->
+<div class="wrap">
+  <header>
+    <div class="hdA">
+      <div class="top">
+        <div class="brandrow">
+          <img src="@@LOGO@@" alt="상민T와 함께하는 지구과학 로고">
+          <div>
+            <div class="eyebrow"><a href="../subjects/ess.html" style="color:inherit;text-decoration:none">← 단원 목차</a> · 지구과학 체험형 시뮬레이션</div>
+            <h1><span class="subj">지구시스템과학</span>Ⅱ-05 조석</h1>
+          </div>
+        </div>
+      </div>
+      <nav class="chips" role="tablist" aria-label="실험 선택">
+        <button role="tab" id="tab-tide" data-tab="tide" class="tchip" aria-selected="true"><i class="em em-water-wave"></i>밀물과 썰물?</button>
+        <button role="tab" id="tab-flat" data-tab="flat" class="tchip" aria-selected="false"><i class="em em-beach-with-umbrella"></i>경사와 갯벌</button>
+        <button role="tab" id="tab-force" data-tab="force" class="tchip" aria-selected="false"><i class="em em-full-moon-symbol"></i>기조력 벡터</button>
+        <button role="tab" id="tab-pattern" data-tab="pattern" class="tchip" aria-selected="false"><i class="em em-earth-globe-asia-australia"></i>위도별 조석 3D</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 0. 밀물과 썰물 -->
+  <section id="tide" role="tabpanel" aria-labelledby="tab-tide">
+    <div class="lab-head">
+      <h2>밀물과 썰물?</h2>
+      <p>바닷물이 육지 쪽으로 밀려왔다가 빠져나가는 것은 해수면이 높아졌다 낮아지기 때문이다.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvTide" width="1000" height="520" style="aspect-ratio:1000/520" aria-label="해수면 상승과 하강에 따른 밀물과 썰물 단면"></canvas>
+        <div class="tide-mini">
+          <div class="tide-mini-top"><span>시간에 따른 해수면 높이</span><span class="muted-s">하루(약 24시간 50분) 동안</span></div>
+          <canvas id="cvTideMini" width="1000" height="190" style="aspect-ratio:1000/190" aria-label="시간에 따른 해수면 높이 그래프"></canvas>
+        </div>
+      </div>
+      <div class="controls t-cards">
+        <div class="card">
+          <p class="card-title">지금 바다는</p>
+          <div class="item">
+            <div class="tile blue"><i class="em em-water-wave" id="tIcon"></i></div>
+            <div class="item-text big" id="tState"><b></b><span></span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="item">
+            <div class="tile"><i class="em em-straight-ruler"></i></div>
+            <div class="item-text"><b id="tH"></b><span>평균 해수면보다</span></div>
+          </div>
+          <div class="item">
+            <div class="tile yellow"><i class="em em-crab"></i></div>
+            <div class="item-text"><b id="tF"></b><span>드러난 갯벌</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="item">
+            <div class="tile"><i class="em em-stopwatch"></i></div>
+            <div class="item-text"><b id="tTime-v"></b><span>경과 시간</span></div>
+          </div>
+          <div class="pair"><button class="btn" id="tHigh">만조로 이동</button><button class="btn" id="tLow">간조로 이동</button></div>
+          <input type="range" id="tTime" min="0" max="24.84" step="0.01" aria-label="경과 시간">
+          <div class="ctl"><div class="row"><label for="tSpeed">재생 속도</label><output id="tSpeed-v"></output></div><input type="range" id="tSpeed" min="0.5" max="6" step="0.5"></div>
+          <button class="btn primary btn-xl" id="tPlay">일시정지</button>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile blue"><i class="em em-upwards-black-arrow"></i></div><div class="item-text small"><b>밀물</b><span>해수면이 높아지며 바닷물이 육지 쪽으로 밀려옴</span></div></div>
+          <div class="item"><div class="tile"><i class="em em-downwards-black-arrow"></i></div><div class="item-text small"><b>썰물</b><span>해수면이 낮아지며 바닷물이 바다 쪽으로 빠져나감</span></div></div>
+          <div class="item"><div class="tile green"><i class="em em-round-pushpin"></i></div><div class="item-text small"><b>만조 · 간조</b><span>해수면이 가장 높을 때 · 가장 낮을 때</span></div></div>
+          <div class="item"><div class="tile yellow"><i class="em em-straight-ruler"></i></div><div class="item-text small"><b>조차</b><span>만조 해수면과 간조 해수면의 높이 차</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">2개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>하루 동안 만조와 간조는 각각 몇 번 나타날까?</li>
+            <li><span class="num">2</span>갯벌은 언제 드러나고 언제 바닷물에 잠길까?</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. 경사와 갯벌 -->
+  <section id="flat" role="tabpanel" aria-labelledby="tab-flat" hidden>
+    <div class="lab-head">
+      <h2>해안 경사와 갯벌 면적</h2>
+      <p>조차가 같아도 경사가 완만할수록 만조선과 간조선 사이 거리가 길어져 갯벌이 넓게 드러난다.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvFlat" width="1000" height="480" style="aspect-ratio:1000/480" aria-label="서해와 동해 해안 단면 시뮬레이션"></canvas>
+        <p class="note">한반도 동서 단면입니다. 가로·세로 축척을 다르게 해 경사를 과장했습니다. 밀물·썰물에 따라 해수면이 오르내립니다.</p>
+      </div>
+      <div class="controls">
+        <div class="group">
+          <h3><i class="em em-beach-with-umbrella"></i>서해</h3>
+          <div class="ctl"><div class="row"><label for="wSlope">해안 경사</label><output id="wSlope-v"></output></div><input type="range" id="wSlope" min="0" max="1000" step="1"></div>
+          <div class="ctl"><div class="row"><label for="wRange">조차</label><output id="wRange-v"></output></div><input type="range" id="wRange" min="0.2" max="10" step="0.1"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-water-wave"></i>동해</h3>
+          <div class="ctl"><div class="row"><label for="eSlope">해안 경사</label><output id="eSlope-v"></output></div><input type="range" id="eSlope" min="0" max="1000" step="1"></div>
+          <div class="ctl"><div class="row"><label for="eRange">조차</label><output id="eRange-v"></output></div><input type="range" id="eRange" min="0.2" max="10" step="0.1"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-sparkles"></i>빠른 설정</h3>
+          <div class="btns">
+            <button class="btn" id="presetSame">조차 같게 (4 m)</button>
+            <button class="btn" id="presetReal">실제와 비슷하게</button>
+            <button class="btn primary" id="flatPlay">일시정지</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-straight-ruler"></i>측정값</h3>
+          <table class="read">
+            <thead><tr><th></th><th>경사</th><th>조차</th><th>갯벌 폭</th></tr></thead>
+            <tbody>
+              <tr><td>서해</td><td id="rW1"></td><td id="rW2"></td><td id="rW3"></td></tr>
+              <tr><td>동해</td><td id="rE1"></td><td id="rE2"></td><td id="rE3"></td></tr>
+            </tbody>
+          </table>
+          <div class="big" id="flatRatio"></div>
+          <div class="formula">갯벌 폭 ≈ 조차 ÷ tan(경사)</div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-electric-light-bulb"></i>탐구 질문</h3>
+          <ol class="qs">
+            <li>조차를 같게 두고 경사만 바꾸면 갯벌 폭은 어떻게 변할까?</li>
+            <li>‘실제와 비슷하게’를 누르면 차이가 더 커지는 까닭은?</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 기조력 벡터 -->
+  <section id="force" role="tabpanel" aria-labelledby="tab-force" hidden>
+    <div class="lab-head">
+      <h2>기조력 = 달의 인력 + 원심력</h2>
+      <p>원심력은 모든 지점에서 크기·방향이 같고, 달의 인력은 달에 가까울수록 크다. 두 힘을 더하면 달 쪽과 반대쪽에서 바깥을 향하는 기조력이 남는다.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvForce" width="1000" height="640" style="aspect-ratio:1000/640" aria-label="지구 표면 각 지점의 기조력 벡터"></canvas>
+        <p class="note">달을 끌어서 위치를 바꿀 수 있습니다. 지구 표면의 점에 마우스를 올리면 그 지점의 힘을 보여줍니다. 화면 속 지구–달 거리는 축척이 아닙니다.</p>
+      </div>
+      <div class="controls">
+        <div class="group">
+          <h3><i class="em em-full-moon-symbol"></i>달</h3>
+          <div class="ctl"><div class="row"><label for="fAng">달의 위치(각도)</label><output id="fAng-v"></output></div><input type="range" id="fAng" min="0" max="359" step="1"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-eyes"></i>표시</h3>
+          <div class="checks">
+            <label><input type="checkbox" id="showG"><span class="chip" style="background:var(--grav)"></span>달의 인력</label>
+            <label><input type="checkbox" id="showC"><span class="chip" style="background:var(--cent)"></span>원심력</label>
+            <label><input type="checkbox" id="showT"><span class="chip" style="background:var(--tide)"></span>기조력</label>
+            <label><input type="checkbox" id="showO"><span class="chip" style="background:var(--sea)"></span>해수면 모양</label>
+            <label><input type="checkbox" id="showB"><span class="chip" style="background:var(--muted)"></span>공통 질량 중심</label>
+          </div>
+          <div class="ctl"><div class="row"><label for="fMag">기조력 화살표 확대</label><output id="fMag-v"></output></div><input type="range" id="fMag" min="1" max="3" step="0.5"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-round-pushpin"></i>선택한 지점</h3>
+          <div class="info" id="fInfo"></div>
+          <div class="big" id="fSummary"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-electric-light-bulb"></i>탐구 질문</h3>
+          <ol class="qs">
+            <li>원심력 화살표들은 왜 모두 같은 모양일까?</li>
+            <li>달 반대쪽 해수면이 높아지는 까닭을 두 힘으로 설명해 보자.</li>
+            <li>달 쪽과 반대쪽의 기조력 크기·방향을 비교해 보자.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 위도별 조석 3D -->
+  <section id="pattern" role="tabpanel" aria-labelledby="tab-pattern" hidden>
+    <div class="lab-head">
+      <h2>위도에 따른 조석 양상</h2>
+      <p>지구 적도면은 달의 공전 궤도면과 기울어져 있다. 지구가 자전할 때 각 지점이 해수면 부푼 부분의 어디를 지나가는지 관찰한다.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <div class="gl-host" id="gl">
+          <div class="gl-clock" id="glClock"></div>
+          <div class="gl-hint">끌어서 회전 · 두 손가락으로 확대/축소</div>
+        </div>
+        <div class="charts" id="charts"></div>
+        <p class="note">해수면 부풂은 과장해 그렸습니다. 막대 길이와 그래프는 각 지점의 해수면 높이(상대값)입니다. 하루는 달이 다시 남중하기까지 걸리는 약 24시간 50분입니다.</p>
+      </div>
+      <div class="controls">
+        <div class="group">
+          <h3><i class="em em-stopwatch"></i>시간</h3>
+          <div class="btns">
+            <button class="btn primary" id="pPlay">일시정지</button>
+            <button class="btn" id="pReset">0시로</button>
+          </div>
+          <div class="ctl"><div class="row"><label for="pTime">경과 시간</label><output id="pTime-v"></output></div><input type="range" id="pTime" min="0" max="24.84" step="0.01"></div>
+          <div class="ctl"><div class="row"><label for="pSpeed">재생 속도</label><output id="pSpeed-v"></output></div><input type="range" id="pSpeed" min="0.5" max="8" step="0.5"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-full-moon-symbol"></i>달의 위치</h3>
+          <div class="ctl"><div class="row"><label for="pDec">적도면과 달 방향 사이 각</label><output id="pDec-v"></output></div><input type="range" id="pDec" min="0" max="28.5" step="0.5"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-earth-globe-asia-australia"></i>관측 지점 위도 (북위)</h3>
+          <div class="ctl"><div class="row"><label for="lat0">지점 1</label><output id="lat0-v"></output></div><input type="range" id="lat0" min="0" max="85" step="1"></div>
+          <div class="ctl"><div class="row"><label for="lat1">지점 2</label><output id="lat1-v"></output></div><input type="range" id="lat1" min="0" max="85" step="1"></div>
+          <div class="ctl"><div class="row"><label for="lat2">지점 3</label><output id="lat2-v"></output></div><input type="range" id="lat2" min="0" max="85" step="1"></div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-eyes"></i>시점</h3>
+          <div class="btns">
+            <button class="btn" id="vFront">정면</button>
+            <button class="btn" id="vSide">달 쪽에서</button>
+            <button class="btn" id="vTop">위에서</button>
+            <button class="btn" id="zIn">확대 +</button>
+            <button class="btn" id="zOut">축소 −</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3><i class="em em-electric-light-bulb"></i>탐구 질문</h3>
+          <ol class="qs">
+            <li>달이 지구의 적도면 위에 있다면 세 지점의 조석 양상은 어떻게 바뀔까?</li>
+            <li>고위도 지점이 하루에 만조를 한 번만 맞는 까닭은?</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="real">
+      <div class="lab-head">
+        <h2>실제 관측 자료: 이어도 해양과학기지</h2>
+        <p>북위 약 32°의 중위도 해역에서 한 달(2020년 1월) 동안 관측한 조위 변화이다.</p>
+      </div>
+      <div class="real-grid">
+        <figure>
+          <div class="real-top">
+            <div class="btns"><button class="btn primary" id="rAll">한 달 전체</button><button class="btn" id="r3">3일 확대</button></div>
+            <div class="ctl" id="rStartWrap" hidden><div class="row"><label for="rStart">시작 날짜</label><output id="rStart-v"></output></div><input type="range" id="rStart" min="1" max="29" step="1" value="11"></div>
+          </div>
+          <canvas id="cvReal" width="900" height="320" style="aspect-ratio:900/320" aria-label="이어도 해양과학기지 2020년 1월 조위 그래프"></canvas>
+          <div class="real-read" id="rRead">그래프 위에 마우스를 올리거나 눌러 값을 확인하세요.</div>
+          <figcaption>이어도 해양과학기지 2020년 1월 조위 관측 그래프를 디지털화한 뒤 주요 조석 성분으로 다시 그렸습니다(값은 근삿값).</figcaption>
+        </figure>
+        <div class="controls">
+          <div class="group">
+            <h3><i class="em em-electric-light-bulb"></i>그래프에서 찾아보기</h3>
+            <ol class="qs">
+              <li>하루에 만조가 두 번 오지만 두 만조의 높이가 다르다 → 혼합조</li>
+              <li>조차가 약 15일 주기로 커졌다 작아진다 → 대조(사리)·소조(조금). 1월 11일 망(보름달), 1월 25일 삭 무렵부터 조차가 크다.</li>
+              <li>위 시뮬레이션의 중위도 그래프와 비교하면 실제 일조부등이 더 작다. 태양의 영향과 지형·수심이 함께 작용하기 때문이다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="../lib/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const FONT='"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const MONO='"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- 색상 토큰 ---------- */
+const COL={};
+const NAMES=['bg','panel','ink','muted','line','accent','canvas','sky','sea','sea-a','mud','land','land-edge','grav','cent','tide','earth','moon','siteC','siteB','siteA'];
+const themeFns=[];
+function readColors(){const s=getComputedStyle(document.documentElement);NAMES.forEach(n=>COL[n]=s.getPropertyValue('--'+n).trim());}
+function onTheme(){readColors();themeFns.forEach(f=>f());}
+readColors();
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',onTheme);}catch(e){}
+new MutationObserver(onTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- 공통 도구 ---------- */
+// 화면이 좁으면 캔버스 글자를 키워 읽기 쉽게 한다
+(function(){const d=Object.getOwnPropertyDescriptor(CanvasRenderingContext2D.prototype,'font');if(!d||!d.set)return;
+  Object.defineProperty(CanvasRenderingContext2D.prototype,'font',{configurable:true,get(){return d.get.call(this);},
+    set(v){const k=this.__fs||1;d.set.call(this,k===1?v:String(v).replace(/(\d+(?:\.\d+)?)px/,(m,n)=>(n*k).toFixed(1)+'px'));}});})();
+function fitCanvas(cv,LW,LH){
+  const w=cv.clientWidth||LW, dpr=window.devicePixelRatio||1;
+  const pw=Math.max(1,Math.round(w*dpr)), ph=Math.max(1,Math.round(w*LH/LW*dpr));
+  if(cv.width!==pw||cv.height!==ph){cv.width=pw;cv.height=ph;}
+  const ctx=cv.getContext('2d');ctx.setTransform(pw/LW,0,0,ph/LH,0,0);ctx.__fs=Math.min(1.7,Math.max(1,LW/w*0.6));return ctx;
+}
+function arrow(ctx,x1,y1,x2,y2,color,w,head){
+  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy);if(len<1.5)return;
+  head=Math.min(head||11,len*.6);const ux=dx/len,uy=dy/len;
+  ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=w;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*head*.7,y2-uy*head*.7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-ux*head-uy*head*.5,y2-uy*head+ux*head*.5);ctx.lineTo(x2-ux*head+uy*head*.5,y2-uy*head-ux*head*.5);ctx.closePath();ctx.fill();
+}
+function bindRange(id,fmt,fn){
+  const el=document.getElementById(id),out=document.getElementById(id+'-v');
+  const upd=()=>{const v=+el.value;if(out)out.textContent=fmt(v);fn(v);};
+  el.addEventListener('input',upd);
+  return {el,upd,set(v){el.value=v;upd();}};
+}
+const logMap=(lo,hi)=>({to:v=>Math.pow(10,Math.log10(lo)+v/1000*(Math.log10(hi)-Math.log10(lo))),from:x=>Math.round((Math.log10(x)-Math.log10(lo))/(Math.log10(hi)-Math.log10(lo))*1000)});
+const fmtDeg=d=>d<1?d.toFixed(2)+'°':d<10?d.toFixed(1)+'°':d.toFixed(0)+'°';
+function fmtLen(m){if(m>=1000)return (m/1000).toFixed(m>=10000?0:1)+' km';if(m>=10)return Math.round(m)+' m';return m.toFixed(1)+' m';}
+
+/* =========================================================
+   0. 밀물과 썰물?
+   ========================================================= */
+const tide=(function(){
+  const cv=$('#cvTide'),mini=$('#cvTideMini'),LW=1000,LH=520;
+  const P=12.42,DAY=24.84,AMP=2;            // 반일주조 주기(시간), 진폭(m)
+  const YM=260,PPM=40;                       // 평균 해수면 y, 1 m당 픽셀
+  const X0=170,K=0.56;                        // 해안선: y = LH - (x-X0)*K
+  const st={t:3.1,speed:2,playing:!reduce,wave:0};
+  const lvl=t=>-AMP*Math.cos(2*Math.PI*t/P);  // 0시 간조
+  const rate=t=>Math.sin(2*Math.PI*t/P);
+  const shoreY=x=>LH-(x-X0)*K, shoreX=y=>X0+(LH-y)/K;
+  const fmtT=h=>{const hh=Math.floor(h),mm=Math.floor((h-hh)*60);return `${hh}시간 ${String(mm).padStart(2,'0')}분`;};
+  const tS=bindRange('tTime',fmtT,v=>{st.t=v;});
+  bindRange('tSpeed',v=>v+' 시간/초',v=>{st.speed=v;}).set(2);
+  tS.set(st.t);
+  const pb=$('#tPlay');const setPlay=p=>{st.playing=p;pb.textContent=p?'일시정지':'재생하기';};
+  pb.onclick=()=>setPlay(!st.playing);setPlay(st.playing);
+  const jump=target=>{setPlay(false);let t=st.t;const n=Math.round((t-target)/P);let v=target+n*P;if(v<0)v+=P;if(v>DAY)v-=P;tS.set(v);};
+  $('#tHigh').onclick=()=>jump(P/2);
+  $('#tLow').onclick=()=>jump(0);
+
+  function state(t){
+    const h=lvl(t)/AMP,r=rate(t);
+    if(h>0.97)return ['만조','해수면이 가장 높을 때'];
+    if(h<-0.97)return ['간조','해수면이 가장 낮을 때'];
+    return r>0?['밀물','해수면이 높아지는 중 · 바닷물이 육지 쪽으로']:['썰물','해수면이 낮아지는 중 · 바닷물이 바다 쪽으로'];
+  }
+  function readout(){
+    const [a,b]=state(st.t),el=$('#tState');
+    el.querySelector('b').textContent=a;el.querySelector('span').textContent=b;
+    const ic=document.getElementById('tIcon');if(ic)ic.className='em em-'+({'밀물':'upwards-black-arrow','썰물':'downwards-black-arrow','만조':'water-wave','간조':'crab'}[a]||'water-wave');
+    const h=lvl(st.t);$('#tH').textContent=(h>=0?'+':'')+h.toFixed(1)+' m';
+    $('#tF').textContent=Math.round((AMP-h)/(2*AMP)*100)+' %';
+  }
+
+  function boat(ctx,x,y,tilt){
+    ctx.save();ctx.translate(x,y);ctx.rotate(tilt);
+    ctx.fillStyle=COL.ink;ctx.fillRect(-1.5,-58,3,52);
+    ctx.fillStyle=COL.panel;ctx.beginPath();ctx.moveTo(2,-56);ctx.lineTo(34,-12);ctx.lineTo(2,-12);ctx.closePath();ctx.fill();
+    ctx.strokeStyle=COL.ink;ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=COL.cent;ctx.beginPath();ctx.moveTo(-40,-8);ctx.lineTo(40,-8);ctx.lineTo(28,8);ctx.lineTo(-28,8);ctx.closePath();ctx.fill();
+    ctx.restore();
+  }
+  function draw(){
+    const ctx=fitCanvas(cv,LW,LH),h=lvl(st.t),sy=YM-h*PPM,yH=YM-AMP*PPM,yL=YM+AMP*PPM;
+    const xw=shoreX(sy),xH=shoreX(yH),xL=shoreX(yL),rising=rate(st.t)>0;
+    // 하늘
+    const g=ctx.createLinearGradient(0,0,0,LH);g.addColorStop(0,COL.sky);g.addColorStop(1,COL.canvas);ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+    // 바다 (물결)
+    const wv=x=>Math.sin(x*0.045-st.wave*2.2)*3+Math.sin(x*0.11+st.wave*1.3)*1.2;
+    const sg=ctx.createLinearGradient(0,sy,0,LH);sg.addColorStop(0,COL['sea-a']);sg.addColorStop(1,COL.sea);
+    ctx.beginPath();ctx.moveTo(0,sy+wv(0));for(let x=0;x<=xw;x+=4)ctx.lineTo(x,sy+wv(x)*(1-x/xw*0.7));
+    ctx.lineTo(xw,sy);ctx.lineTo(X0,LH);ctx.lineTo(0,LH);ctx.closePath();ctx.fillStyle=sg;ctx.fill();
+    // 육지
+    ctx.beginPath();ctx.moveTo(X0,LH);ctx.lineTo(LW,shoreY(LW));ctx.lineTo(LW,LH);ctx.closePath();ctx.fillStyle=COL.land;ctx.fill();
+    ctx.save();ctx.clip();ctx.strokeStyle=COL['land-edge'];ctx.globalAlpha=.25;ctx.lineWidth=1.5;
+    for(let k=1;k<6;k++){ctx.beginPath();ctx.moveTo(X0+k*90,LH);ctx.lineTo(LW,shoreY(LW)+k*48);ctx.stroke();}
+    ctx.restore();
+    // 갯벌 (만조선~간조선 사이 해안)
+    ctx.save();ctx.beginPath();ctx.moveTo(X0,LH);ctx.lineTo(LW,shoreY(LW));ctx.lineTo(LW,LH);ctx.closePath();ctx.clip();
+    ctx.strokeStyle=COL.mud;ctx.lineWidth=30;ctx.beginPath();ctx.moveTo(xL,yL);ctx.lineTo(xH,yH);ctx.stroke();ctx.restore();
+    ctx.strokeStyle=COL['land-edge'];ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(X0,LH);ctx.lineTo(LW,shoreY(LW));ctx.stroke();
+    // 수면선
+    ctx.beginPath();for(let x=0;x<=xw;x+=4){const y=sy+wv(x)*(1-x/xw*0.7);x?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.lineTo(xw,sy);
+    ctx.strokeStyle=COL.sea;ctx.lineWidth=3;ctx.stroke();
+    // 만조·간조 해수면
+    ctx.setLineDash([10,8]);ctx.lineWidth=2;ctx.strokeStyle=COL.accent;
+    ctx.beginPath();ctx.moveTo(0,yH);ctx.lineTo(xH,yH);ctx.stroke();ctx.beginPath();ctx.moveTo(0,yL);ctx.lineTo(xL,yL);ctx.stroke();ctx.setLineDash([]);
+    ctx.font=`700 16px ${FONT}`;ctx.fillStyle=COL.accent;ctx.textAlign='left';
+    ctx.textBaseline='bottom';ctx.fillText('만조 해수면',96,yH-6);ctx.textBaseline='top';ctx.fillText('간조 해수면',96,yL+6);
+    // 조차
+    arrow(ctx,58,(yH+yL)/2,58,yH+2,COL.ink,2,10);arrow(ctx,58,(yH+yL)/2,58,yL-2,COL.ink,2,10);
+    ctx.font=`700 15px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textAlign='left';ctx.textBaseline='middle';
+    ctx.fillText('조차',68,(yH+yL)/2-10);ctx.font=`500 13px ${MONO}`;ctx.fillText(`${2*AMP} m`,68,(yH+yL)/2+10);
+    // 배
+    boat(ctx,300,sy+wv(300)-2,Math.cos(300*0.045-st.wave*2.2)*0.05);
+    // 해수면 상승·하강 화살표
+    const ax=440,col=COL.tide;
+    if(Math.abs(h)<AMP*0.97){
+      arrow(ctx,ax,sy,ax,sy+(rising?-56:56),col,5,16);
+      ctx.font=`700 17px ${FONT}`;ctx.fillStyle=col;ctx.textAlign='left';ctx.textBaseline='middle';
+      ctx.fillText(rising?'해수면 상승':'해수면 하강',ax+14,sy+(rising?-36:36));
+      // 바닷물 이동 방향
+      const hx=xw-290,hy=sy+30;
+      arrow(ctx,rising?hx:hx+110,hy,rising?hx+110:hx,hy,col,4,14);
+      ctx.font=`500 15px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(rising?'육지 쪽으로 밀려옴':'바다 쪽으로 빠져나감',hx+55,hy+14);
+    }
+    // 이름표
+    const fx=(xH+xL)/2,fy=shoreY(fx);
+    ctx.font=`700 20px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('갯벌',fx+34,fy+26);
+    ctx.font=`500 13px ${FONT}`;ctx.fillText(sy<yL-4?(sy>yH+4?'일부가 드러남':'모두 잠김'):'모두 드러남',fx+34,fy+26+24*(ctx.__fs||1));
+    ctx.font=`700 26px ${FONT}`;ctx.fillStyle=COL['land-edge'];ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('대륙',LW-120,LH-110);
+    ctx.fillStyle='rgba(255,255,255,.92)';ctx.fillText('바다',90,LH-50);
+    // 상태
+    const [a]=state(st.t);
+    ctx.font=`700 22px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(a,18,16);
+    ctx.font=`500 14px ${MONO}`;ctx.fillStyle=COL.muted;ctx.fillText(`경과 ${fmtT(st.t)}`,18,16+28*(ctx.__fs||1));
+  }
+  function drawMini(){
+    const LW2=1000,LH2=190,ctx=fitCanvas(mini,LW2,LH2),l=46,r=14,t=22,b=48,W=LW2-l-r,H=LH2-t-b;
+    const X=x=>l+x/DAY*W,Y=v=>t+(AMP-v)/(2*AMP)*H;
+    ctx.clearRect(0,0,LW2,LH2);
+    ctx.strokeStyle=COL.line;ctx.lineWidth=1;ctx.font=`500 12px ${MONO}`;ctx.fillStyle=COL.muted;
+    ctx.textAlign='center';ctx.textBaseline='top';
+    for(let hh=0;hh<=24;hh+=3){ctx.beginPath();ctx.moveTo(X(hh),t);ctx.lineTo(X(hh),t+H);ctx.stroke();ctx.fillText(hh+'시간',X(hh),t+H+26);}
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    [[AMP,'+2 m'],[0,'0'],[-AMP,'−2 m']].forEach(([v,s])=>{ctx.beginPath();ctx.moveTo(l,Y(v));ctx.lineTo(l+W,Y(v));ctx.stroke();ctx.fillText(s,l-6,Y(v));});
+    // 밀물·썰물 구간 배경
+    for(let k=0;k<4;k++){const a=k*P/2,bb=Math.min(DAY,a+P/2);ctx.fillStyle=k%2===0?COL['sea-a']:'transparent';ctx.globalAlpha=.25;ctx.fillRect(X(a),t,X(bb)-X(a),H);ctx.globalAlpha=1;}
+    ctx.beginPath();for(let i=0;i<=600;i++){const x=i/600*DAY;i?ctx.lineTo(X(x),Y(lvl(x))):ctx.moveTo(X(x),Y(lvl(x)));}
+    ctx.strokeStyle=COL.tide;ctx.lineWidth=2.6;ctx.stroke();
+    ctx.font=`700 12px ${FONT}`;ctx.textAlign='center';
+    for(let k=0;k<=4;k++){const x=k*P/2;if(x>DAY+0.01)break;const hi=k%2===1;ctx.fillStyle=hi?COL.cent:COL.accent;ctx.textBaseline=hi?'bottom':'top';ctx.fillText(hi?'만조':'간조',X(x),hi?Y(AMP)-4:Y(-AMP)+4);}
+    ctx.font=`500 12px ${FONT}`;ctx.fillStyle=COL.muted;ctx.textAlign='left';ctx.textBaseline='bottom';
+    ctx.fillText('색칠한 구간: 밀물',l+4,t-4);
+    const cx=X(st.t),cy=Y(lvl(st.t));
+    ctx.strokeStyle=COL.ink;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(cx,t);ctx.lineTo(cx,t+H);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,cy,7,0,Math.PI*2);ctx.fillStyle=COL.tide;ctx.fill();ctx.strokeStyle=COL.panel;ctx.lineWidth=2.5;ctx.stroke();
+  }
+  return {show(){},frame(dt){
+    st.wave+=dt;
+    if(st.playing){st.t=(st.t+dt*st.speed)%DAY;tS.el.value=st.t;$('#tTime-v').textContent=fmtT(st.t);}
+    draw();drawMini();readout();
+  }};
+})();
+
+/* =========================================================
+   1. 해안 경사와 갯벌 면적
+   ========================================================= */
+const flat=(function(){
+  const cv=$('#cvFlat'),LW=1000,LH=480;
+  const Y0=225,XW=320,XE=690,PPM=13,K=220,CAP=175,FLOOR=235;
+  const st={w:0.1,e:3,wr:4,er:4,phase:Math.PI/2,playing:!reduce};
+  const sl=logMap(0.08,10);
+  const vt=d=>Math.tan(d*Math.PI/180)*K;
+  function ground(x,tw,te){return Math.max(Math.min((x-XW)*tw,(XE-x)*te,CAP),-FLOOR);}
+  const wS=bindRange('wSlope',v=>fmtDeg(sl.to(v)),v=>{st.w=sl.to(v);readout();});
+  const eS=bindRange('eSlope',v=>fmtDeg(sl.to(v)),v=>{st.e=sl.to(v);readout();});
+  const wR=bindRange('wRange',v=>v.toFixed(1)+' m',v=>{st.wr=v;readout();});
+  const eR=bindRange('eRange',v=>v.toFixed(1)+' m',v=>{st.er=v;readout();});
+  wS.set(sl.from(0.1));eS.set(sl.from(3));wR.set(4);eR.set(4);
+  $('#presetSame').onclick=()=>{wR.set(4);eR.set(4);};
+  $('#presetReal').onclick=()=>{wR.set(8);eR.set(0.3);};
+  const pb=$('#flatPlay');
+  const setPlay=p=>{st.playing=p;pb.textContent=p?'일시정지':'재생';};
+  pb.onclick=()=>setPlay(!st.playing);setPlay(st.playing);
+  function widthM(range,deg){return range/Math.tan(deg*Math.PI/180);}
+  function readout(){
+    const ww=widthM(st.wr,st.w),we=widthM(st.er,st.e);
+    $('#rW1').textContent=fmtDeg(st.w);$('#rW2').textContent=st.wr.toFixed(1)+' m';$('#rW3').textContent=fmtLen(ww);
+    $('#rE1').textContent=fmtDeg(st.e);$('#rE2').textContent=st.er.toFixed(1)+' m';$('#rE3').textContent=fmtLen(we);
+    const r=ww/we;
+    $('#flatRatio').innerHTML=r>=1?`서해 갯벌 폭이 동해의 약 <b>${r>=100?Math.round(r).toLocaleString():r.toFixed(1)}배</b>`:`동해 갯벌 폭이 서해의 약 <b>${(1/r).toFixed(1)}배</b>`;
+  }
+  readout();
+
+  function groundPath(ctx,tw,te){
+    ctx.beginPath();ctx.moveTo(0,LH);
+    for(let x=0;x<=LW;x+=2)ctx.lineTo(x,Y0-ground(x,tw,te));
+    ctx.lineTo(LW,LH);ctx.closePath();
+  }
+  function draw(){
+    const ctx=fitCanvas(cv,LW,LH),tw=vt(st.w),te=vt(st.e);
+    const g=ctx.createLinearGradient(0,0,0,LH);g.addColorStop(0,COL.sky);g.addColorStop(1,COL.canvas);
+    ctx.fillStyle=g;ctx.fillRect(0,0,LW,LH);
+    const hw=st.wr/2*PPM,he=st.er/2*PPM;
+    const s=Math.sin(st.phase),seaW=hw*s,seaE=he*s;
+    // 땅
+    groundPath(ctx,tw,te);ctx.fillStyle=COL.land;ctx.fill();
+    // 갯벌층 (만조선~간조선 사이)
+    const wLow=XW-hw/tw,wHigh=XW+hw/tw,eLow=XE+he/te,eHigh=XE-he/te;
+    ctx.save();groundPath(ctx,tw,te);ctx.clip();
+    ctx.strokeStyle=COL.mud;ctx.lineWidth=18;ctx.lineJoin='round';
+    [[wLow,wHigh],[eHigh,eLow]].forEach(([a,b])=>{ctx.beginPath();const x0=Math.max(0,a),x1=Math.min(LW,b);for(let x=x0;x<=x1;x+=1)ctx.lineTo(x,Y0-ground(x,tw,te));ctx.stroke();});
+    ctx.restore();
+    groundPath(ctx,tw,te);ctx.strokeStyle=COL['land-edge'];ctx.lineWidth=2;ctx.stroke();
+    // 바닷물
+    ctx.fillStyle=COL['sea-a'];
+    let xe=0;while(xe<LW&&ground(xe,tw,te)<seaW)xe+=1;
+    ctx.beginPath();ctx.moveTo(0,Y0-seaW);ctx.lineTo(xe,Y0-seaW);for(let x=xe;x>=0;x-=2)ctx.lineTo(x,Y0-ground(x,tw,te));ctx.closePath();ctx.fill();
+    let xs=LW;while(xs>0&&ground(xs,tw,te)<seaE)xs-=1;
+    ctx.beginPath();ctx.moveTo(LW,Y0-seaE);ctx.lineTo(xs,Y0-seaE);for(let x=xs;x<=LW;x+=2)ctx.lineTo(x,Y0-ground(x,tw,te));ctx.closePath();ctx.fill();
+    // 현재 해수면
+    ctx.strokeStyle=COL.sea;ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.moveTo(0,Y0-seaW);ctx.lineTo(xe,Y0-seaW);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xs,Y0-seaE);ctx.lineTo(LW,Y0-seaE);ctx.stroke();
+    // 만조·간조선
+    ctx.setLineDash([9,7]);ctx.lineWidth=2;ctx.strokeStyle=COL.accent;
+    const hl=(x0,x1,y)=>{ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();};
+    hl(0,Math.min(LW,wHigh+30),Y0-hw);hl(0,Math.max(40,wLow+30),Y0+hw);
+    hl(Math.max(0,eHigh-30),LW,Y0-he);hl(Math.min(LW-40,eLow-30),LW,Y0+he);
+    ctx.setLineDash([]);
+    ctx.font=`500 15px ${FONT}`;ctx.fillStyle=COL.accent;ctx.textBaseline='bottom';
+    ctx.textAlign='left';ctx.fillText('만조 해수면',8,Y0-hw-4);ctx.textBaseline='top';ctx.fillText('간조 해수면',8,Y0+hw+4);
+    ctx.textAlign='right';ctx.textBaseline='bottom';ctx.fillText('만조 해수면',LW-8,Y0-he-4);ctx.textBaseline='top';ctx.fillText('간조 해수면',LW-8,Y0+he+4);
+    // 갯벌 폭 화살표
+    function span(xl,xh,h,side,txt,fixed){
+      const p1={x:xl,y:Y0+h},p2={x:xh,y:Y0-h};
+      const dx=p2.x-p1.x,dy=p2.y-p1.y,L=Math.hypot(dx,dy)||1;let nx=dy/L,ny=-dx/L;if(ny>0){nx=-nx;ny=-ny;}
+      const off=18,a={x:p1.x+nx*off,y:p1.y+ny*off},b={x:p2.x+nx*off,y:p2.y+ny*off};
+      arrow(ctx,(a.x+b.x)/2,(a.y+b.y)/2,a.x,a.y,COL.ink,2,10);arrow(ctx,(a.x+b.x)/2,(a.y+b.y)/2,b.x,b.y,COL.ink,2,10);
+      ctx.font=`700 18px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textAlign=side;ctx.textBaseline='middle';
+      if(fixed){ctx.fillText(txt,fixed.x,fixed.y);return;}
+      let tx=(a.x+b.x)/2+nx*34,ty=(a.y+b.y)/2+ny*34;
+      tx=Math.max(200,Math.min(LW-200,tx));ty=Math.max(40,ty);
+      ctx.fillText(txt,tx,ty);
+    }
+    span(Math.max(-20,wLow),Math.min(LW,wHigh),hw,'center','서해 갯벌 폭 ≈ '+fmtLen(widthM(st.wr,st.w)));
+    span(Math.min(LW+20,eLow),eHigh,he,'right','동해 갯벌 폭 ≈ '+fmtLen(widthM(st.er,st.e)),{x:LW-10,y:Math.min(Y0-he-36,Y0-40)});
+    // 태백산맥 (단면의 가장 높은 곳)
+    let px=0,ph=-Infinity;for(let x=0;x<=LW;x+=2){const h=ground(x,tw,te);if(h>ph){ph=h;px=x;}}
+    const py=Y0-ph;
+    ctx.fillStyle=COL.ink;ctx.beginPath();ctx.moveTo(px,py-6);ctx.lineTo(px-6,py-16);ctx.lineTo(px+6,py-16);ctx.closePath();ctx.fill();
+    ctx.font=`700 18px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='bottom';
+    ctx.fillText('태백산맥',Math.max(50,Math.min(LW-50,px)),py-20);
+    // 지명
+    ctx.font=`700 24px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textBaseline='alphabetic';
+    ctx.textAlign='left';ctx.fillText('서해',20,LH-24);ctx.textAlign='right';ctx.fillText('동해',LW-20,LH-24);
+    // 물때
+    const rising=Math.cos(st.phase)>0;
+    ctx.font=`500 15px ${FONT}`;ctx.textAlign='center';ctx.fillStyle=COL.muted;ctx.textBaseline='top';
+    ctx.fillText(rising?'▲ 밀물 (해수면 상승)':'▼ 썰물 (해수면 하강)',LW/2,12);
+  }
+  return {frame(dt){if(st.playing)st.phase+=dt*Math.PI*2/7;draw();},show(){}};
+})();
+
+/* =========================================================
+   2. 기조력 벡터
+   ========================================================= */
+const force=(function(){
+  const cv=$('#cvForce'),LW=1000,LH=640,CX=500,CY=320,ER=150,MD=272,L=58,N=16;
+  const st={ang:0,mag:1,g:false,c:false,t:false,o:false,b:false,hover:-1,drag:false};
+  const aS=bindRange('fAng',v=>v+'°',v=>{st.ang=v;info();});
+  const mS=bindRange('fMag',v=>'×'+v,v=>{st.mag=v;});
+  aS.set(0);mS.set(1);
+  [['showG','g'],['showC','c'],['showT','t'],['showO','o'],['showB','b']].forEach(([id,k])=>{const el=document.getElementById(id);el.onchange=()=>{st[k]=el.checked;};});
+
+  function unit(){const a=st.ang*Math.PI/180;return {ux:Math.cos(a),uy:-Math.sin(a)};}
+  // 교과서 그림처럼 과장한 대칭 기조력: 기조력 = K(3(p·u)u − p), 달의 인력 = 원심력의 반대 + 기조력
+  const K=0.25;
+  function vec(px,py){
+    const {ux,uy}=unit(),c=px*ux+py*uy,tx=K*(3*c*ux-px),ty=K*(3*c*uy-py);
+    return {gx:ux+tx,gy:uy+ty,cx:-ux,cy:-uy,tx,ty};
+  }
+  function summary(){
+    $('#fSummary').innerHTML=`원심력을 100으로 볼 때 기조력 크기<br>달 쪽 <b>${(2*K*100).toFixed(0)}</b> · 반대쪽 <b>${(2*K*100).toFixed(0)}</b> · 옆쪽 <b>${(K*100).toFixed(0)}</b>(안쪽)`;
+  }
+  function info(){
+    const el=$('#fInfo');
+    if(st.hover<0){el.innerHTML='지구 표면의 점에 마우스를 올리거나 눌러 보세요.';return;}
+    const a=st.hover*2*Math.PI/N,v=vec(Math.cos(a),Math.sin(a));
+    const {ux,uy}=unit();const cosA=Math.cos(a)*ux+Math.sin(a)*uy;const deg=Math.acos(Math.max(-1,Math.min(1,cosA)))*180/Math.PI;
+    const where=deg<12?'달을 향한 쪽':deg>168?'달 반대쪽':Math.abs(deg-90)<12?'달과 90° 방향(옆쪽)':`달 방향에서 ${Math.round(deg)}°`;
+    const g=Math.hypot(v.gx,v.gy),t=Math.hypot(v.tx,v.ty),rad=v.tx*Math.cos(a)+v.ty*Math.sin(a);
+    el.innerHTML=`<div><b style="font-family:inherit">${where}</b></div>달의 인력 <b>${(g*100).toFixed(1)}</b> · 원심력 <b>100.0</b><br>기조력 <b>${(t*100).toFixed(1)}</b> → ${rad>0.0005?'바깥쪽(해수면 높아짐)':rad<-0.0005?'안쪽(해수면 낮아짐)':'거의 수평'}`;
+  }
+  summary();info();
+
+  function toLogical(e){const r=cv.getBoundingClientRect();return {x:(e.clientX-r.left)*LW/r.width,y:(e.clientY-r.top)*LH/r.height};}
+  cv.addEventListener('pointerdown',e=>{
+    const p=toLogical(e),{ux,uy}=unit();
+    if(Math.hypot(p.x-(CX+ux*MD),p.y-(CY+uy*MD))<46){st.drag=true;cv.setPointerCapture(e.pointerId);}
+    else pick(p);
+  });
+  cv.addEventListener('pointermove',e=>{
+    const p=toLogical(e);
+    if(st.drag){let a=Math.round(Math.atan2(-(p.y-CY),p.x-CX)*180/Math.PI);if(a<0)a+=360;aS.set(a);return;}
+    if(e.pointerType==='mouse')pick(p);
+  });
+  cv.addEventListener('pointerup',()=>{st.drag=false;});
+  cv.addEventListener('pointerleave',()=>{if(!st.drag&&st.hover>=0&&!st.locked){st.hover=-1;info();}});
+  function pick(p){
+    let best=-1,bd=30;
+    for(let i=0;i<N;i++){const a=i*2*Math.PI/N,d=Math.hypot(p.x-(CX+Math.cos(a)*ER),p.y-(CY+Math.sin(a)*ER));if(d<bd){bd=d;best=i;}}
+    if(best!==st.hover){st.hover=best;info();}
+  }
+
+  function draw(){
+    const ctx=fitCanvas(cv,LW,LH);ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const {ux,uy}=unit();
+    // 해수면 모양
+    if(st.o){
+      const S=180,rad=[];let rmax=0;
+      for(let i=0;i<S;i++){const a=i*2*Math.PI/S,px=Math.cos(a),py=Math.sin(a),v=vec(px,py),r=v.tx*px+v.ty*py;rad.push(r);if(Math.abs(r)>rmax)rmax=Math.abs(r);}
+      ctx.beginPath();
+      for(let i=0;i<=S;i++){const a=i*2*Math.PI/S,r=ER+15+24*rad[i%S]/(rmax||1);const x=CX+Math.cos(a)*r,y=CY+Math.sin(a)*r;i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+      ctx.closePath();ctx.fillStyle=COL['sea-a'];ctx.fill();ctx.strokeStyle=COL.sea;ctx.lineWidth=2;ctx.stroke();
+    }
+    // 지구
+    ctx.beginPath();ctx.arc(CX,CY,ER,0,Math.PI*2);ctx.fillStyle=COL.earth;ctx.fill();
+    ctx.strokeStyle=COL.panel;ctx.lineWidth=1.5;ctx.stroke();
+    // 지구-달 선
+    const mx=CX+ux*MD,my=CY+uy*MD;
+    ctx.setLineDash([6,8]);ctx.strokeStyle=COL.muted;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(mx,my);ctx.stroke();ctx.setLineDash([]);
+    // 달
+    ctx.beginPath();ctx.arc(mx,my,25,0,Math.PI*2);ctx.fillStyle=COL.moon;ctx.fill();
+    ctx.font=`700 18px ${FONT}`;ctx.fillStyle=COL.ink;ctx.textAlign='center';ctx.textBaseline='middle';
+    const lx=mx+ux*44,ly=my+uy*44;ctx.fillText('달',Math.max(20,Math.min(LW-20,lx)),Math.max(14,Math.min(LH-14,ly)));
+    ctx.font=`500 14px ${FONT}`;ctx.fillStyle=COL.muted;ctx.textAlign='left';ctx.textBaseline='top';
+    ctx.fillText('화살표 크기는 교과서 그림처럼 과장해 표현 (실제 지구–달 거리 약 60 R)',14,12);
+    if(st.mag>1){ctx.fillStyle=COL.tide;ctx.fillText(`기조력 화살표 ×${st.mag} 확대`,14,32);}
+    // 공통 질량 중심
+    if(st.b){
+      const off=0.73*ER,bx=CX+ux*off,by=CY+uy*off;
+      ctx.strokeStyle=COL.ink;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx-7,by);ctx.lineTo(bx+7,by);ctx.moveTo(bx,by-7);ctx.lineTo(bx,by+7);ctx.stroke();
+      ctx.font=`500 13px ${FONT}`;ctx.fillStyle=COL.panel;ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillText('공통 질량 중심',bx,by+28);
+    }
+    ctx.beginPath();ctx.arc(CX,CY,3.5,0,Math.PI*2);ctx.fillStyle=COL.panel;ctx.fill();
+    ctx.font=`500 13px ${FONT}`;ctx.fillStyle=COL.panel;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText('지구 중심',CX,CY-22);
+    // 중심의 힘
+    if(st.g)arrow(ctx,CX,CY,CX+ux*L,CY+uy*L,COL.panel,2.5);
+    if(st.c)arrow(ctx,CX,CY,CX-ux*L,CY-uy*L,COL.cent,2.5);
+    // 표면 지점
+    for(let i=0;i<N;i++){
+      const a=i*2*Math.PI/N,px=Math.cos(a),py=Math.sin(a),sx=CX+px*ER,sy=CY+py*ER,v=vec(px,py);
+      if(i===st.hover){ctx.beginPath();ctx.arc(sx,sy,11,0,Math.PI*2);ctx.strokeStyle=COL.accent;ctx.lineWidth=3;ctx.stroke();}
+      if(st.c)arrow(ctx,sx,sy,sx+v.cx*L,sy+v.cy*L,COL.cent,2.5);
+      if(st.g)arrow(ctx,sx,sy,sx+v.gx*L,sy+v.gy*L,COL.grav,2.5);
+      if(st.t)arrow(ctx,sx,sy,sx+v.tx*L*st.mag,sy+v.ty*L*st.mag,COL.tide,4,13);
+      ctx.beginPath();ctx.arc(sx,sy,4.5,0,Math.PI*2);ctx.fillStyle=COL.ink;ctx.fill();
+    }
+  }
+  return {frame(){draw();},show(){}};
+})();
+
+/* =========================================================
+   3. 위도에 따른 조석 양상 (3D)
+   ========================================================= */
+const pattern=(function(){
+  const DAY=24.84,BASE=1.085,E=0.16;
+  const P2=c=>1.5*c*c-.5;
+  const SITEKEYS=['siteC','siteB','siteA'];
+  const st={t:0,speed:3,dec:28.5,lats:[0,30,60],playing:!reduce};
+  let gl=null;
+  const rad=d=>d*Math.PI/180;
+  const tideH=(lat,dec,H)=>{const c=Math.sin(lat)*Math.sin(dec)+Math.cos(lat)*Math.cos(dec)*Math.cos(H);return P2(c);};
+  const latName=l=>l<=10?'적도':l<=45?'중위도':'고위도';
+
+  function classify(latDeg){
+    const n=360,lat=rad(latDeg),dec=rad(st.dec),h=[];
+    for(let i=0;i<n;i++)h.push(tideH(lat,dec,i*2*Math.PI/n));
+    const mx=Math.max(...h),mn=Math.min(...h),rng=mx-mn;
+    if(rng<0.03)return {type:'조차 거의 없음',desc:'해수면 변화가 거의 없음',highs:[],h,mx,mn};
+    const highs=[];
+    for(let i=0;i<n;i++){
+      const p=h[(i-1+n)%n],q=h[(i+1)%n];if(!(h[i]>p&&h[i]>=q))continue;
+      let ml=Infinity,mr=Infinity;for(let k=1;k<=n/2;k++){ml=Math.min(ml,h[(i-k+n)%n]);mr=Math.min(mr,h[(i+k)%n]);if(h[(i-k+n)%n]>h[i]||h[(i+k)%n]>h[i])break;}
+      if(h[i]-Math.max(ml,mr)>0.05*rng)highs.push(i);
+    }
+    let type,desc;
+    if(highs.length<=1){type='일주조';desc='하루 만조 1회 · 간조 1회';}
+    else{const hv=highs.map(i=>h[i]),ineq=(Math.max(...hv)-Math.min(...hv))/rng;
+      if(ineq<0.06){type='반일주조';desc='하루 만조 2회 · 간조 2회, 높이 비슷';}
+      else{type='혼합조';desc='하루 만조 2회, 두 만조 높이 차이 큼';}}
+    return {type,desc,highs,h,mx,mn};
+  }
+
+  // 그래프 영역
+  const chartsEl=$('#charts'),charts=[];
+  for(let i=0;i<3;i++){
+    const d=document.createElement('div');d.className='chart';
+    d.innerHTML=`<div class="chart-top"><span><span class="dot"></span><span class="nm"></span></span><span class="badge"></span></div><canvas width="520" height="170" style="aspect-ratio:520/170"></canvas><div class="sub"><span class="ds"></span><span>현재 <b class="cur"></b></span></div>`;
+    chartsEl.appendChild(d);
+    charts.push({el:d,cv:d.querySelector('canvas'),nm:d.querySelector('.nm'),badge:d.querySelector('.badge'),dot:d.querySelector('.dot'),ds:d.querySelector('.ds'),cur:d.querySelector('.cur'),cls:null});
+  }
+  function refreshCls(){charts.forEach((c,i)=>{c.cls=classify(st.lats[i]);c.nm.textContent=`${latName(st.lats[i])} (${st.lats[i]}°N)`;c.badge.textContent=c.cls.type;c.ds.textContent=c.cls.desc;const col=COL[SITEKEYS[i]];c.dot.style.background=col;c.badge.style.color=col;});}
+  function drawChart(i){
+    const c=charts[i],LW=520,LH=170,ctx=fitCanvas(c.cv,LW,LH),col=COL[SITEKEYS[i]];
+    const l=34,r=10,t=10,b=26,W=LW-l-r,H=LH-t-b,y0=-0.6,y1=1.1;
+    const X=h=>l+h/DAY*W,Y=v=>t+(y1-v)/(y1-y0)*H;
+    ctx.clearRect(0,0,LW,LH);
+    ctx.strokeStyle=COL.line;ctx.lineWidth=1;ctx.font=`500 12px ${MONO}`;ctx.fillStyle=COL.muted;ctx.textAlign='center';ctx.textBaseline='top';
+    for(let hh=0;hh<=24;hh+=6){ctx.beginPath();ctx.moveTo(X(hh),t);ctx.lineTo(X(hh),t+H);ctx.stroke();ctx.fillText(hh+'시',X(hh),t+H+6);}
+    ctx.beginPath();ctx.moveTo(l,Y(0));ctx.lineTo(l+W,Y(0));ctx.stroke();
+    ctx.save();ctx.translate(12,t+H/2);ctx.rotate(-Math.PI/2);ctx.font=`500 12px ${FONT}`;ctx.textBaseline='middle';ctx.fillText('해수면 높이',0,0);ctx.restore();
+    const n=c.cls.h.length;
+    ctx.beginPath();for(let k=0;k<=n;k++){const hr=k/n*DAY,v=c.cls.h[k%n];k?ctx.lineTo(X(hr),Y(v)):ctx.moveTo(X(hr),Y(v));}
+    ctx.strokeStyle=col;ctx.lineWidth=2.6;ctx.stroke();
+    ctx.fillStyle=col;ctx.font=`700 12px ${FONT}`;ctx.textBaseline='bottom';
+    c.cls.highs.forEach(k=>{const x=X(k/n*DAY),y=Y(c.cls.h[k]);ctx.beginPath();ctx.moveTo(x,y-4);ctx.lineTo(x-5,y-12);ctx.lineTo(x+5,y-12);ctx.closePath();ctx.fill();ctx.fillText('만조',x,y-13);});
+    const v=tideH(rad(st.lats[i]),rad(st.dec),st.t/DAY*2*Math.PI),cx=X(st.t);
+    ctx.strokeStyle=COL.ink;ctx.lineWidth=1.5;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(cx,t);ctx.lineTo(cx,t+H);ctx.stroke();ctx.setLineDash([]);
+    ctx.beginPath();ctx.arc(cx,Y(v),6,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle=COL.panel;ctx.lineWidth=2;ctx.stroke();
+    c.cur.textContent=(v>=0?'+':'')+v.toFixed(2);
+  }
+
+  // 조작
+  const playBtn=$('#pPlay');const setPlay=p=>{st.playing=p;playBtn.textContent=p?'일시정지':'재생';};
+  playBtn.onclick=()=>setPlay(!st.playing);setPlay(st.playing);
+  const fmtT=h=>{const hh=Math.floor(h),mm=Math.floor((h-hh)*60);return `${hh}시간 ${String(mm).padStart(2,'0')}분`;};
+  const tS=bindRange('pTime',fmtT,v=>{st.t=v;});
+  $('#pReset').onclick=()=>tS.set(0);
+  bindRange('pSpeed',v=>v+' 시간/초',v=>{st.speed=v;}).set(3);
+  bindRange('pDec',v=>v.toFixed(1)+'°',v=>{st.dec=v;refreshCls();if(gl)gl.setDec();}).set(28.5);
+  for(let i=0;i<3;i++)bindRange('lat'+i,v=>`${v}° (${latName(v)})`,v=>{st.lats[i]=v;refreshCls();if(gl)gl.setLat(i);}).set(st.lats[i]);
+  tS.set(0);
+  themeFns.push(()=>{refreshCls();if(gl)gl.theme();});
+
+  // three.js
+  const host=$('#gl'),clock=$('#glClock');
+  if(!window.THREE){host.innerHTML='<p class="gl-error">3D 화면을 불러오지 못했습니다. 인터넷 연결을 확인한 뒤 새로고침하세요. 아래 그래프는 정상 작동합니다.</p>';}
+  else gl=(function(){
+    const T=THREE;
+    const renderer=new T.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+    host.insertBefore(renderer.domElement,host.firstChild);
+    const scene=new T.Scene(),camera=new T.PerspectiveCamera(34,1.6,0.1,100);
+    const target=new T.Vector3(0.9,0.25,0);let th=0,ph=1.45,cr=7.6;
+    const placeCam=()=>{camera.position.set(target.x+cr*Math.sin(ph)*Math.sin(th),target.y+cr*Math.cos(ph),target.z+cr*Math.sin(ph)*Math.cos(th));camera.lookAt(target);};
+    placeCam();
+    scene.add(new T.AmbientLight(0xffffff,.62));const dl=new T.DirectionalLight(0xffffff,.7);dl.position.set(2,3,5);scene.add(dl);
+    const tilt=new T.Group(),spin=new T.Group();tilt.add(spin);scene.add(tilt);
+    const bulge=new T.Group();scene.add(bulge);const uvec=new T.Vector3(1,0,0);
+
+    // 지구 텍스처
+    function earthTex(){
+      const c=document.createElement('canvas');c.width=1024;c.height=512;const g=c.getContext('2d');
+      g.fillStyle='#2a6f98';g.fillRect(0,0,1024,512);
+      let seed=11;const rnd=()=>{seed=seed*16807%2147483647;return seed/2147483647;};
+      [[170,160,80],[250,320,60],[520,140,100],[555,300,70],[770,170,110],[850,340,55],[300,90,50]].forEach(([x,y,s])=>{
+        for(let k=0;k<16;k++){g.fillStyle=rnd()<.75?'#5d8d4c':'#a58c5b';g.beginPath();g.ellipse(x+(rnd()-.5)*s*1.6,y+(rnd()-.5)*s,s*(.25+rnd()*.35),s*(.18+rnd()*.3),rnd()*3,0,Math.PI*2);g.fill();}
+      });
+      g.fillStyle='rgba(245,250,252,.9)';g.fillRect(0,0,1024,26);g.fillRect(0,486,1024,26);
+      g.strokeStyle='rgba(255,255,255,.28)';g.lineWidth=2;
+      for(let la=-60;la<=60;la+=30){const y=(90-la)/180*512;g.beginPath();g.moveTo(0,y);g.lineTo(1024,y);g.stroke();}
+      for(let lo=0;lo<360;lo+=30){const x=lo/360*1024;g.beginPath();g.moveTo(x,0);g.lineTo(x,512);g.stroke();}
+      return new T.CanvasTexture(c);
+    }
+    spin.add(new T.Mesh(new T.SphereGeometry(1,64,48),new T.MeshPhongMaterial({map:earthTex(),shininess:6})));
+
+    // 해수(부풂 과장)
+    function waterGeo(ws,hs){const g=new T.SphereGeometry(1,ws,hs),p=g.attributes.position,v=new T.Vector3();
+      for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();v.multiplyScalar(BASE+E*P2(v.x));p.setXYZ(i,v.x,v.y,v.z);}g.computeVertexNormals();return g;}
+    const water=new T.Mesh(waterGeo(128,96),new T.MeshPhongMaterial({color:0x3aa0dc,transparent:true,opacity:.28,shininess:90,depthWrite:false}));
+    water.renderOrder=3;bulge.add(water);
+    const wire=new T.LineSegments(new T.WireframeGeometry(waterGeo(36,24)),new T.LineBasicMaterial({color:0x7cc7ef,transparent:true,opacity:.18,depthWrite:false}));
+    wire.renderOrder=4;bulge.add(wire);
+
+    // 달, 궤도면, 지구-달 선
+    const MOONX=3.1;
+    const moon=new T.Mesh(new T.SphereGeometry(.24,32,24),new T.MeshPhongMaterial({color:0xc4c8cc,shininess:4}));moon.position.set(MOONX,0,0);bulge.add(moon);
+    const orbitPts=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;orbitPts.push(new T.Vector3(Math.cos(a)*MOONX,0,Math.sin(a)*MOONX));}
+    const orbit=new T.Line(new T.BufferGeometry().setFromPoints(orbitPts),new T.LineBasicMaterial({color:0x888888,transparent:true,opacity:.45}));bulge.add(orbit);
+    const mline=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0,0,0),new T.Vector3(MOONX,0,0)]),new T.LineDashedMaterial({color:0x888888,dashSize:.08,gapSize:.07,transparent:true,opacity:.7}));mline.computeLineDistances();bulge.add(mline);
+
+    // 라벨 스프라이트
+    function makeLabel(text,color,scale){
+      const c=document.createElement('canvas');c.width=512;c.height=150;
+      const tex=new T.CanvasTexture(c);const s=new T.Sprite(new T.SpriteMaterial({map:tex,transparent:true}));
+      s.userData={c,tex,scale:scale||.5};setLabel(s,text,color);return s;
+    }
+    function setLabel(s,text,color){
+      const {c,tex,scale}=s.userData,g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);
+      g.font=`700 84px ${FONT}`;g.textAlign='center';g.textBaseline='middle';g.lineJoin='round';
+      g.lineWidth=14;g.strokeStyle='rgba(12,22,28,.8)';g.strokeText(text,256,78);g.fillStyle=color;g.fillText(text,256,78);
+      tex.needsUpdate=true;s.scale.set(scale,scale*150/512,1);
+    }
+    const moonLabel=makeLabel('달','#ffffff',.9);moonLabel.position.set(MOONX,.5,0);bulge.add(moonLabel);
+    const orbitLabel=makeLabel('달의 공전 궤도면','#cfd6db',.95);orbitLabel.position.set(1.6,0.2,2.7);bulge.add(orbitLabel);
+
+    // 자전축, 적도
+    const axisMat=new T.LineBasicMaterial({color:0xffffff});
+    tilt.add(new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(0,-1.5,0),new T.Vector3(0,1.5,0)]),axisMat));
+    const nL=makeLabel('N','#ffffff',.7);nL.position.set(0,1.68,0);tilt.add(nL);
+    const sL=makeLabel('S','#ffffff',.7);sL.position.set(0,-1.68,0);tilt.add(sL);
+    const ring=(r,y,color,op)=>{const pts=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;pts.push(new T.Vector3(Math.cos(a)*r,y,Math.sin(a)*r));}return new T.Line(new T.BufferGeometry().setFromPoints(pts),new T.LineBasicMaterial({color,transparent:true,opacity:op}));};
+    tilt.add(ring(1.004,0,0xffffff,.75));
+    const mer=[];for(let i=0;i<=64;i++){const a=-Math.PI/2+i/64*Math.PI;mer.push(new T.Vector3(Math.cos(a)*1.006,Math.sin(a)*1.006,0));}
+    spin.add(new T.Line(new T.BufferGeometry().setFromPoints(mer),new T.LineBasicMaterial({color:0xffffff,transparent:true,opacity:.55})));
+
+    // 관측 지점
+    const Y=new T.Vector3(0,1,0),tmp=new T.Vector3();
+    const sites=[0,1,2].map(i=>{
+      const color=new T.Color(COL[SITEKEYS[i]]);
+      const marker=new T.Mesh(new T.SphereGeometry(.05,16,12),new T.MeshBasicMaterial({color}));spin.add(marker);
+      const lat=ring(1,0,color,.95);tilt.add(lat);
+      const cg=new T.CylinderGeometry(.04,.04,1,14);cg.translate(0,.5,0);
+      const gauge=new T.Mesh(cg,new T.MeshBasicMaterial({color}));scene.add(gauge);
+      const tip=new T.Mesh(new T.SphereGeometry(.06,16,12),new T.MeshBasicMaterial({color}));scene.add(tip);
+      const label=makeLabel('',COL[SITEKEYS[i]],.95);spin.add(label);
+      return {marker,lat,gauge,tip,label};
+    });
+    function setLat(i){
+      const s=sites[i],la=rad(st.lats[i]);
+      s.marker.position.set(Math.cos(la),Math.sin(la),0);
+      s.lat.scale.set(Math.cos(la),1,Math.cos(la));s.lat.position.y=Math.sin(la)*1.003;s.lat.scale.multiplyScalar(1.003);
+      s.label.position.set(Math.cos(la)*1.55,Math.sin(la)*1.55,0);
+      setLabel(s.label,latName(st.lats[i]),COL[SITEKEYS[i]]);
+    }
+    [0,1,2].forEach(setLat);
+    function setDec(){const d=rad(st.dec);bulge.rotation.z=d;uvec.set(Math.cos(d),Math.sin(d),0);}
+    setDec();
+    function theme(){sites.forEach((s,i)=>{const c=new T.Color(COL[SITEKEYS[i]]);[s.marker,s.gauge,s.tip].forEach(m=>m.material.color.copy(c));s.lat.material.color.copy(c);setLabel(s.label,latName(st.lats[i]),COL[SITEKEYS[i]]);});}
+
+    // 회전 조작
+    // 한 손가락(마우스) 끌기: 회전 · 두 손가락: 확대/축소
+    const pts=new Map();let pinch0=0,cr0=cr;
+    const setR=r=>{cr=Math.max(3.2,Math.min(14,r));placeCam();};
+    const pdist=()=>{const a=[...pts.values()];return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)||1;};
+    host.addEventListener('pointerdown',e=>{pts.set(e.pointerId,{x:e.clientX,y:e.clientY});try{host.setPointerCapture(e.pointerId);}catch(_){}if(pts.size===2){pinch0=pdist();cr0=cr;}});
+    host.addEventListener('pointermove',e=>{
+      const p=pts.get(e.pointerId);if(!p)return;
+      if(pts.size===1){th-=(e.clientX-p.x)*.008;ph=Math.max(.12,Math.min(Math.PI-.12,ph-(e.clientY-p.y)*.008));placeCam();}
+      p.x=e.clientX;p.y=e.clientY;
+      if(pts.size===2&&pinch0>0)setR(cr0*pinch0/pdist());
+    });
+    const up=e=>{pts.delete(e.pointerId);pinch0=0;};
+    host.addEventListener('pointerup',up);host.addEventListener('pointercancel',up);
+    host.addEventListener('wheel',e=>{if(!e.ctrlKey)return;e.preventDefault();setR(cr*Math.exp(e.deltaY*.01));},{passive:false});
+    $('#zIn').onclick=()=>setR(cr/1.2);
+    $('#zOut').onclick=()=>setR(cr*1.2);
+    $('#vFront').onclick=()=>{th=0;ph=1.45;cr=7.6;placeCam();};
+    $('#vSide').onclick=()=>{th=Math.PI/2;ph=1.45;placeCam();};
+    $('#vTop').onclick=()=>{th=0;ph=.15;placeCam();};
+
+    function resize(){const w=host.clientWidth;if(!w)return;const h=Math.round(Math.max(260,Math.min(w*.62,560)));renderer.setSize(w,h,false);renderer.domElement.style.width='100%';renderer.domElement.style.height=h+'px';camera.aspect=w/h;camera.updateProjectionMatrix();}
+    if(window.ResizeObserver)new ResizeObserver(resize).observe(host);else addEventListener('resize',resize);
+
+    function render(){
+      spin.rotation.y=st.t/DAY*Math.PI*2;
+      scene.updateMatrixWorld(true);
+      sites.forEach(s=>{
+        s.marker.getWorldPosition(tmp);const n=tmp.normalize().clone();
+        const wr=BASE+E*P2(n.dot(uvec)),len=Math.max(.001,wr-1);
+        s.gauge.position.copy(n);s.gauge.quaternion.setFromUnitVectors(Y,n);s.gauge.scale.set(1,len,1);
+        s.tip.position.copy(n).multiplyScalar(wr);
+      });
+      renderer.render(scene,camera);
+    }
+    return {resize,render,setDec,setLat,theme};
+  })();
+  refreshCls();
+
+  return {
+    show(){if(gl)gl.resize();},
+    frame(dt){
+      if(st.playing){st.t=(st.t+dt*st.speed)%DAY;tS.el.value=st.t;$('#pTime-v').textContent=fmtT(st.t);}
+      clock.textContent=`경과 ${fmtT(st.t)} / 하루 24시간 50분`;
+      if(gl)gl.render();
+      for(let i=0;i<3;i++)drawChart(i);
+    }
+  };
+})();
+
+
+/* =========================================================
+   실제 자료: 이어도 해양과학기지 (2020년 1월)
+   ========================================================= */
+const real=(function(){
+  const cv=document.getElementById('cvReal');if(!cv)return {draw(){}};
+  const LW=900,LH=320,L=58,R=16,T=26,B=42;
+  // 원본 그래프의 만조·간조를 읽어 맞춘 조석 성분 (M2,S2,N2,K1,O1,Q1,M4,MS4), t: 1월 1일 0시부터의 시간
+  const C=[0.84,3.47,68.3,28.83,0.75,-4.25,-10.77,-18.36,-19.67,12.28,-12.19,-1.76,3.34,0.16,2.25,2.58,0.17];
+  const F=[0.0805114,0.0833333,0.0789992,0.0417807,0.0387307,0.0372185,0.1610228,0.1638447];
+  const h=t=>{let v=C[0];for(let i=0;i<F.length;i++){const w=2*Math.PI*F[i]*t;v+=C[1+2*i]*Math.cos(w)+C[2+2*i]*Math.sin(w);}return v;};
+  const MOON=[[10.18*24,'망(보름달)'],[24.28*24,'삭']];
+  const st={mode:'all',start:11,hover:null};
+  const bAll=document.getElementById('rAll'),b3=document.getElementById('r3'),wrap=document.getElementById('rStartWrap'),read=document.getElementById('rRead');
+  const setMode=m=>{st.mode=m;bAll.classList.toggle('primary',m==='all');b3.classList.toggle('primary',m==='3');wrap.hidden=m!=='3';st.hover=null;};
+  bAll.onclick=()=>setMode('all');b3.onclick=()=>setMode('3');
+  bindRange('rStart',v=>`1월 ${v}일 ~ ${v+2}일`,v=>{st.start=v;}).set(11);
+  const range=()=>st.mode==='all'?[0,31*24]:[(st.start-1)*24,(st.start+2)*24];
+  const fmt=t=>{const d=Math.floor(t/24)+1,hh=Math.floor(t%24),mm=Math.floor((t%1)*60);return `1월 ${d}일 ${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;};
+  function pos(e){const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*LW/r.width,[t0,t1]=range();if(x<L||x>LW-R)return null;return t0+(x-L)/(LW-L-R)*(t1-t0);}
+  const show=t=>{st.hover=t;if(t==null){read.textContent='그래프 위에 마우스를 올리거나 눌러 값을 확인하세요.';return;}const v=h(t);read.textContent=`${fmt(t)} · 조위 ${v>=0?'+':''}${Math.round(v)} cm`;};
+  cv.addEventListener('pointermove',e=>show(pos(e)));
+  cv.addEventListener('pointerdown',e=>show(pos(e)));
+  cv.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')show(null);});
+  function draw(){
+    const ctx=fitCanvas(cv,LW,LH),[t0,t1]=range(),W=LW-L-R,H=LH-T-B;
+    const X=t=>L+(t-t0)/(t1-t0)*W,Y=v=>T+(150-v)/300*H;
+    ctx.clearRect(0,0,LW,LH);
+    ctx.font=`500 13px ${MONO}`;ctx.fillStyle=COL.muted;ctx.strokeStyle=COL.line;ctx.lineWidth=1;
+    ctx.textAlign='right';ctx.textBaseline='middle';
+    for(let v=-150;v<=150;v+=50){ctx.beginPath();ctx.moveTo(L,Y(v));ctx.lineTo(L+W,Y(v));ctx.stroke();ctx.fillText(String(v),L-8,Y(v));}
+    ctx.textAlign='center';ctx.textBaseline='top';
+    if(st.mode==='all'){for(let d=1;d<=31;d+=5){const x=X((d-1)*24);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.fillText(d+'일',x,T+H+8);}}
+    else{for(let k=0;k<=12;k++){const t=t0+k*6,x=X(t);ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.fillText(k%4===0?`1월 ${Math.floor(t/24)+1}일`:String(t%24).padStart(2,'0')+'시',x,T+H+8);}}
+    ctx.save();ctx.translate(16,T+H/2);ctx.rotate(-Math.PI/2);ctx.font=`500 13px ${FONT}`;ctx.textBaseline='middle';ctx.fillText('조위 (cm)',0,0);ctx.restore();
+    if(st.mode==='all'){ctx.font=`500 13px ${FONT}`;ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText('2020년 1월',L,T+H+24);}
+    // 달의 위상
+    MOON.forEach(([t,name])=>{if(t<t0||t>t1)return;const x=X(t);ctx.setLineDash([5,5]);ctx.strokeStyle=COL.accent;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=COL.accent;ctx.font=`700 13px ${FONT}`;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(name,x,T-6);});
+    // 조위 곡선
+    const n=st.mode==='all'?2400:900;
+    ctx.save();ctx.beginPath();ctx.rect(L,T,W,H);ctx.clip();
+    ctx.beginPath();for(let i=0;i<=n;i++){const t=t0+(t1-t0)*i/n,x=X(t),y=Y(h(t));i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.strokeStyle=COL.tide;ctx.lineWidth=st.mode==='all'?1.4:2.4;ctx.lineJoin='round';ctx.stroke();ctx.restore();
+    // 3일 보기: 만조 표시
+    if(st.mode==='3'){
+      ctx.font=`700 13px ${MONO}`;ctx.textAlign='center';ctx.textBaseline='bottom';
+      for(let t=t0+0.1;t<t1-0.1;t+=0.1){const v=h(t);if(v>h(t-0.1)&&v>=h(t+0.1)){const x=X(t),y=Y(v);ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=COL.cent;ctx.fill();ctx.fillText(`${Math.round(v)}`,x,y-8);}}
+      ctx.font=`500 13px ${FONT}`;ctx.textAlign='right';ctx.textBaseline='top';ctx.fillStyle=COL.cent;ctx.fillText('● 만조 높이(cm)',L+W-6,T+6);
+    }
+    // 커서
+    if(st.hover!=null&&st.hover>=t0&&st.hover<=t1){const x=X(st.hover),y=Y(h(st.hover));ctx.strokeStyle=COL.ink;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,T);ctx.lineTo(x,T+H);ctx.stroke();ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=COL.ink;ctx.fill();}
+  }
+  return {draw};
+})();
+
+/* ---------- 탭 & 루프 ---------- */
+const mods={tide,flat,force,pattern};let active='tide';
+function setTab(id,save){
+  if(!mods[id])id='tide';active=id;
+  document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
+  ['tide','flat','force','pattern'].forEach(k=>{document.getElementById(k).hidden=k!==id;});
+  mods[id].show();
+  if(save){try{history.replaceState(null,'','#'+id);}catch(e){}}
+}
+document.querySelectorAll('[role=tab]').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab,true)));
+setTab((location.hash||'').slice(1)||'tide');
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;try{mods[active].frame(dt);if(active==='pattern')real.draw();}catch(e){console.error(e);}requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{onTheme();});
+})();
+</script>
+
+<script src="../pwa.js" defer></script></body></html>

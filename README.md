@@ -3,7 +3,11 @@
 통합과학1·2, 지구과학, 지구시스템과학, 행성우주과학 단원별로 직접 조작하며 원리를 확인하는 학생용 시뮬레이션 모음입니다.
 사이트: https://jigoolee-earthscience.github.io/jigu-sim/
 
+작업 지침과 상세 절차는 [`CLAUDE.md`](CLAUDE.md), 진행 기록은 [`docs/PROGRESS.md`](docs/PROGRESS.md).
+
 ## 구성
+- `src/` : 원본(직접 고치는 곳) → `python3 tools/build.py`로 아래 사이트 파일을 만듦
+- `kit/` : 디자인 키트(기본 틀, 글꼴, 토스페이스 이모지, 로고)
 - `index.html` : 첫 화면(과목 선택). `SUBJECTS` 목록에 `href`가 있는 과목만 열림
 - `subjects/<과목>.html` : 과목별 단원 목차 (`UNITS` 목록에 `href`가 있는 단원만 열림)
   - `subjects/ess.html` : 지구시스템과학 (미래엔 교과서 목차·쪽수 기준)
@@ -21,14 +25,12 @@
 - 피드백은 인터넷이 연결되어 있을 때만 보낼 수 있습니다(쓴 내용은 기기에 남아 있음).
 
 ## 새 단원 추가
-1. 단원 파일을 `units/<대단원>-<중단원 두 자리>-<영문이름>.html`로 넣는다.
-   - 제목 위 링크: `<a href="../subjects/<과목>.html">← 단원 목차</a>`
-2. `python3 tools/pwaify.py units/새파일.html`
-3. `subjects/<과목>.html`의 `UNITS` 목록에서 해당 단원에 `href:'../units/새파일.html'`을 넣는다.
-4. `index.html`의 `SUBJECTS`에서 그 과목의 공개 단원 수(`open`)를 늘린다.
-5. `sw.js`의 `ASSETS`에 새 파일을 추가하고 `VERSION`을 바꾼다.
+1. `kit/skeleton.html`을 `src/units/<대단원>-<중단원 두 자리>-<영문이름>.html`로 복사해 작성한다.
+2. `src/subjects/<과목>.html`의 `UNITS`에 `href:'../units/새파일.html'`, `src/index.html`의 `SUBJECTS`에서 `open`을 늘린다.
+3. `python3 tools/build.py` (src 전체를 사이트 파일로)
+4. `sw.js`의 `ASSETS`에 새 파일을 추가하고 `VERSION`을 바꾼다.
 
 ## 새 과목 열기
-1. `subjects/ess.html`을 복사해 `subjects/<과목>.html`을 만들고 제목·`UNITS`·교과서 표기를 바꾼다.
-2. `index.html`의 `SUBJECTS`에서 그 과목에 `href:'subjects/<과목>.html'`, `open`, `total`, `pub`(출판사)를 넣는다.
-3. `sw.js`의 `ASSETS`·`VERSION`을 갱신한다.
+1. `src/subjects/ess.html`을 복사해 `src/subjects/<과목>.html`을 만들고 제목·`UNITS`·교과서 표기를 바꾼다.
+2. `src/index.html`의 `SUBJECTS`에서 그 과목에 `href:'subjects/<과목>.html'`, `open`, `total`, `pub`(출판사)를 넣는다.
+3. `python3 tools/build.py` 후 `sw.js`의 `ASSETS`·`VERSION`을 갱신한다.
