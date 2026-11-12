@@ -1,12 +1,13 @@
 /* 지구시스템과학 시뮬레이션 — 오프라인 저장(서비스 워커)
    새 단원을 올릴 때: ASSETS에 파일을 추가하고 VERSION을 바꾼다. */
-const VERSION = '2026-11-06-1';
+const VERSION = '2026-11-12-1';
 const CACHE = 'jigu-sim-' + VERSION;
 const ASSETS = [
   './',
   './index.html',
   './units/2-05-tide.html',
   './units/3-03-stability-precipitation.html',
+  './units/3-04-pressure-forces.html',
   './lib/three.min.js',
   './pwa.js',
   './manifest.webmanifest',
