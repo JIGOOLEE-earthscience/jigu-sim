@@ -1,7 +1,12 @@
-/* 오프라인 저장 등록 + 업데이트 알림 + (목차) 설치 안내 */
+/* 오프라인 저장 등록 + 업데이트 알림 + (첫 화면) 설치 안내 + 피드백 버튼 불러오기 */
 (function () {
   'use strict';
   var base = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
+
+  /* 모든 페이지 오른쪽 아래 피드백 버튼 */
+  var fb = document.createElement('script');
+  fb.src = base + 'feedback.js'; fb.defer = true;
+  document.head.appendChild(fb);
 
   function toast(text) {
     var t = document.createElement('div');

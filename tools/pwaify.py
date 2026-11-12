@@ -20,7 +20,7 @@ for arg in sys.argv[1:]:
                 f'<link rel="apple-touch-icon" href="{p}icons/apple-touch-icon.png">'
                 f'<meta name="mobile-web-app-capable" content="yes">'
                 f'<meta name="apple-mobile-web-app-capable" content="yes">'
-                f'<meta name="apple-mobile-web-app-title" content="지구시스템과학">')
+                f'<meta name="apple-mobile-web-app-title" content="지구과학 시뮬">')
     if 'rel="manifest"' not in s:
         if s.lstrip().lower().startswith('<!doctype'):
             s = re.sub(r'(<meta name=viewport[^>]*>|<meta name="viewport"[^>]*>)', lambda m: m.group(1) + pwa_head, s, count=1)
