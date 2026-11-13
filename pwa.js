@@ -1,4 +1,4 @@
-/* 오프라인 저장 등록 + 업데이트 알림 + (첫 화면) 설치 안내 + 피드백 버튼 불러오기 */
+/* 오프라인 저장 등록 + 업데이트 알림 + (첫 화면) 설치 안내 + 피드백 버튼·화면 배치 불러오기 */
 (function () {
   'use strict';
   var base = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
@@ -7,6 +7,11 @@
   var fb = document.createElement('script');
   fb.src = base + 'feedback.js'; fb.defer = true;
   document.head.appendChild(fb);
+
+  /* 단원 페이지 화면 배치(세로: 화면 고정 + 조작 카드 당기기 / 가로: 두 열 높이 맞춤) */
+  var ly = document.createElement('script');
+  ly.src = base + 'layout.js'; ly.defer = true;
+  document.head.appendChild(ly);
 
   function toast(text) {
     var t = document.createElement('div');
