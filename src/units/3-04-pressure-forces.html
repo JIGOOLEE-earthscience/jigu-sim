@@ -198,6 +198,7 @@ details.adv[open] summary::after{content:'접기'}
       </div>
       <nav class="chips" role="tablist" aria-label="실험 선택">
         <button role="tab" id="tab-torr" data-tab="torr" class="tchip" aria-selected="true"><i class="em em-test-tube"></i>토리첼리 실험</button>
+        <button role="tab" id="tab-pgf" data-tab="pgf" class="tchip" aria-selected="false"><i class="em em-black-rightwards-arrow"></i>기압 경도력</button>
         <button role="tab" id="tab-disk" data-tab="disk" class="tchip" aria-selected="false"><i class="em em-cyclone"></i>회전 원판 · 전향 효과</button>
         <button role="tab" id="tab-globe" data-tab="globe" class="tchip" aria-selected="false"><i class="em em-earth-globe-asia-australia"></i>지구의 전향력</button>
         <button role="tab" id="tab-fric" data-tab="fric" class="tchip" aria-selected="false"><i class="em em-wind-blowing-face"></i>대기 경계층 · 마찰력</button>
@@ -272,7 +273,82 @@ details.adv[open] summary::after{content:'접기'}
     </div>
   </section>
 
-  <!-- ================= 2. 회전 원판 ================= -->
+  <!-- ================= 2. 기압 경도력 ================= -->
+  <!-- JS에서 바꾸는 이모지: em-leaf-fluttering-in-wind em-cyclone em-wind-blowing-face -->
+  <section id="pgf" role="tabpanel" aria-labelledby="tab-pgf" hidden>
+    <div class="lab-head">
+      <h2>기압 경도력의 변수 조절하기</h2>
+      <p>이웃한 등압선의 기압 차(ΔP)와 등압선 간격(ΔL)을 바꾸며, 기압 경도력의 크기가 어떻게 달라지는지 알아봐요.</p>
+    </div>
+    <div class="lab">
+      <div class="stage">
+        <canvas id="cvPgf" width="1000" height="600" style="aspect-ratio:1000/600" aria-label="세로 등압선 사이의 공기 덩어리에 고기압 쪽에서 저기압 쪽으로 작용하는 기압 경도력"></canvas>
+        <p class="note">위에서 내려다본 모습이고, 세로선은 등압선(숫자 단위: hPa)이에요. 공기 밀도는 지표 부근 값(1.2 kg/m³)으로 계산했어요. 공기 덩어리는 기압 경도력만 받는다고 가정했어요 — 실제 바람은 전향력·마찰력도 받아 이렇게 계속 빨라지지 않아요.</p>
+      </div>
+      <div class="controls">
+        <div class="card">
+          <p class="card-title">지금 상태</p>
+          <div class="item">
+            <div class="tile blue" id="pTile"><i class="em em-wind-blowing-face"></i></div>
+            <div class="item-text big"><b id="pF">–</b><span>기압 경도력 P<sub>H</sub> (단위 질량의 공기에 작용)</span></div>
+          </div>
+          <div class="item">
+            <div class="tile yellow"><i class="em em-stopwatch"></i></div>
+            <div class="item-text small"><b id="pV">–</b><span id="pVsub">기압 경도력만 1시간 받았을 때의 풍속</span></div>
+          </div>
+          <p class="status" id="pState"></p>
+          <p class="formula" id="pFormula"></p>
+        </div>
+        <div class="card">
+          <div class="ctl"><div class="row"><label for="pDP">이웃한 등압선의 기압 차 ΔP</label><output id="pDP-v"></output></div><input type="range" id="pDP" min="1" max="8" step="1" value="4"></div>
+          <div class="kbtns" id="pDPB" role="group" aria-label="기압 차 바로 가기">
+            <button class="btn" data-v="1">1 hPa</button><button class="btn" data-v="2">2 hPa</button><button class="btn" data-v="4">4 hPa</button><button class="btn" data-v="8">8 hPa</button>
+          </div>
+          <div class="ctl"><div class="row"><label for="pDL">등압선 간격 ΔL</label><output id="pDL-v"></output></div><input type="range" id="pDL" min="50" max="500" step="10" value="100"></div>
+          <div class="kbtns" id="pDLB" role="group" aria-label="등압선 간격 바로 가기">
+            <button class="btn" data-v="50">50 km</button><button class="btn" data-v="100">100 km</button><button class="btn" data-v="200">200 km</button><button class="btn" data-v="400">400 km</button>
+          </div>
+          <div class="ctl"><div class="row"><label for="pSp">재생 속도</label><output id="pSp-v"></output></div><input type="range" id="pSp" min="1" max="5" step="1" value="3"></div>
+          <div class="checks">
+            <label><input type="checkbox" id="pcFace">면에 작용하는 힘(그림 Ⅲ-26)</label>
+            <label><input type="checkbox" id="pcRef">기준 화살표 남기기(4 hPa · 100 km)</label>
+            <label><input type="checkbox" id="pcHour">1시간마다 멈추기</label>
+          </div>
+          <div class="pair"><button class="btn" id="pReset">처음 상태로</button><button class="btn" id="pBack">출발점으로</button></div>
+          <button class="btn primary btn-xl" id="pGo">공기 덩어리 출발</button>
+        </div>
+        <div class="card">
+          <p class="card-title">알아 둘 용어</p>
+          <div class="item"><div class="tile"><i class="em em-straight-ruler"></i></div><div class="item-text small"><b>등압선</b><span>일기도에서 기압이 같은 지점을 이은 선</span></div></div>
+          <div class="item"><div class="tile blue"><i class="em em-wind-blowing-face"></i></div><div class="item-text small"><b>기압 경도력</b><span>두 지점 사이의 기압 차 때문에 생기는 힘. 기압이 높은 곳에서 낮은 곳으로 등압선에 수직으로 작용하며, 바람을 일으키는 근본적인 힘</span></div></div>
+          <div class="item"><div class="tile yellow"><i class="em em-abacus"></i></div><div class="item-text small"><b>P<sub>H</sub> = (1/ρ) × (ΔP/ΔL)</b><span>단위 질량의 공기에 작용하는 기압 경도력. 기압 차(ΔP)가 클수록, 등압선 간격(ΔL)이 좁을수록 큼</span></div></div>
+        </div>
+        <div class="card">
+          <p class="card-title">생각해 볼 질문 <span class="blue">3개</span></p>
+          <p class="card-sub">화면을 직접 움직이며 답을 찾아보세요</p>
+          <ol class="qlist">
+            <li><span class="num">1</span>ΔP는 4 hPa로 두고 ΔL을 100 km에서 50 km로 줄이면 기압 경도력은 몇 배가 될까요? 400 km로 늘리면요?</li>
+            <li><span class="num">2</span>ΔP와 ΔL을 둘 다 2배로 바꾸면 기압 경도력은 어떻게 될까요? 그 까닭을 식으로 설명해 보세요.</li>
+            <li><span class="num">3</span>일기도에서 바람이 강하게 부는 곳을 찾으려면 등압선의 어떤 모습을 보면 될까요?</li>
+          </ol>
+        </div>
+        <div class="card quiz" data-quiz="pgf"></div>
+        <details class="adv">
+          <summary><i class="em em-mountain"></i>심화 · 공기가 희박한 높은 곳에서는?</summary>
+          <div class="advbody">
+            <span>식 P<sub>H</sub> = (1/ρ) × (ΔP/ΔL)에서 공기 밀도 ρ가 작을수록 같은 ΔP, ΔL이라도 기압 경도력이 커져요. 공기 밀도를 바꿔 확인해 보세요.</span>
+            <div class="seg small" id="pRho" role="group" aria-label="공기 밀도">
+              <button data-v="1.2" aria-pressed="true">지표 부근 1.2</button>
+              <button data-v="0.74" aria-pressed="false">높이 약 5 km 0.74</button>
+            </div>
+            <span class="mini">단위 kg/m³. 높이 5 km의 밀도는 표준 대기의 근삿값이에요.</span>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 3. 회전 원판 ================= -->
   <section id="disk" role="tabpanel" aria-labelledby="tab-disk" hidden>
     <div class="lab-head">
       <h2>회전 원판을 이용한 전향 효과</h2>
@@ -755,6 +831,135 @@ const torr=(function(){
       else if(!st.settle){st.settle=1;sync();}
     }else{st.x=maxLv();st.finger=1;}
     drawScene();drawBars();
+  }};
+})();
+
+/* =========================================================
+   2. 기압 경도력 : pgf
+   ========================================================= */
+const pgf=(function(){
+  const cv=$('#cvPgf');
+  const REF=400/(1.2*100000);            // 기준: 4 hPa, 100 km
+  let KM=1000;                            // 화면 가로 전체가 나타내는 거리(km), 휴대폰은 600
+  const HOUR=3600, SIM=1800;              // '보통' 속도에서 실제 1초 = 30분
+  const st={dP:4,dL:100,rho:1.2,sp:3,face:false,ref:false,hour:false,playing:false,t:0,s:0,v:0,marks:[],stopMsg:'',edge:false};
+  const P_H=()=>st.dP*100/(st.rho*st.dL*1000);
+  const sci=v=>nf(v*1000,v*1000<1?2:2);
+
+  /* ----- 조작 ----- */
+  const go=$('#pGo');
+  const DP=bindRange('pDP',v=>v+' hPa',v=>{st.dP=v;sync();});
+  const DL=bindRange('pDL',v=>v+' km',v=>{st.dL=v;sync();});
+  DP.upd();DL.upd();
+  $$('#pDPB [data-v]').forEach(b=>b.onclick=()=>DP.set(+b.dataset.v));
+  $$('#pDLB [data-v]').forEach(b=>b.onclick=()=>DL.set(+b.dataset.v));
+  bindRange('pSp',v=>SPL[v-1],v=>{st.sp=v;}).set(3);
+  bindCheck('pcFace',v=>{st.face=v;});
+  bindCheck('pcRef',v=>{st.ref=v;});
+  bindCheck('pcHour',v=>{st.hour=v;});
+  const RHO=bindSeg('pRho',v=>{st.rho=+v;sync();});
+  function back(){st.t=0;st.s=0;st.v=0;st.marks=[];st.playing=false;st.stopMsg='';st.edge=false;}
+  $('#pBack').onclick=()=>{back();sync();};
+  $('#pReset').onclick=()=>{back();st.rho=1.2;RHO.set('1.2');DP.set(4);DL.set(100);};
+  go.onclick=()=>{if(st.edge)back();st.playing=!st.playing;if(st.playing)st.stopMsg='';sync();};
+  const tTxt=t=>{const m=Math.round(t/60),h=Math.floor(m/60),r=m%60;return h?(h+'시간'+(r?' '+r+'분':'')):r+'분';};
+
+  function sync(){
+    const a=P_H();
+    go.textContent=st.playing?'일시정지':(st.t>0&&!st.edge?'이어서 출발':'공기 덩어리 출발');
+    $$('#pDPB [data-v]').forEach(b=>b.classList.toggle('on',+b.dataset.v===st.dP));
+    $$('#pDLB [data-v]').forEach(b=>b.classList.toggle('on',+b.dataset.v===st.dL));
+    $('#pF').innerHTML=sci(a)+' <small style="font-size:.55em">× 10⁻³ N/kg</small>';
+    setTile($('#pTile'),a<REF*0.6?'leaf-fluttering-in-wind':a<REF*1.6?'wind-blowing-face':'cyclone');
+    if(st.t>0){$('#pV').textContent=nf(st.v,1)+' m/s';$('#pVsub').textContent=`출발 후 ${tTxt(st.t)} · ${nf(st.s/1000,st.s<10000?1:0)} km 이동`;}
+    else{$('#pV').textContent=nf(a*HOUR,1)+' m/s';$('#pVsub').textContent='기압 경도력만 1시간 받았을 때의 풍속';}
+    let s;
+    if(st.stopMsg)s=st.stopMsg;
+    else if(st.playing)s='공기 덩어리가 기압이 높은 곳에서 낮은 곳으로 움직이고 있어요. 30분마다 찍은 점의 간격을 살펴보세요.';
+    else s=`이웃한 등압선의 기압 차는 <b>${st.dP} hPa</b>, 등압선 간격은 <b>${st.dL} km</b>예요. 화살표의 길이가 기압 경도력의 크기를 나타내요.`;
+    $('#pState').innerHTML=s;
+    $('#pFormula').innerHTML=`<span class="eq">P<sub>H</sub> = <sup>1</sup>⁄<sub>ρ</sub> × <sup>ΔP</sup>⁄<sub>ΔL</sub></span>`+
+      `= <sup>1</sup>⁄<sub>${st.rho} kg/m³</sub> × <sup>${nf(st.dP*100)} Pa</sup>⁄<sub>${nf(st.dL*1000)} m</sub><br>≈ <b>${sci(a)} × 10⁻³ N/kg</b> (= m/s²)`;
+  }
+
+  /* ----- 그리기 ----- */
+  function draw(){
+    const nar=narrowOf(cv),LW=1000,LH=nar?900:600;setAR(cv,LW,LH);
+    const ctx=fitCanvas(cv,LW,LH),fs=ctx.__fs||1,dk=isDark();KM=nar?600:1000;
+    const x0=nar?40:60,x1=LW-(nar?40:60),pk=(x1-x0)/KM,gap=st.dL*pk,xc=(x0+x1)/2;
+    const yT=nar?110:84,yB=LH-(nar?150:118);
+    // 바탕: 고기압 쪽은 붉게, 저기압 쪽은 푸르게
+    ctx.fillStyle=COL.canvas;ctx.fillRect(0,0,LW,LH);
+    const bg=ctx.createLinearGradient(0,0,LW,0);
+    bg.addColorStop(0,dk?'rgba(255,107,118,.16)':'rgba(240,68,82,.10)');bg.addColorStop(.5,'rgba(0,0,0,0)');bg.addColorStop(1,dk?'rgba(106,168,255,.18)':'rgba(49,130,246,.12)');
+    ctx.fillStyle=bg;ctx.fillRect(0,0,LW,LH);
+    // 등압선
+    const kL=Math.ceil((x0-xc)/gap),kR=Math.floor((x1-xc)/gap);
+    const every=Math.max(1,Math.ceil(50*fs/gap));
+    for(let k=kL;k<=kR;k++){const x=xc+k*gap;
+      ctx.strokeStyle=COL.ink2;ctx.globalAlpha=.55;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,yT);ctx.lineTo(x,yB);ctx.stroke();ctx.globalAlpha=1;
+      if(((k%every)+every)%every===0)label(ctx,String(1000-k*st.dP),x,yT-22,{s:15,w:700,c:COL.ink2});}
+    // 공기 덩어리(그림 Ⅲ-26): 등압선 k=-1 ~ 0 사이
+    const bx0=xc-gap,bx1=xc,by=(yT+yB)/2-(nar?60:30),bh=nar?170:130,dep=Math.min(26,gap*.35+6);
+    const grd=ctx.createLinearGradient(bx0,0,bx1,0);grd.addColorStop(0,dk?'rgba(140,180,255,.55)':'rgba(120,170,245,.55)');grd.addColorStop(1,dk?'rgba(90,140,230,.45)':'rgba(160,200,250,.55)');
+    ctx.fillStyle=dk?'rgba(160,195,255,.35)':'rgba(190,215,250,.8)';ctx.beginPath();ctx.moveTo(bx0,by-bh/2);ctx.lineTo(bx0+dep,by-bh/2-dep);ctx.lineTo(bx1+dep,by-bh/2-dep);ctx.lineTo(bx1,by-bh/2);ctx.closePath();ctx.fill();
+    ctx.fillStyle=dk?'rgba(70,110,190,.5)':'rgba(110,160,235,.65)';ctx.beginPath();ctx.moveTo(bx1,by-bh/2);ctx.lineTo(bx1+dep,by-bh/2-dep);ctx.lineTo(bx1+dep,by+bh/2-dep);ctx.lineTo(bx1,by+bh/2);ctx.closePath();ctx.fill();
+    ctx.fillStyle=grd;ctx.fillRect(bx0,by-bh/2,gap,bh);
+    ctx.strokeStyle=dk?'rgba(200,220,255,.8)':'rgba(40,90,170,.55)';ctx.lineWidth=1.5;ctx.strokeRect(bx0,by-bh/2,gap,bh);
+    // 면 이름
+    const bgL=dk?'rgba(30,30,36,.85)':'rgba(255,255,255,.92)';
+    if(gap>=34*fs){label(ctx,'B',bx0+12*fs,by-bh/2+16*fs,{s:14,w:800,c:COL.ink});label(ctx,'A',bx1-12*fs,by-bh/2+16*fs,{s:14,w:800,c:COL.ink});}
+    label(ctx,'S',bx1+dep/2,by-bh*.3-dep/2,{s:14,w:800,c:COL.ink});
+    // ΔL 치수선
+    const yd=by+bh/2+24*fs;
+    ctx.strokeStyle=COL.ink2;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(bx0,yd-8);ctx.lineTo(bx0,yd+8);ctx.moveTo(bx1,yd-8);ctx.lineTo(bx1,yd+8);ctx.stroke();
+    if(gap>16){arrow(ctx,(bx0+bx1)/2,yd,bx0+1,yd,COL.ink2,1.3,7);arrow(ctx,(bx0+bx1)/2,yd,bx1-1,yd,COL.ink2,1.3,7);}
+    label(ctx,'ΔL = '+st.dL+' km',(bx0+bx1)/2,yd+20*fs,{s:14,w:800,c:COL.ink,bg:bgL});
+    // 면에 작용하는 힘
+    if(st.face){const fl=Math.min(90,40+gap*.3),yy=by+bh*.2;
+      arrow(ctx,bx0-fl,yy,bx0-2,yy,COL.cent,4,12);arrow(ctx,bx1+dep+fl,yy,bx1+2,yy,COL.cent,3,11);
+      label(ctx,'(P+ΔP) × S',bx0-fl/2-4,yy+20*fs,{s:13,w:800,c:COL.cent,bg:bgL});
+      label(ctx,'P × S',bx1+fl/2+4,yy+20*fs,{s:13,w:800,c:COL.cent,bg:bgL});
+      label(ctx,'P+ΔP',bx0-6,by-bh/2-14*fs-dep*.2,{s:13,w:800,c:COL.warm,al:'right',bg:bgL});
+      label(ctx,'P',bx1+dep+6,by-bh/2-14*fs-dep,{s:13,w:800,c:COL.stream,al:'left',bg:bgL});}
+    // 기압 경도력 화살표
+    const ay=by-bh*.12,ax=(bx0+bx1)/2,len=v=>Math.max(10,v/REF*90);
+    if(st.ref){const L=len(REF);ctx.globalAlpha=.35;arrow(ctx,ax,ay+(nar?44:34),ax+L,ay+(nar?44:34),COL.grav,8,20);ctx.globalAlpha=1;
+      label(ctx,'기준',ax+L+8,ay+(nar?44:34),{s:13,w:700,c:COL.muted,al:'left'});}
+    const L=len(P_H());arrow(ctx,ax,ay,ax+L,ay,COL.grav,9,22);
+    const lx=Math.min(ax+L+10,x1-4),la=ax+L+10>x1-90?'right':'left';
+    label(ctx,'기압 경도력',la==='right'?Math.min(ax+L,x1)-4:lx,la==='right'?ay-26*fs:ay,{s:16,w:800,c:COL.ink,al:la,bg:bgL});
+    // 움직이는 공기 덩어리
+    const yp=yB-(nar?46:36);
+    st.marks.forEach(m=>{const x=x0+14+m*pk;ctx.fillStyle=COL.stream;ctx.globalAlpha=.45;ctx.beginPath();ctx.arc(x,yp,4.5,0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;
+    {const x=x0+14+st.s/1000*pk;const g=ctx.createRadialGradient(x-5,yp-5,2,x,yp,14);g.addColorStop(0,'#FFFFFF');g.addColorStop(1,COL.stream);
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,yp,12,0,Math.PI*2);ctx.fill();
+      if(st.t===0)label(ctx,'공기 덩어리',x-4,yp-26*fs,{s:13,w:700,c:COL.stream,al:'left',bg:bgL});
+      else{const sp=st.v>.05;if(sp)arrow(ctx,x+16,yp,x+16+Math.min(120,st.v*1.2),yp,COL.stream,3,9);
+        label(ctx,nf(st.v,1)+' m/s',x,yp-26*fs,{s:13,w:800,c:COL.stream,bg:bgL});}}
+    // 고·저, 축척
+    label(ctx,'고',x0+4,LH-(nar?62:44),{s:30,w:800,c:COL.warm,al:'left'});
+    label(ctx,'저',x1-4,LH-(nar?62:44),{s:30,w:800,c:COL.stream,al:'right'});
+    const sbk=nar?100:200,sb=sbk*pk,sbx=xc-sb/2,sby=LH-(nar?58:42);
+    ctx.fillStyle=COL.ink2;ctx.fillRect(sbx,sby,sb,4);ctx.fillRect(sbx,sby-5,2,14);ctx.fillRect(sbx+sb-2,sby-5,2,14);
+    label(ctx,sbk+' km',xc,sby+18*fs,{s:13,w:700,c:COL.muted});
+  }
+
+  sync();
+  return {show(){},frame(dt){
+    if(st.playing){
+      const pk=1, a=P_H();let d=dt*SPM[st.sp-1]*SIM;
+      while(d>0){const step=Math.min(d,60);
+        // 1시간마다 멈추기
+        if(st.hour){const nextH=Math.floor(st.t/HOUR+1e-9)*HOUR+HOUR;if(st.t+step>=nextH){const s2=nextH-st.t;st.v+=a*s2;st.s+=st.v*s2;st.t=nextH;
+          st.playing=false;st.stopMsg=`출발 후 <b>${tTxt(st.t)}</b>이 지났어요. 지금 풍속은 <b>${nf(st.v,1)} m/s</b>예요. 다시 출발해 1시간 뒤의 풍속과 비교해 보세요.`;break;}}
+        const prev=Math.floor(st.t/(HOUR/2));st.v+=a*step;st.s+=st.v*step;st.t+=step;d-=step;
+        if(Math.floor(st.t/(HOUR/2))>prev)st.marks.push(st.s/1000);
+        if(st.s/1000>KM-40){st.playing=false;st.edge=true;st.stopMsg=`공기 덩어리가 <b>${tTxt(st.t)}</b> 만에 화면 끝에 닿았어요. 기압 경도력이 클수록 더 빨리 도착해요.`;break;}
+      }
+      sync();
+    }
+    draw();
   }};
 })();
 
@@ -1394,6 +1599,14 @@ const fric=(function(){
       {t:'mc',q:'토리첼리 실험에서 유리관을 기울였을 때 옳은 설명은?',o:['수은 기둥의 연직 높이가 낮아진다','수은 기둥의 연직 높이는 변하지 않는다','관 속 수은 기둥의 길이가 짧아진다'],a:1,
         hint:'압력을 결정하는 것은 기둥의 길이가 아니라 연직 높이예요.',exp:'대기압이 같으면 <b>연직 높이(76 cm)는 그대로</b>이고, 기울어진 관 속 수은의 길이는 오히려 길어져요.'}
     ],
+    pgf:[
+      {t:'mc',q:'기압 차(ΔP)는 그대로 두고 등압선 간격(ΔL)만 절반으로 줄이면 기압 경도력은 어떻게 될까요?',o:['1/2배가 된다','변하지 않는다','2배가 된다','4배가 된다'],a:2,
+        hint:'P<sub>H</sub> = (1/ρ) × (ΔP/ΔL)에서 ΔL은 분모에 있어요.',exp:'ΔL이 분모에 있으므로 간격이 절반이 되면 기압 경도력은 <b>2배</b>가 돼요.'},
+      {t:'num',q:'이웃한 등압선의 기압 차가 4 hPa, 간격이 200 km일 때 단위 질량의 공기에 작용하는 기압 경도력은 몇 × 10⁻³ N/kg일까요? (공기 밀도 1.2 kg/m³)',a:1.67,tol:0.04,unit:'× 10⁻³ N/kg',
+        hint:'4 hPa = 400 Pa, 200 km = 200 000 m로 바꿔 P<sub>H</sub> = (1/ρ) × (ΔP/ΔL)에 넣어 보세요.',exp:'(1/1.2) × (400 ÷ 200 000) ≈ <b>1.67 × 10⁻³ N/kg</b>'},
+      {t:'mc',q:'기압 경도력이 작용하는 방향으로 옳은 것은?',o:['저기압에서 고기압 쪽으로, 등압선에 수직','고기압에서 저기압 쪽으로, 등압선에 수직','고기압에서 저기압 쪽으로, 등압선과 나란하게'],a:1,
+        hint:'화면의 화살표가 어느 쪽을 향하는지, 등압선과 어떤 각을 이루는지 보세요.',exp:'기압 경도력은 <b>기압이 높은 곳에서 낮은 곳으로, 등압선에 수직</b>으로 작용해요.'}
+    ],
     disk:[
       {t:'mc',q:'원판을 시계 반대 방향으로 회전시키며 중심에서 쇠구슬을 굴렸어요. 원판 위의 종이에 남은 자국은?',o:['운동 방향의 오른쪽으로 휘어진다','운동 방향의 왼쪽으로 휘어진다','곧은 직선이다'],a:0,
         hint:'오른쪽 화면(원판 위에서 본 모습)의 잉크 자국을 확인해 보세요.',exp:'<b>오른쪽</b>으로 휘어져요. 북쪽에서 내려다본 지구도 시계 반대 방향으로 돌기 때문에 북반구와 같아요.'},
@@ -1458,7 +1671,7 @@ const fric=(function(){
 
 
 /* ---------- 탭 & 루프 ---------- */
-const mods={torr,disk,globe,fric};const ORDER=Object.keys(mods);let active=ORDER[0];
+const mods={torr,pgf,disk,globe,fric};const ORDER=Object.keys(mods);let active=ORDER[0];
 function setTab(id,save){
   if(!mods[id])id=ORDER[0];active=id;
   document.querySelectorAll('[role=tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===id)));
