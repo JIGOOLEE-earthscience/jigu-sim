@@ -213,7 +213,7 @@ details.adv[open] summary::after{content:'접기'}
       <p>여러 가지 액체로 실험해 보며, 액체의 밀도와 기둥 높이만 재면 기압을 구할 수 있는 까닭을 알아봐요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="tGo" data-back="tReset">
         <canvas id="cvTorr" width="1000" height="600" style="aspect-ratio:1000/600" aria-label="액체를 채운 유리관을 거꾸로 세워 액체 기둥의 높이로 대기압을 재는 토리첼리 실험"></canvas>
         <div class="chart">
           <div class="chart-top">같은 기압에서 액체 기둥의 높이 비교<span id="tBarSub">기압 1013 hPa</span></div>
@@ -281,7 +281,7 @@ details.adv[open] summary::after{content:'접기'}
       <p>이웃한 등압선의 기압 차(ΔP)와 등압선 간격(ΔL)을 바꾸며, 기압 경도력의 크기가 어떻게 달라지는지 알아봐요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="pGo" data-back="pBack" data-play-pos="tr">
         <canvas id="cvPgf" width="1000" height="600" style="aspect-ratio:1000/600" aria-label="세로 등압선 사이의 공기 덩어리에 고기압 쪽에서 저기압 쪽으로 작용하는 기압 경도력"></canvas>
         <p class="note">위에서 내려다본 모습이고, 세로선은 등압선(숫자 단위: hPa)이에요. 공기 밀도는 지표 부근 값(1.2 kg/m³)으로 계산했어요. 공기 덩어리는 기압 경도력만 받는다고 가정했어요 — 실제 바람은 전향력·마찰력도 받아 이렇게 계속 빨라지지 않아요.</p>
       </div>
@@ -355,7 +355,7 @@ details.adv[open] summary::after{content:'접기'}
       <p>같은 쇠구슬의 움직임을 원판 밖(멈춰 있는 관찰자)과 원판 위(함께 도는 관찰자)에서 동시에 비교해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="dPlay" data-back="dBack">
         <canvas id="cvDisk" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="원판 밖과 원판 위에서 본 쇠구슬의 운동 경로 비교"></canvas>
         <div class="leg" id="diskLeg"></div>
         <p class="note">원판과 쇠구슬 사이의 마찰은 무시했어요. 쇠구슬은 원판 중심에서 깃발(목표 지점) 쪽으로 굴리고, 종이에는 잉크 자국이 남아요. 잉크 자국은 최대 4개까지 남아요.</p>
@@ -418,7 +418,7 @@ details.adv[open] summary::after{content:'접기'}
       <p>위도와 이동 방향을 바꾸며, 수평 방향으로 움직이는 물체에 작용하는 전향력의 방향과 크기를 확인해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="gPlay" data-back="gBack" data-play-pos="tr">
         <div class="gl-host" id="glHost" aria-label="지구 위 한 지점에서 운동 방향과 전향력 방향을 보여 주는 3D 지구본"><span class="gl-hint">끌어서 돌리기 · 두 손가락으로 확대</span></div>
         <div class="viewbar" role="group" aria-label="시점과 확대">
           <button class="btn" data-view="front">정면</button><button class="btn" data-view="north">북극 위에서</button><button class="btn" data-view="south">남극 위에서</button><button class="btn" data-view="spot">지점 위에서</button>
@@ -493,7 +493,7 @@ details.adv[open] summary::after{content:'접기'}
       <p>지표면의 종류를 바꾸며, 지표면의 거칠기에 따라 높이별 바람의 세기가 어떻게 달라지는지 확인해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="fPlay">
         <canvas id="cvFric" width="1000" height="600" style="aspect-ratio:1000/600" aria-label="지표면 종류에 따른 높이별 풍속과 대기 경계층"></canvas>
         <div class="leg" id="fLeg"></div>
         <p class="readout" id="fRead">그래프 위에 마우스를 올리거나 터치하면 높이별 풍속을 읽을 수 있어요.</p>

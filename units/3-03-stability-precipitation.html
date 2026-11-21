@@ -377,7 +377,7 @@ table.read.data td{font-size:14px}
       <p>공기 덩어리가 외부와 열을 주고받지 않고 부피 변화로 온도가 변하는 모습을 관찰해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="aPlay">
         <canvas id="cvAdia" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="공기 덩어리가 상승하면 팽창하고 하강하면 압축되는 단열 변화 시뮬레이션"></canvas>
         <p class="note">불포화 공기 덩어리(높이 1 km마다 약 10 ℃ 변화)로 가정했어요. 부피 변화와 분자 운동은 잘 보이도록 과장해 표현했고, 기압은 근삿값이에요.</p>
       </div>
@@ -396,7 +396,7 @@ table.read.data td{font-size:14px}
         </div>
         <div class="card">
           <div class="ctl"><div class="row"><label for="aT0">지표면에서의 온도</label><output id="aT0-v"></output></div><input type="range" id="aT0" min="0" max="30" step="1" value="20"></div>
-          <div class="ctl"><div class="row"><label for="aH">공기 덩어리 높이</label><output id="aH-v"></output></div><input type="range" id="aH" min="0" max="5" step="0.01" value="0"></div>
+          <div class="ctl" data-dock><div class="row"><label for="aH">공기 덩어리 높이</label><output id="aH-v"></output></div><input type="range" id="aH" min="0" max="5" step="0.01" value="0"></div>
           <div class="kbtns" role="group" aria-label="높이로 이동"><button class="btn" data-ah="0">지표</button><button class="btn" data-ah="1">1 km</button><button class="btn" data-ah="2">2 km</button><button class="btn" data-ah="3">3 km</button><button class="btn" data-ah="4">4 km</button><button class="btn" data-ah="5">5 km</button></div>
           <div class="pair"><button class="btn" id="aUp">⬆ 상승시키기</button><button class="btn" id="aDown">⬇ 하강시키기</button></div>
           <button class="btn primary btn-xl" id="aPlay">재생하기</button>
@@ -443,7 +443,7 @@ table.read.data td{font-size:14px}
       <p>기온과 수증기량을 바꾸며 공기가 불포화 → 포화 → 응결로 바뀌는 모습을 분자 수준에서 관찰해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="vPlay" data-back="vReset" data-play-pos="tr">
         <canvas id="cvSvp" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="공기 속 수증기 분자와 물방울, 포화 수증기압 곡선 위의 공기 상태"></canvas>
         <div class="leg">
           <span><i class="dot" style="background:var(--moist)"></i>수증기(기체) 분자</span>
@@ -531,7 +531,7 @@ table.read.data td{font-size:14px}
       <p>공기 덩어리를 상승시키며 기온과 이슬점이 만나는 높이(구름이 생기기 시작하는 높이)를 찾아요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="lPlay" data-back="lReset" data-play-pos="tr">
         <canvas id="cvLcl" width="1000" height="600" style="aspect-ratio:1000/600" aria-label="높이-기온 그래프 위에서 공기 덩어리의 기온과 이슬점 변화를 보여 주는 단열선도"></canvas>
         <div class="leg">
           <span><i style="background:var(--dry)"></i>공기 덩어리 기온(건조 단열 감률)</span>
@@ -556,7 +556,7 @@ table.read.data td{font-size:14px}
         <div class="card">
           <div class="ctl"><div class="row"><label for="lT">지표면 기온 (T)</label><output id="lT-v"></output></div><input type="range" id="lT" min="0" max="35" step="1" value="20"></div>
           <div class="ctl"><div class="row"><label for="lTd">지표면 이슬점 (T<sub>d</sub>)</label><output id="lTd-v"></output></div><input type="range" id="lTd" min="-10" max="20" step="1" value="12"></div>
-          <div class="ctl"><div class="row"><label for="lH">공기 덩어리 높이</label><output id="lH-v"></output></div><input type="range" id="lH" min="0" max="5" step="0.01" value="0"></div>
+          <div class="ctl" data-dock><div class="row"><label for="lH">공기 덩어리 높이</label><output id="lH-v"></output></div><input type="range" id="lH" min="0" max="5" step="0.01" value="0"></div>
           <div class="ctl"><div class="row"><label for="lSp">상승 속도</label><output id="lSp-v"></output></div><input type="range" id="lSp" min="1" max="5" step="1" value="3"></div>
           <div class="checks">
             <label><input type="checkbox" id="lcDry"><span class="chip dash" style="color:var(--dry)"></span>건조 단열선</label>
@@ -605,7 +605,7 @@ table.read.data td{font-size:14px}
       <p>공기 덩어리가 산 사면을 따라 오르고 내려올 때 기온과 이슬점이 어떻게 변하는지 단열선도와 함께 봐요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="fhPlay" data-back="fhReset" data-play-pos="tr">
         <canvas id="cvFoehn" width="1000" height="620" style="aspect-ratio:1000/620" aria-label="산 사면을 넘는 공기 덩어리와 높이-기온 그래프(단열선도)"></canvas>
         <div class="leg">
           <span><i style="background:var(--dry)"></i>공기 덩어리 기온(건조 단열 감률)</span>
@@ -628,7 +628,7 @@ table.read.data td{font-size:14px}
           <div class="status" id="fhState"></div>
         </div>
         <div class="card">
-          <div class="ctl"><div class="row"><label for="fhU">공기 덩어리 위치</label><output id="fhU-v"></output></div><input type="range" id="fhU" min="0" max="1" step="0.001" value="0"></div>
+          <div class="ctl" data-dock><div class="row"><label for="fhU">공기 덩어리 위치</label><output id="fhU-v"></output></div><input type="range" id="fhU" min="0" max="1" step="0.001" value="0"></div>
           <div class="kbtns" style="grid-template-columns:repeat(4,1fr)" role="group" aria-label="위치 바로가기"><button class="btn" data-fu="start">출발</button><button class="btn" data-fu="lcl">응결 고도</button><button class="btn" data-fu="top">산 정상</button><button class="btn" data-fu="end">도착</button></div>
           <div class="ctl"><div class="row"><label for="fhT0">출발 기온</label><output id="fhT0-v"></output></div><input type="range" id="fhT0" min="10" max="30" step="1" value="20"></div>
           <div class="ctl"><div class="row"><label for="fhTd0">출발 이슬점</label><output id="fhTd0-v"></output></div><input type="range" id="fhTd0" min="0" max="20" step="1" value="12"></div>
@@ -685,7 +685,7 @@ table.read.data td{font-size:14px}
       <p>기온 감률(기온 변화선)과 단열 감률을 비교해 대기 안정도를 판단하고, 생기는 구름을 확인해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="sPlay" data-back="sReset" data-play-pos="tr">
         <canvas id="cvStab" width="1000" height="640" style="aspect-ratio:1000/640" aria-label="기온 변화선과 단열선을 비교해 대기 안정도를 판별하는 시뮬레이션"></canvas>
         <div class="leg">
           <span><i style="background:var(--env)"></i>기온 변화선(주위 공기)</span>
@@ -789,7 +789,7 @@ table.read.data td{font-size:14px}
       <p>지표면 부근 공기의 기온이 이슬점까지 내려가 포화되는 과정을 그래프 두 개로 함께 봐요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="fPlay" data-back="fReset">
         <canvas id="cvFogS" width="1000" height="380" style="aspect-ratio:1000/380" aria-label="안개가 생기는 장면"></canvas>
         <div class="duo">
           <figure><canvas id="cvFogD" width="600" height="500" style="aspect-ratio:600/500" aria-label="높이-기온 그래프"></canvas><figcaption id="fogDcap">높이-기온 그래프: 기온 변화선과 이슬점</figcaption></figure>
@@ -848,7 +848,7 @@ table.read.data td{font-size:14px}
       <p>구름 입자가 빗방울 크기로 자라는 두 가지 방법을 비교해요.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="rPlay" data-back="rReset">
         <canvas id="cvRain" width="1000" height="560" style="aspect-ratio:1000/560" aria-label="병합설과 빙정설 강수 과정 시뮬레이션"></canvas>
         <figure id="iceFig" style="margin:10px 0 0" hidden>
           <canvas id="cvIce" width="1000" height="470" style="aspect-ratio:1000/470;touch-action:pan-y" aria-label="과냉각 물방울과 빙정의 포화 수증기압 그래프"></canvas>

@@ -262,7 +262,7 @@ table.read td:first-child{font-weight:600;color:var(--ink2)}
       <p>바닷물이 육지 쪽으로 밀려왔다가 빠져나가는 것은 해수면이 높아졌다 낮아지기 때문이다.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="tPlay">
         <canvas id="cvTide" width="1000" height="520" style="aspect-ratio:1000/520" aria-label="해수면 상승과 하강에 따른 밀물과 썰물 단면"></canvas>
         <div class="tide-mini">
           <div class="tide-mini-top"><span>시간에 따른 해수면 높이</span><span class="muted-s">하루(약 24시간 50분) 동안</span></div>
@@ -322,7 +322,7 @@ table.read td:first-child{font-weight:600;color:var(--ink2)}
       <p>조차가 같아도 경사가 완만할수록 만조선과 간조선 사이 거리가 길어져 갯벌이 넓게 드러난다.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="flatPlay">
         <canvas id="cvFlat" width="1000" height="480" style="aspect-ratio:1000/480" aria-label="서해와 동해 해안 단면 시뮬레이션"></canvas>
         <p class="note">한반도 동서 단면입니다. 가로·세로 축척을 다르게 해 경사를 과장했습니다. 밀물·썰물에 따라 해수면이 오르내립니다.</p>
       </div>
@@ -419,7 +419,7 @@ table.read td:first-child{font-weight:600;color:var(--ink2)}
       <p>지구 적도면은 달의 공전 궤도면과 기울어져 있다. 지구가 자전할 때 각 지점이 해수면 부푼 부분의 어디를 지나가는지 관찰한다.</p>
     </div>
     <div class="lab">
-      <div class="stage">
+      <div class="stage" data-play="pPlay" data-back="pReset">
         <div class="gl-host" id="gl">
           <div class="gl-clock" id="glClock"></div>
           <div class="gl-hint">끌어서 회전 · 두 손가락으로 확대/축소</div>
@@ -434,7 +434,7 @@ table.read td:first-child{font-weight:600;color:var(--ink2)}
             <button class="btn primary" id="pPlay">일시정지</button>
             <button class="btn" id="pReset">0시로</button>
           </div>
-          <div class="ctl"><div class="row"><label for="pTime">경과 시간</label><output id="pTime-v"></output></div><input type="range" id="pTime" min="0" max="24.84" step="0.01"></div>
+          <div class="ctl" data-dock><div class="row"><label for="pTime">경과 시간</label><output id="pTime-v"></output></div><input type="range" id="pTime" min="0" max="24.84" step="0.01"></div>
           <div class="ctl"><div class="row"><label for="pSpeed">재생 속도</label><output id="pSpeed-v"></output></div><input type="range" id="pSpeed" min="0.5" max="8" step="0.5"></div>
         </div>
         <div class="group">
