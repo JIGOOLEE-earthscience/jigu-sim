@@ -103,7 +103,7 @@
 | 통합과학2 | 1학년 공통 | `subjects/is2.html` | **동아출판** |
 | 지구과학 | 2학년 일반 선택 | `subjects/es.html` | **미래엔** |
 | 지구시스템과학 | 2학년 진로 선택 | `subjects/ess.html` | **미래엔** (목차에 '미래엔 ○쪽'으로 표기) |
-| 행성우주과학 | 진로 선택 | `subjects/ps.html` | **미래엔** |
+| 행성우주과학 | 3학년 1학기 진로 선택 | `subjects/ps.html` | **미래엔** |
 - 교과서마다 쪽수가 달라 출판사를 반드시 표기. 새 과목을 열 때 선생님께 출판사 확인.
 - 새 과목 열기: `src/subjects/ess.html` 복사 → 제목·`UNITS`·출판사 표기 변경 → `src/index.html` `SUBJECTS`에 `href:'subjects/<과목>.html'`, `open`, `total`, `pub` → build → `sw.js` 갱신.
 
