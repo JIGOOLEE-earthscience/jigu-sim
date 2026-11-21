@@ -1,0 +1,48 @@
+지구과학 체험형 시뮬레이션 (jigu-sim)
+Copyright (c) 2026 이상민 (남양고등학교)
+
+이 저장소와 사이트(https://jigoolee-earthscience.github.io/jigu-sim/)의 시뮬레이션,
+화면 구성, 문구, 직접 그린 그림, 형성평가 문항, 원본 코드는
+크리에이티브 커먼즈 저작자표시-비영리-변경금지 4.0 국제 라이선스
+(CC BY-NC-ND 4.0)에 따라 이용할 수 있습니다.
+
+  라이선스 요약: https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko
+  라이선스 전문: https://creativecommons.org/licenses/by-nc-nd/4.0/legalcode.ko
+
+- 저작자표시: 이용할 때 저작자(이상민, 남양고등학교)와 출처(사이트 주소)를 밝혀야 합니다.
+- 비영리: 상업적 목적으로 이용할 수 없습니다.
+- 변경금지: 내용을 고치거나 이를 바탕으로 새 저작물을 만들어 배포할 수 없습니다.
+
+교사의 수업, 학생의 학습을 위해 링크·QR코드를 공유하거나 수업 중에 화면을
+보여 주는 것은 환영합니다. 위 조건을 벗어난 이용은 아래로 문의해 주세요.
+문의: earthsci24@korea.kr
+
+This work is licensed under the Creative Commons
+Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0).
+https://creativecommons.org/licenses/by-nc-nd/4.0/
+
+
+----------------------------------------------------------------------
+다른 저작물 (각 라이선스를 따르며, 위 CC BY-NC-ND 4.0의 대상이 아님)
+----------------------------------------------------------------------
+
+1. 토스페이스 (Tossface) — kit/em/, 각 페이지에 들어간 이모지 그림
+   이 사이트에는 토스팀에서 제공한 토스페이스가 적용되어 있습니다.
+   토스페이스 저작권 안내: https://toss.im/tossface/copyright
+   토스페이스 라이선스 전문: https://github.com/toss/tossface/blob/main/LICENSE
+
+2. Pretendard — kit/font/pretendard-kr.woff2, 각 페이지에 들어간 글꼴
+   Copyright (c) 2021, Kil Hyung-jin (https://github.com/orioncactus/pretendard)
+   This Font Software is licensed under the SIL Open Font License, Version 1.1.
+   https://openfontlicense.org/open-font-license-official-text/
+
+3. three.js r128 — lib/three.min.js
+   Copyright 2010-2021 Three.js Authors
+   SPDX-License-Identifier: MIT
+   https://github.com/mrdoob/three.js/blob/r128/LICENSE
+
+4. 2022 개정 과학과 교육과정 (교육부 고시 제2022-33호 [별책 9]) — docs/curriculum/
+   교육부 고시 원문에서 글자를 옮겨 적은 참고 자료입니다.
+
+교과서 내용은 개념과 용어를 참고했으며, 교과서의 그림·사진을 그대로 옮기지 않고
+새로 그렸습니다. 교과서 원본(PDF·스캔본)은 이 저장소에 포함되어 있지 않습니다.

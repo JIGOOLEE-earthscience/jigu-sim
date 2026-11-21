@@ -107,6 +107,12 @@ a.subj:focus-visible,.resume:focus-visible{outline:2px solid var(--accent);outli
 .copy:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .copy{font:600 12px var(--font);color:var(--btn-ink);background:var(--panel);border:0;border-radius:8px;padding:4px 9px;cursor:pointer}
 .pub{font-size:12.5px;color:var(--sub)}
+.lic{max-width:640px;margin-top:8px;padding-top:12px;border-top:1px solid var(--line, rgba(128,128,128,.2));font-size:12.5px;line-height:1.6;color:var(--sub);text-wrap:pretty}
+.lic p{margin:0 0 2px}
+.lic b{color:var(--ink2);font-weight:600}
+.lic a{color:var(--accent);text-decoration:none;font-weight:600;white-space:nowrap}
+.lic a:hover{text-decoration:underline}
+.lic .third{margin-top:6px;font-size:11.5px}
 @media (prefers-reduced-motion: reduce){.subj{transition:none}a.subj:hover,a.subj:active{transform:none}}
 </style>
 <!-- 이모지: em-microscope em-alembic em-volcano em-earth-globe-asia-australia em-ringed-planet em-mobile-phone em-black-right-pointing-triangle -->
@@ -154,6 +160,11 @@ a.subj:focus-visible,.resume:focus-visible{outline:2px solid var(--accent);outli
   <footer class="foot">
     <div class="contact"><span>문의</span><b>남양고등학교 이상민</b><a href="mailto:earthsci24@korea.kr" id="mail">earthsci24@korea.kr</a><button class="copy" id="copyMail" type="button">복사</button></div>
     <span>2022 개정 교육과정 · 단원 목차와 쪽수는 과목별 교과서 기준</span>
+    <div class="lic">
+      <p><b>© 2026 이상민(남양고등학교).</b> 이 사이트의 시뮬레이션은 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/deed.ko" target="_blank" rel="noopener license">CC BY-NC-ND 4.0</a>에 따라 이용할 수 있어요.</p>
+      <p>교사의 수업·학생의 학습을 위한 공유는 환영해요. 상업적 이용과 내용 수정은 할 수 없어요.</p>
+      <p class="third">이 사이트에는 토스팀에서 제공한 <a href="https://toss.im/tossface/copyright" target="_blank" rel="noopener">토스페이스</a>가 적용되어 있어요. 글꼴 <a href="https://github.com/orioncactus/pretendard" target="_blank" rel="noopener">Pretendard</a>(SIL OFL 1.1), 3D <a href="https://github.com/mrdoob/three.js" target="_blank" rel="noopener">three.js</a>(MIT)는 각 라이선스를 따라요. <a href="https://github.com/JIGOOLEE-earthscience/jigu-sim/blob/main/LICENSE" target="_blank" rel="noopener">라이선스 전체 보기</a></p>
+    </div>
   </footer>
 </div>
 
