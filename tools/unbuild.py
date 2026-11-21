@@ -2,6 +2,9 @@
 # 원본이 없는 옛 페이지를 고쳐야 할 때 한 번만 쓰면 된다.
 #   python3 tools/unbuild.py units/2-05-tide.html   → src/units/2-05-tide.html
 import re, sys, pathlib
+for _s in (sys.stdout, sys.stderr):
+    try: _s.reconfigure(encoding='utf-8', errors='replace')
+    except Exception: pass
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 for arg in sys.argv[1:]:
     f = pathlib.Path(arg).resolve(); rel = f.relative_to(ROOT)

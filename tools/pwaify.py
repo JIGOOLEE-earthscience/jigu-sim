@@ -5,6 +5,10 @@
 # - three.js를 인터넷(cdnjs) 대신 lib/three.min.js에서 읽게 한다.
 # - 마지막에 pwa.js(오프라인 저장 등록)를 붙인다.
 import re, sys, pathlib
+# Windows(한글 cp949 콘솔·파이프)에서도 한글·⚠ 출력이 깨지지 않게
+for _s in (sys.stdout, sys.stderr):
+    try: _s.reconfigure(encoding='utf-8', errors='replace')
+    except Exception: pass
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 for arg in sys.argv[1:]:

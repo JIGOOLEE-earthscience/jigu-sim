@@ -10,6 +10,10 @@
 #   3) <script> 문법 검사(node 가 있으면)
 # 원본 src/<경로>.html → 결과 <경로>.html (예: src/units/a.html → units/a.html)
 import base64, re, sys, pathlib, subprocess, shutil, tempfile
+# Windows(한글 cp949 콘솔·파이프)에서도 한글·⚠ 출력이 깨지지 않게
+for _s in (sys.stdout, sys.stderr):
+    try: _s.reconfigure(encoding='utf-8', errors='replace')
+    except Exception: pass
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 KIT = ROOT / 'kit'
@@ -38,7 +42,7 @@ def build(src):
     if shutil.which('node'):
         js = '\n;\n'.join(re.findall(r'<script>(.*?)</script>', out.read_text(encoding='utf-8'), re.S))
         with tempfile.NamedTemporaryFile('w', suffix='.js', delete=False, encoding='utf-8') as f: f.write(js)
-        r = subprocess.run(['node', '--check', f.name], capture_output=True, text=True)
+        r = subprocess.run(['node', '--check', f.name], capture_output=True, text=True, encoding='utf-8', errors='replace')
         msg += '  문법 OK' if r.returncode == 0 else '\n  ⚠ 문법 오류:\n' + r.stderr
     print(msg)
 

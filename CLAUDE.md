@@ -6,6 +6,18 @@
 - 저장소: JIGOOLEE-earthscience/jigu-sim (공개 저장소 → 교과서 PDF·스캔본은 절대 올리지 않음)
 - 답변은 한국어로, 결론 먼저·짧게. 서론·칭찬 없이. 불확실하면 추측하지 말고 모른다고 말함.
 
+## 0. 작업 환경 (Claude Code, 2026-11-21부터)
+- 선생님 PC(Windows)의 OneDrive 폴더 `…\2026학년도\2. 교과\15. 교과 관련 바이브코딩\지구과학 시뮬레이션`이 이 저장소의 루트. 여기서 Claude Code를 열면 이 파일이 자동으로 읽힘.
+- 작업을 시작할 때 `docs/PROGRESS.md`(남은 요청)와 해당 단원의 `docs/units/<단원>.md`를 먼저 읽음. 작업 전에 `git pull`로 최신 상태 맞춤(다른 기기·채팅에서 올렸을 수 있음).
+- Windows 명령: `python3` 대신 `py`(없으면 `python`). 예: `py tools/build.py src/units/<파일>.html`. node가 있으면 빌드 때 문법 검사도 함.
+- 화면 검사(playwright)는 처음 한 번 `py -m pip install playwright` → `py -m playwright install chromium`. 미리보기는 `py -m http.server 8000` 후 `http://localhost:8000/units/<파일>.html`.
+- **사이트 반영(목차 연결·`sw.js`·커밋·푸시)은 선생님이 '올려줘'라고 할 때.** 만들거나 고친 뒤에는 로컬 미리보기 주소를 주고 올릴지 한 줄로 물음.
+- 커밋·푸시는 선생님 PC의 git 로그인(GitHub 계정 JIGOOLEE-earthscience)으로 함. 푸시가 인증 오류면 선생님께 GitHub 로그인 창 확인을 안내.
+- 교과서 PDF·스캔본: `textbook/<과목>/<출판사>/` (예: `textbook/지구시스템과학/미래엔/`). `.gitignore`로 제외돼 GitHub에 안 올라감. 파일 이름에 단원·쪽을 넣으면 찾기 쉬움(예: `Ⅲ-05_104-111쪽.pdf`). PDF는 필요한 쪽만 읽음.
+- 교육과정: `docs/curriculum/<과목>.md`(2022 개정 과학과 교육과정에서 5과목 성취기준·해설·적용 시 고려 사항을 글자로 뽑은 것), 원본 PDF는 `reference/`(로컬 전용). 새 단원은 해당 성취기준 코드와 '다루지 않는 내용'을 확인해 `docs/units/<단원>.md`에 적음. 교과서와 다르면 교과서 표현 우선.
+- 명령(`.claude/commands/`): `/new-unit`(새 단원 만들기), `/publish`(사이트에 올리기), `/log`(진행 기록 정리). 선생님용 사용법은 `docs/CLAUDE-CODE-START.md`.
+- OneDrive 폴더이므로 두 PC에서 동시에 작업하지 않음. 동기화 충돌 사본(`…-PC이름.html` 등)이 보이면 지우지 말고 선생님께 알림.
+
 ## 1. 폴더 구조
 | 경로 | 내용 |
 |---|---|
@@ -24,7 +36,11 @@
 | `lib/three.min.js` | three.js r128 내장본 |
 | `docs/PROGRESS.md` | 단원별 진행 상황·결정 사항·남은 요청 → **작업할 때마다 갱신** |
 | `docs/units/<단원>.md` | 단원별 교과서 분석 메모·교과서와 다르게 처리한 부분 |
-| `textbook/` | 교과서 PDF 보관(로컬 전용, `.gitignore`로 제외) |
+| `textbook/<과목>/<출판사>/` | 교과서 PDF 보관(로컬 전용, `.gitignore`로 제외) |
+| `reference/` | 참고 자료 원본(2022 개정 과학과 교육과정 PDF 등, 로컬 전용) |
+| `docs/curriculum/` | 교육과정 5과목 성취기준·해설 텍스트(`README.md`에 목록) |
+| `.claude/commands/` | Claude Code 명령 `/new-unit`·`/publish`·`/log` |
+| `docs/CLAUDE-CODE-START.md` | 선생님용 Claude Code 사용 안내 |
 
 ## 2. 새 단원 만들기 (순서)
 1. **교과서 분석 먼저.** `textbook/` 또는 첨부된 PDF에서 본문 용어·수치, 모든 그림·그래프의 축(가로/세로, 단위, 범위, 눈금 간격, 선형/로그, 점선 격자, 선 색·이름)을 정리 → `docs/units/<단원>.md`에 기록. 교과서 개념도와 실제 자료가 다르면 교과서 개념도 우선. 교과서 그림 번호 버튼(예: '그림 Ⅲ-23처럼')을 두면 좋음.
@@ -34,7 +50,7 @@
    - 칩 탭: `<button role="tab" data-tab="키" class="tchip"><i class="em em-이름"></i>…</button>`
    - JS에서만 바꿔 끼우는 이모지는 HTML 주석에 `em-이름`을 적어 둬야 빌드에 포함됨.
    - 3D는 `<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>`로 쓰면 빌드 때 내장본으로 바뀜.
-4. `python3 tools/build.py src/units/<파일>.html` → '키트에 없는 이모지' 경고가 나오면 `kit/emoji-list.json`의 다른 이름으로 바꿈.
+4. `python3 tools/build.py src/units/<파일>.html`(Windows는 `py`) → '키트에 없는 이모지' 경고가 나오면 `kit/emoji-list.json`의 다른 이름으로 바꿈.
 5. 검사: 저장소 루트에서 `python3 -m http.server 8000` → playwright로 라이트·다크·400px 휴대폰 폭 화면 캡처, 라벨 겹침·가로 스크롤·콘솔 오류 확인, 형성평가 정답 입력 한 번씩 눌러 봄.
 6. 목차·첫 화면 연결
    - `src/subjects/<과목>.html`의 `UNITS`에서 해당 단원에 `href:'../units/<파일>.html'` 추가(없으면 '준비 중' 표시)
@@ -108,7 +124,7 @@
 ## 9. 앱(PWA)·배포
 - `sw.js` 네트워크 우선 + 4초 넘으면 저장본. 새 파일은 `ASSETS`에 넣고, 무엇이든 고치면 `VERSION` 변경.
 - 앱 이름 '지구과학 체험형 시뮬레이션'(홈 화면 '지구과학 시뮬').
-- 푸시가 403이면 Claude GitHub 앱 설치 필요 → https://github.com/apps/claude/installations/select_target 에서 JIGOOLEE-earthscience에 설치 안내.
+- (채팅·클라우드 작업에서) 푸시가 403이면 Claude GitHub 앱 설치 필요 → https://github.com/apps/claude/installations/select_target 에서 JIGOOLEE-earthscience에 설치 안내.
 - 사이트가 안 바뀌면 저장소 Actions 탭의 'pages build and deployment' 확인 안내.
 
 ## 10. 답변 방식

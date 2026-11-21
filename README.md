@@ -4,6 +4,7 @@
 사이트: https://jigoolee-earthscience.github.io/jigu-sim/
 
 작업 지침과 상세 절차는 [`CLAUDE.md`](CLAUDE.md), 진행 기록은 [`docs/PROGRESS.md`](docs/PROGRESS.md).
+Claude Code 사용 안내는 [`docs/CLAUDE-CODE-START.md`](docs/CLAUDE-CODE-START.md).
 
 ## 구성
 - `src/` : 원본(직접 고치는 곳) → `python3 tools/build.py`로 아래 사이트 파일을 만듦
