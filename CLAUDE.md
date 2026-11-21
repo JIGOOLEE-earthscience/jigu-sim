@@ -23,7 +23,7 @@
 |---|---|
 | `src/` | **원본**. 직접 고치는 곳. 글꼴·이모지·로고는 자리표시자로 들어 있음 |
 | `src/index.html` | 첫 화면(과목 선택). `SUBJECTS` 목록 |
-| `src/subjects/<과목>.html` | 과목별 단원 목차. `UNITS` 목록 (지금은 `ess.html` = 지구시스템과학) |
+| `src/subjects/<과목>.html` | 과목별 단원 목차. `UNITS` 목록 (`is1`·`is2` 통합과학1·2, `es` 지구과학, `ess` 지구시스템과학, `ps` 행성우주과학). 중단원이 있는 과목은 `UNITS` 항목에 `{sub:'1 중단원명'}` 줄을 넣어 소제목 표시, 출판사는 `PUB` |
 | `src/units/<대단원>-<중단원 두 자리>-<영문>.html` | 단원 시뮬레이션 원본 |
 | `index.html`, `subjects/`, `units/` | **빌드 결과**(사이트에 올라가는 파일). 직접 고치지 않음 |
 | `kit/` | 디자인 키트: `skeleton.html`(기본 틀), `kit.css`, `font/pretendard-kr.woff2`, `em/<이름>.png`(토스페이스 187개, 목록 `emoji-list.json`), `logo.png` |
@@ -99,11 +99,11 @@
 ## 6. 과목·교과서
 | 과목 | 학년·구분 | 목차 파일 | 교과서 기준 |
 |---|---|---|---|
-| 통합과학1 | 1학년 공통 | (준비 중) | 미정 |
-| 통합과학2 | 1학년 공통 | (준비 중) | 미정 |
-| 지구과학 | 2학년 일반 선택 | (준비 중) | 미정 |
+| 통합과학1 | 1학년 공통 | `subjects/is1.html` | **동아출판** |
+| 통합과학2 | 1학년 공통 | `subjects/is2.html` | **동아출판** |
+| 지구과학 | 2학년 일반 선택 | `subjects/es.html` | **미래엔** |
 | 지구시스템과학 | 2학년 진로 선택 | `subjects/ess.html` | **미래엔** (목차에 '미래엔 ○쪽'으로 표기) |
-| 행성우주과학 | 진로 선택 | (준비 중) | 미정 |
+| 행성우주과학 | 진로 선택 | `subjects/ps.html` | **미래엔** |
 - 교과서마다 쪽수가 달라 출판사를 반드시 표기. 새 과목을 열 때 선생님께 출판사 확인.
 - 새 과목 열기: `src/subjects/ess.html` 복사 → 제목·`UNITS`·출판사 표기 변경 → `src/index.html` `SUBJECTS`에 `href:'subjects/<과목>.html'`, `open`, `total`, `pub` → build → `sw.js` 갱신.
 
